@@ -8,7 +8,10 @@ function App() {
     <>
 <<<<<<< HEAD
       <div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2b03d55 (Explain to saksham git)
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
