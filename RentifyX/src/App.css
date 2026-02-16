@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 html {
   scroll-behavior: smooth;
 }
@@ -19,3 +20,6 @@ body {
 #root {
   animation: fadeIn 0.3s ease-in-out;
 }
+=======
+/* App-level styles - mostly handled by SellerLayout.css now */
+>>>>>>> 0e4265b (blabla)
