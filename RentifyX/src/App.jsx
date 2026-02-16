@@ -1,8 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
-import "./App.css";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import SellerLayout from './seller/SellerLayout';
+import Dashboard from './seller/pages/Dashboard';
+import Analytics from './seller/pages/Analytics';
+import Messages from './seller/pages/Messages';
+import AddDwellings from './seller/pages/AddDwellings';
+import AddVehicles from './seller/pages/AddVehicles';
+import "./App.css";
 
 function App() {
   return (
@@ -11,10 +17,19 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
+        {/* Seller Routes */}
+        <Route path="/seller" element={<SellerLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="add-dwellings" element={<AddDwellings />} />
+          <Route path="add-vehicles" element={<AddVehicles />} />
+        </Route>
       </Routes>
     </Router>
   );
 }
 
 export default App;
-  
