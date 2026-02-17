@@ -9,3 +9,24 @@
   background-color: #ffffff;
   width: 100%;
 }
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Page transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#root {
+  animation: fadeIn 0.3s ease-in-out;
+}
