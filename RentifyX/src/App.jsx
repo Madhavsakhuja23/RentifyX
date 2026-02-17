@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dwellings from "./pages/Dwellings";
 
@@ -34,6 +35,9 @@ function App() {
     </>
 =======
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+=======
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+>>>>>>> 7f7e119 (dwellings page)
 import Home from "./pages/Home";
 import "./App.css";
 import Login from "./pages/Login";
@@ -104,8 +108,23 @@ function App() {
         
 >>>>>>> 6c708be (seller dashboard)
       </Routes>
+<<<<<<< HEAD
     </BrowserRouter>
 >>>>>>> 0e4265b (blabla)
+=======
+    </Router>
+  
+=======
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Dwellings from "./pages/Dwellings";
+
+function App() {
+  return (
+    <>
+      <Dwellings />
+    </>
+>>>>>>> cb21056 (dwellings page)
+>>>>>>> 7f7e119 (dwellings page)
   );
 =======
 import DriveablesMain from './Saksham/DriveablesMain'

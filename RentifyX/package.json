@@ -14,6 +14,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "date-fns": "^4.1.0",
 =======
     "framer-motion": "^12.34.0",
@@ -24,6 +25,8 @@
 =======
 =======
 >>>>>>> c63818d (Remove duplicate framer-motion from dependencies)
+=======
+>>>>>>> 7f7e119 (dwellings page)
     "bootstrap": "^5.3.8",
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.563.0",
@@ -38,7 +41,17 @@
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0"
+<<<<<<< HEAD
 >>>>>>> 0e4265b (blabla)
+=======
+=======
+    "date-fns": "^4.1.0",
+    "react": "^19.2.0",
+    "react-date-range": "^2.0.1",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.0"
+>>>>>>> cb21056 (dwellings page)
+>>>>>>> 7f7e119 (dwellings page)
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
