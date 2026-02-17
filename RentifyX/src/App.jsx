@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dwellings from "./pages/Dwellings";
 
@@ -78,6 +79,17 @@ function App() {
     </BrowserRouter>
 >>>>>>> 0e4265b (blabla)
   );
+=======
+import DriveablesMain from './Saksham/DriveablesMain'
+import './App.css'
+
+function App() {
+  return (
+    <div className="App">
+      <DriveablesMain />
+    </div>
+  )
+>>>>>>> 3f8342c (Driveables landing page)
 }
 
 export default App;

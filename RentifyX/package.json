@@ -12,7 +12,11 @@
   "dependencies": {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "date-fns": "^4.1.0",
+=======
+    "framer-motion": "^12.34.0",
+>>>>>>> 3f8342c (Driveables landing page)
     "react": "^19.2.0",
     "react-date-range": "^2.0.1",
     "react-dom": "^19.2.0",
