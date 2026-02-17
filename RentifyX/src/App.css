@@ -1,3 +1,15 @@
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+   animation: fadeIn 0.3s ease-in-out;
+}
+
+.App {
+  min-height: 100vh;
+  background-color: #ffffff;
+  width: 100%;
+}
 html {
   scroll-behavior: smooth;
 }

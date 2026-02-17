@@ -27,8 +27,10 @@ function App() {
           <Route path="add-dwellings" element={<AddDwellings />} />
           <Route path="add-vehicles" element={<AddVehicles />} />
         </Route>
+        <Route path="/driveables" element={<DriveablesMain />} />
       </Routes>
     </Router>
+  
   );
 }
 
