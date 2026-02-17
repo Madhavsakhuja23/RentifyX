@@ -155,7 +155,7 @@ const Hero = () => {
               <div className="col-12 col-md-3">
                 <div className="search-input-wrapper">
                   <Calendar size={18} className="search-icon" />
-                  <Input type="date" className="search-input" />
+                  <Input type="date" className="search-input" aria-label="Select date" />
                 </div>
               </div>
 
