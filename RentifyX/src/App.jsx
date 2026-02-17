@@ -9,7 +9,6 @@ import Messages from './seller/pages/Messages';
 import AddDwellings from './seller/pages/AddDwellings';
 import AddVehicles from './seller/pages/AddVehicles';
 import DriveablesMain from './Saksham/DriveablesMain';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dwellings from "./pages/Dwellings";
 import "./App.css";
 
