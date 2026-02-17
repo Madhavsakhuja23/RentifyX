@@ -85,8 +85,12 @@ function App() {
         {/* Seller Section */}
 =======
         <Route path="/driveables" element={<DriveablesMain />} />
+<<<<<<< HEAD
         {/* Seller Routes */}
 >>>>>>> 6c708be (seller dashboard)
+=======
+        {/* Seller Routes for later*/}
+>>>>>>> 7e68c29 (some changes in seller)
         <Route path="/seller" element={<SellerLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
