@@ -38,6 +38,17 @@ import Home from "./pages/Home";
 import "./App.css";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+<<<<<<< HEAD
+=======
+import SellerLayout from './seller/SellerLayout';
+import Dashboard from './seller/pages/Dashboard';
+import Analytics from './seller/pages/Analytics';
+import Messages from './seller/pages/Messages';
+import AddDwellings from './seller/pages/AddDwellings';
+import AddVehicles from './seller/pages/AddVehicles';
+import DriveablesMain from './Saksham/DriveablesMain'
+import "./App.css";
+>>>>>>> 6c708be (seller dashboard)
 
 function App() {
   return (
@@ -46,6 +57,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         <Route path="/driveables" element={<DriveablesMain />} />
@@ -71,6 +83,10 @@ function App() {
         <Route path="/" element={<Navigate to="/seller/dashboard" replace />} />
 
         {/* Seller Section */}
+=======
+        <Route path="/driveables" element={<DriveablesMain />} />
+        {/* Seller Routes */}
+>>>>>>> 6c708be (seller dashboard)
         <Route path="/seller" element={<SellerLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
@@ -79,6 +95,10 @@ function App() {
           <Route path="add-dwellings" element={<AddDwellings />} />
           <Route path="add-vehicles" element={<AddVehicles />} />
         </Route>
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 6c708be (seller dashboard)
       </Routes>
     </BrowserRouter>
 >>>>>>> 0e4265b (blabla)
