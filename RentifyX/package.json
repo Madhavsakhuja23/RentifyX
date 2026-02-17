@@ -13,6 +13,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "date-fns": "^4.1.0",
 =======
     "framer-motion": "^12.34.0",
@@ -21,6 +22,8 @@
     "react-date-range": "^2.0.1",
     "react-dom": "^19.2.0",
 =======
+=======
+>>>>>>> c63818d (Remove duplicate framer-motion from dependencies)
     "bootstrap": "^5.3.8",
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.563.0",
