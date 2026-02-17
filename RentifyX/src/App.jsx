@@ -46,6 +46,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+<<<<<<< HEAD
+=======
+        <Route path="/driveables" element={<DriveablesMain />} />
+>>>>>>> a64b7d7 (Replace Driveables component with DriveablesMain)
       </Routes>
     </Router>
 >>>>>>> b09cc25 (Landing and Login Page added)
@@ -95,8 +99,12 @@ function App() {
 export default App;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   
 >>>>>>> b09cc25 (Landing and Login Page added)
 =======
 >>>>>>> 0e4265b (blabla)
+=======
+  
+>>>>>>> a64b7d7 (Replace Driveables component with DriveablesMain)
