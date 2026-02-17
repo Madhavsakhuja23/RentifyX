@@ -23,7 +23,12 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { 
+        varsIgnorePattern: '^[A-Z_]',
+        ignoreRestSiblings: true,
+        args: 'after-used'
+      }],
+      'react/jsx-uses-vars': 'error',
     },
   },
 ])
