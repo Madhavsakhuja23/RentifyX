@@ -1,5 +1,20 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+   animation: fadeIn 0.3s ease-in-out;
+}
+
+.App {
+  min-height: 100vh;
+  background-color: #ffffff;
+  width: 100%;
+}
+>>>>>>> 2d998c6 (Add fadeIn animation to #root)
 html {
   scroll-behavior: smooth;
 }
@@ -18,6 +33,7 @@ body {
   }
 }
 
+<<<<<<< HEAD
 #root {
   animation: fadeIn 0.3s ease-in-out;
 =======
@@ -36,3 +52,5 @@ body {
 =======
 /* App-level styles - mostly handled by SellerLayout.css now */
 >>>>>>> 0e4265b (blabla)
+=======
+>>>>>>> 2d998c6 (Add fadeIn animation to #root)
