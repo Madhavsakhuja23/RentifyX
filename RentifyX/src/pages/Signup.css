@@ -1,0 +1,91 @@
+.signup-wrapper {
+  background: radial-gradient(1100px 560px at 10% 20%, rgba(102,126,234,0.06), transparent 8%),
+              radial-gradient(700px 360px at 85% 85%, rgba(118,75,162,0.06), transparent 8%),
+              #f8f9fa;
+}
+
+.signup-card {
+  max-width: 460px;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), #ffffff);
+  padding: 40px;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(12, 20, 40, 0.08);
+  border-left: 6px solid transparent;
+  border-image: linear-gradient(180deg, #667eea, #764ba2) 1;
+}
+
+.signup-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.logo-box {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa4b2;
+}
+
+.signup-card .custom-input {
+  padding-left: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9aa4b2;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #374151;
+}
+
+.role-option input {
+  width: 16px;
+  height: 16px;
+}
+
+.signup-brand {
+  background: linear-gradient(135deg, #2b2b55 0%, #1b1b2f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+}
+
+.signup-brand h2 {
+  font-weight: 700;
+}
+
+.signup-brand p {
+  color: rgba(255,255,255,0.85);
+}
