@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dwellings from "./pages/Dwellings";
 
@@ -26,7 +27,28 @@ function App() {
       <Dwellings />
 >>>>>>> cb21056 (dwellings page)
     </>
+=======
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import "./App.css";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </Router>
+>>>>>>> b09cc25 (Landing and Login Page added)
   );
 }
 
 export default App;
+<<<<<<< HEAD
+=======
+  
+>>>>>>> b09cc25 (Landing and Login Page added)
