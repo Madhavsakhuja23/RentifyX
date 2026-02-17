@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 * {
@@ -61,7 +60,7 @@ img {
   --box-shadow-sm: 0 4px 12px rgba(102, 126, 234, 0.1);
   --box-shadow-md: 0 12px 30px rgba(102, 126, 234, 0.15);
   --transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-=======
+}
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
@@ -404,7 +403,6 @@ body {
 .guest-panel button {
   padding: 8px 14px;
   font-size: 16px;
->>>>>>> cb21056 (dwellings page)
 }
 
 * {
