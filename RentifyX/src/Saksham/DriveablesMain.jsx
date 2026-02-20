@@ -28,6 +28,8 @@ import tataNexomImg from '../assets/tatanexom.jpg';
 import ktmDukeImg from '../assets/ktmduke.avif';
 import KiaSeltosImg from '../assets/KiaSeltos.avif';
 import gravelBikeImg from '../assets/gravelbike.jpg';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 
 const mockData = [
       {
@@ -402,7 +404,8 @@ const DriveablesMain = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Navbar selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+      <Header />
+      {/* <Navbar selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} /> */}
       <HeroSection onExplore={scrollToFleet} />
 
       {/* Fleet Section */}
@@ -414,9 +417,19 @@ const DriveablesMain = () => {
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.6 }}
         >
-          <span className="section-tag">Our Collection</span>
-          <h2>Browse Our <span className="highlight">Fleet</span></h2>
-          <p>Choose from our wide selection of premium vehicles for any occasion</p>
+          <div className="category-filter-buttons">
+            {['all', 'cars', 'bikes', 'evs', 'bicycles'].map((category) => (
+              <motion.button
+                key={category}
+                className={`category-filter-btn ${selectedCategory === category ? 'active' : ''}`}
+                onClick={() => handleCategoryChange(category)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </motion.button>
+            ))}
+          </div>
         </motion.div>
 
         <div className="driveables-main-content">

@@ -104,12 +104,10 @@ const HeroSection = ({ onExplore }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5, duration: 0.9, ease: 'easeOut' }}
       >
-        <motion.img
+        <img
           src={toyotaFortunerImg}
           alt="Premium rental vehicle"
           className="hero-car-img"
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.div>
     </section>
