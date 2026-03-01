@@ -11,6 +11,14 @@
   width: 100%;
 }
 
+:root {
+  --primary: #3aa0ff; /* main light-blue */
+  --primary-2: #6ec8ff; /* secondary light-blue */
+  --primary-grad: linear-gradient(135deg, var(--primary), var(--primary-2));
+  --muted: #6c757d;
+  --card-shadow: 0 12px 40px rgba(2,6,23,0.06);
+}
+
 html {
   scroll-behavior: smooth;
 }
