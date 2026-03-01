@@ -1,90 +1,93 @@
 .cta-section {
-  padding: 100px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
   position: relative;
+  padding: 110px 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
   overflow: hidden;
 }
 
 .cta-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.14) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
+/* Title */
 .cta-title {
   font-size: 44px;
   font-weight: 800;
-  margin-bottom: 20px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
+  margin-bottom: 18px;
 }
 
+/* Subtitle */
 .cta-subtitle {
-  font-size: 18px;
+  font-size: 17px;
   opacity: 0.95;
-  margin-bottom: 40px;
-  font-weight: 500;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 620px;
+  margin: 0 auto 42px;
+  line-height: 1.6;
 }
 
-.cta-buttons {
-  gap: 20px !important;
+/* Buttons */
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
 }
 
 .cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 32px;
-  border-radius: 10px;
+  padding: 14px 34px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
-  cursor: pointer;
 }
 
-.cta-btn-primary {
+/* Primary */
+.cta-btn.primary {
   background: white;
   color: #667eea;
 }
 
-.cta-btn-primary:hover {
-  background: #f0f0f0;
+.cta-btn.primary:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
-.cta-btn-secondary {
-  background: transparent;
+/* Secondary */
+.cta-btn.secondary {
+  border: 2px solid white;
   color: white;
-  border-color: white;
+  background: transparent;
 }
 
-.cta-btn-secondary:hover {
+.cta-btn.secondary:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-4px);
-  border-color: white;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .cta-title {
     font-size: 32px;
   }
 
   .cta-subtitle {
-    font-size: 16px;
+    font-size: 15px;
   }
 
-  .cta-buttons {
+  .cta-actions {
     flex-direction: column;
   }
 
