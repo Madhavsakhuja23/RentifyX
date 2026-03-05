@@ -1,7 +1,7 @@
 .footer-logo {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
   color: #fff;
   font-weight: bold;
   border-radius: 8px;
@@ -9,12 +9,12 @@
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(123, 97, 255, 0.3);
 }
 
 .footer-link {
   display: inline-block;
-  color: #6c757d;
+  color: #6B6B6B;
   text-decoration: none;
   margin-bottom: 8px;
   font-weight: 500;
@@ -24,12 +24,12 @@
 }
 
 .footer-link:hover {
-  color: #667eea;
-  border-bottom-color: #667eea;
+  color: #7B61FF;
+  border-bottom-color: #7B61FF;
 }
 
 .footer-icon {
-  color: #6c757d;
+  color: #6B6B6B;
   width: 40px;
   height: 40px;
   display: flex;
@@ -41,6 +41,6 @@
 }
 
 .footer-icon:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  color: #667eea;
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.1) 0%, rgba(232, 93, 158, 0.1) 100%);
+  color: #7B61FF;
 }

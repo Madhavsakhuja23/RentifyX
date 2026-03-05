@@ -24,7 +24,7 @@ const Header = () => {
   };
 
   return (
-    <header className="header sticky-top bg-white border-bottom">
+    <header className="header">
       <div className="container">
         <div className="d-flex align-items-center header-inner">
 
@@ -36,22 +36,19 @@ const Header = () => {
           >
             <Link to="/" className="d-flex align-items-center gap-2 text-decoration-none">
               <div className="logo-box">R</div>
-              <span className="fw-bold fs-5 text-dark">RentifyX</span>
+              <span className="fw-bold fs-5" style={{ color: "#FF5722" }}>RentifyX</span>
             </Link>
           </motion.div>
 
           {/* Search Bar (Desktop) - Left */}
-          <form onSubmit={handleSearch} className="search-bar d-none d-lg-flex">
+          <form onSubmit={handleSearch} className="search-bar">
             <input
               type="text"
-              placeholder="Search listings..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
-            <button type="submit" className="search-btn">
-              <Search size={26} />
-            </button>
           </form>
 
           {/* Desktop Nav - Right */}
@@ -93,17 +90,13 @@ const Header = () => {
               <form onSubmit={handleSearch} className="mobile-search mb-3">
                 <input
                   type="text"
-                  placeholder="Search listings..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
+                  className="search-input w-100"
                 />
-                <button type="submit" className="search-btn">
-                  <Search size={18} />
-                </button>
               </form>
 
-              <Link className="mobile-link" to="/listings">Browse Listings</Link>
               <Link className="mobile-link" to="/listings?category=properties">Properties</Link>
               <Link className="mobile-link" to="/listings?category=vehicles">Vehicles</Link>
               <Link className="mobile-link" to="/listings?category=travel">Travel Stays</Link>

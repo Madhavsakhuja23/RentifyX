@@ -4,7 +4,7 @@ import toyotaFortunerImg from '../assets/toyota-fortuner.webp';
 
 const HeroSection = ({ onExplore }) => {
   return (
-    <section className="hero-section" id="home">
+    <section className="premium-hero-section" id="home">
       {/* Background elements */}
       <div className="hero-bg-elements">
         <div className="hero-glow-1" />
@@ -45,7 +45,7 @@ const HeroSection = ({ onExplore }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.6 }}
         >
-          Experience premium vehicles at unbeatable prices. From sleek cars to electric scooters — 
+          Experience premium vehicles at unbeatable prices. From sleek cars to electric scooters —
           we have everything you need for the perfect journey.
         </motion.p>
 

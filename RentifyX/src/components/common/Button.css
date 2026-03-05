@@ -1,8 +1,9 @@
 .custom-btn {
   padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: 9999px;
+  /* Pill shape */
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -11,12 +12,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(123, 97, 255, 0.3);
 }
 
 .custom-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(123, 97, 255, 0.4);
 }
 
 .custom-btn:active {

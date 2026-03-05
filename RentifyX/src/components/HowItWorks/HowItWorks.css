@@ -1,13 +1,13 @@
 .how-section {
   padding: 80px 0;
-  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #F2F2F2 0%, #F2F2F2 100%);
 }
 
 .how-title {
   font-size: 36px;
   font-weight: 800;
   margin-bottom: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -21,10 +21,10 @@
 .steps-container {
   width: 100%;
   max-width: 1000px;
-  border: 2px solid #667eea;
+  border: 1px solid rgba(123, 97, 255, 0.1);
   border-radius: 24px;
   padding: 48px 20px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+  background: rgba(255, 255, 255, 0.5);
   position: relative;
 }
 
@@ -36,41 +36,42 @@
   left: 10%;
   right: 10%;
   height: 2px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    transparent 5%,
-    #667eea 20%, 
-    #667eea 80%, 
-    transparent 95%,
-    transparent 100%);
+  background: linear-gradient(90deg,
+      transparent 0%,
+      transparent 5%,
+      rgba(123, 97, 255, 0.2) 20%,
+      rgba(123, 97, 255, 0.2) 80%,
+      transparent 95%,
+      transparent 100%);
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 0;
 }
 
 .step-card {
-  background: white;
+  background: #0F0F14;
   padding: 32px 20px;
   border-radius: 16px;
   text-align: center;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 32px rgba(123, 97, 255, 0.08);
   transition: all 0.3s ease;
-  border: 2px solid transparent;
+  border: 1px solid rgba(123, 97, 255, 0.1);
+  backdrop-filter: blur(16px);
   z-index: 1;
 }
 
 .step-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.15);
-  border-color: #667eea;
+  box-shadow: 0 12px 40px rgba(123, 97, 255, 0.12);
+  border-color: #7B61FF;
 }
 
 .step-number {
   font-size: 14px;
   font-weight: 800;
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  color: #7B61FF;
+  background: rgba(123, 97, 255, 0.1);
   padding: 4px 10px;
   border-radius: 20px;
   display: inline-block;
@@ -80,7 +81,8 @@
 .step-icon-wrapper {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
+  border: none;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -92,18 +94,19 @@
 
 .step-card:hover .step-icon-wrapper {
   transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(90deg, #6a52de, #d85491, #e39659);
 }
 
 .step-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #FFFFFF;
   margin-bottom: 8px;
 }
 
 .step-desc {
   font-size: 14px;
-  color: #6c757d;
+  color: #E2E8F0;
   margin: 0;
 }
 

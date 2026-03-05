@@ -7,7 +7,7 @@
   font-size: 36px;
   font-weight: 800;
   margin-bottom: 50px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -32,7 +32,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
@@ -40,8 +40,8 @@
 
 .category-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
-  border-color: #667eea;
+  box-shadow: 0 12px 30px rgba(123, 97, 255, 0.12);
+  border-color: #7B61FF;
 }
 
 .category-card:hover::before {
@@ -49,20 +49,20 @@
 }
 
 .category-icon {
-  color: #667eea;
+  color: #7B61FF;
   margin-bottom: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(123, 97, 255, 0.1);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 
 .category-card:hover .category-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
   color: white;
   transform: scale(1.1);
 }
@@ -70,18 +70,18 @@
 .category-name {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #111111;
   margin: 12px 0 8px 0;
   transition: color 0.3s ease;
 }
 
 .category-card:hover .category-name {
-  color: #667eea;
+  color: #7B61FF;
 }
 
 .category-arrow {
   font-size: 18px;
-  color: #667eea;
+  color: #7B61FF;
   opacity: 0;
   transition: all 0.3s ease;
 }

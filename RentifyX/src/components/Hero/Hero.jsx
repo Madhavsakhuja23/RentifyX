@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, MapPin, Calendar, Home, Car, Zap, Building2, Bike, Percent, Sofa, Wifi, Shield } from "lucide-react";
+import { Search, MapPin, Calendar } from "lucide-react";
 import Button from "../common/Button";
 import Input from "../common/Input";
 import "./Hero.css";
@@ -9,106 +9,8 @@ import "./Hero.css";
 const Hero = () => {
   const [location, setLocation] = useState("");
 
-  // Floating animation variants
-  const floatingVariants = {
-    animate: (i) => ({
-      y: [0, -20, 0],
-      x: [0, 10, -10, 0],
-      transition: {
-        duration: 3 + i * 0.3,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
-    }),
-  };
-
   return (
     <section className="hero-section">
-      {/* Animated Background Elements */}
-      <motion.div className="hero-gradient-overlay"></motion.div>
-      
-      {/* Floating Icons Background */}
-      <motion.div
-        className="floating-icon-1"
-        custom={0}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Home size={150} strokeWidth={1} />
-      </motion.div>
-      
-      <motion.div
-        className="floating-icon-2"
-        custom={1}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Car size={130} strokeWidth={1} />
-      </motion.div>
-      
-      <motion.div
-        className="floating-icon-3"
-        custom={2}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Zap size={120} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-4"
-        custom={1.5}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Building2 size={140} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-5"
-        custom={0.5}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Bike size={110} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-6"
-        custom={2.5}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Percent size={100} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-7"
-        custom={1.2}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Sofa size={125} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-8"
-        custom={0.8}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Wifi size={115} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-9"
-        custom={2}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Shield size={110} strokeWidth={1} />
-      </motion.div>
-
       <div className="container text-center position-relative">
 
         {/* Animated Heading */}
@@ -172,7 +74,7 @@ const Hero = () => {
         </motion.div>
 
       </div>
-    </section>
+    </section >
   );
 };
 
