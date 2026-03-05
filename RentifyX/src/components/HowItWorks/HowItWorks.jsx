@@ -12,21 +12,27 @@ const HowItWorks = () => {
   return (
     <section className="how-section">
       <div className="container">
-        <motion.h2
+
+        {/* Title */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           viewport={{ once: true }}
-          className="how-title text-center"
+          className="text-center mb-5"
         >
-          How It Works
-        </motion.h2>
+          <h2 className="how-title">How It Works</h2>
+          <p className="how-subtitle">
+            Rent or list anything in just three simple steps
+          </p>
+        </motion.div>
 
+        {/* Steps */}
         <div className="steps-wrapper">
           <div className="steps-container">
             <div className="row g-4 justify-content-center">
               {steps.map((s, i) => {
-                const IconComponent = s.icon;
+                const Icon = s.icon;
                 return (
                   <motion.div
                     key={i}
@@ -37,14 +43,14 @@ const HowItWorks = () => {
                     className="col-12 col-md-6 col-lg-4"
                   >
                     <div className="step-card">
-                      <div className="step-number">{s.number}</div>
+                      <span className="step-number">{s.number}</span>
 
-                      <div className="step-icon-wrapper">
-                        <IconComponent size={40} />
+                      <div className="step-icon">
+                        <Icon size={36} />
                       </div>
 
-                      <h5 className="step-title">{s.step}</h5>
-                      <p className="step-desc">{s.desc}</p>
+                      <h5>{s.step}</h5>
+                      <p>{s.desc}</p>
                     </div>
                   </motion.div>
                 );
@@ -52,6 +58,7 @@ const HowItWorks = () => {
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );

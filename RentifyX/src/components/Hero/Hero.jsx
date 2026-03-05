@@ -1,80 +1,90 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Search, MapPin, Calendar } from "lucide-react";
 import Button from "../common/Button";
 import Input from "../common/Input";
+import { motion } from "framer-motion";
 import "./Hero.css";
 
 const Hero = () => {
   const [location, setLocation] = useState("");
+  const [date, setDate] = useState("");
+  const [guests, setGuests] = useState(1);
 
   return (
-    <section className="hero-section">
-      <div className="container text-center position-relative">
+    <section className="hero-new">
+      {/* Hero Image */}
+      <div className="hero-image-container">
+        <img
+          src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg"
+          alt="Property"
+          className="hero-bg-image"
+        />
 
-        {/* Animated Heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hero-title"
-        >
-          Rent Homes & Vehicles – Anytime, Anywhere
-        </motion.h1>
-
-        {/* Animated Subtext */}
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="hero-subtitle"
-        >
-          Houses, Flats, PGs, Cars, Bikes & EVs in one place
-        </motion.p>
-
-        {/* Search Box */}
+        {/* Overlay Text */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="hero-search-container"
+          transition={{ duration: 0.6 }}
+          className="hero-text"
         >
-          <div className="hero-search">
-            <div className="row g-3 g-md-2 justify-content-center">
-              <div className="col-12 col-md-4">
-                <div className="search-input-wrapper">
-                  <MapPin size={18} className="search-icon" />
-                  <Input
-                    placeholder="Enter location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="search-input"
-                  />
-                </div>
-              </div>
+          <span className="hero-badge">Welcome to RentifyX</span>
+          <h1>Manage Your Property</h1>
+          <p>
+            Find the perfect rental or list your own property easily.
+          </p>
 
-              <div className="col-12 col-md-3">
-                <div className="search-input-wrapper">
-                  <Calendar size={18} className="search-icon" />
-                  <Input type="date" className="search-input" aria-label="Select date" />
-                </div>
-              </div>
-
-              <div className="col-12 col-md-2">
-                <Button className="w-100 search-btn">
-                  <Search size={18} className="me-2" />
-                  <Link to="/listings" className="text-white text-decoration-none">
-                    Search
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Button className="hero-cta">
+            <Link to="/listings" className="text-decoration-none text-white">
+              Explore Listings
+            </Link>
+          </Button>
         </motion.div>
-
       </div>
-    </section >
+
+      {/* Floating Search */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="hero-search-floating"
+      >
+        <div className="row g-2 align-items-end">
+          <div className="col-12 col-md-3">
+            <Input
+              placeholder="Where to"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-md-3">
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-md-2">
+            <Input
+              type="number"
+              min="1"
+              placeholder="Guests"
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-md-2">
+            <Button className="w-100">
+              <Link to="/listings" className="text-white text-decoration-none">
+                Search
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    </section>
   );
 };
 

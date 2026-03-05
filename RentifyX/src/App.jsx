@@ -8,7 +8,8 @@ import Analytics from './seller/pages/Analytics';
 import Messages from './seller/pages/Messages';
 import AddDwellings from './seller/pages/AddDwellings';
 import AddVehicles from './seller/pages/AddVehicles';
-import DriveablesMain from './Saksham/DriveablesMain'
+import DriveablesMain from './Saksham/DriveablesMain';
+import Dwellings from "./pages/Dwellings";
 import "./App.css";
 
 function App() {
@@ -19,6 +20,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
+        <Route path="/dwellings" element={<Dwellings />} />
+        
         {/* Seller Routes for later*/}
         <Route path="/seller" element={<SellerLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -31,8 +34,7 @@ function App() {
         
       </Routes>
     </Router>
-  
-  );
+  )
 }
 
 export default App;
