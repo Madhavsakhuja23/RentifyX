@@ -55,13 +55,17 @@ const Header = () => {
             </button>
           </form>
 
-          {/* Desktop Nav - Right */}
+          {/* Desktop Nav */}
           <nav className="d-none d-md-flex gap-4 nav-section">
             <Link className="nav-link-custom" to="/dwellings">Dwellings</Link>
             <Link className="nav-link-custom" to="/driveables">Driveables</Link>
             <Link className="nav-link-custom" to="/messages">Messages</Link>
           </nav>
 
+          {/* Right Section */}
+          <div className="header-right">
+
+            {/* Profile Button */}
             <button
               onClick={handleProfileClick}
               className="profile-btn"
@@ -69,15 +73,16 @@ const Header = () => {
             >
               <User size={18} />
             </button>
-          </div>
 
-          {/* Mobile toggle */}
-          <button
-            className="btn d-md-none"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
+            {/* Mobile Toggle */}
+            <button
+              className="btn d-md-none mobile-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X /> : <Menu />}
+            </button>
+
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -115,6 +120,7 @@ const Header = () => {
             </motion.nav>
           )}
         </AnimatePresence>
+
       </div>
     </header>
   );
