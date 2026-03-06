@@ -55,13 +55,12 @@ const Header = () => {
             </button>
           </form>
 
-          {/* Right section */}
-          <div className="header-right d-none d-md-flex">
-            <nav className="nav-section">
-              <Link className="nav-link-custom" to="/listings?category=dwellings">Dwellings</Link>
-              <Link className="nav-link-custom" to="/listings?category=driveables">Driveables</Link>
-              <Link className="nav-link-custom" to="/messages">Messages</Link>
-            </nav>
+          {/* Desktop Nav - Right */}
+          <nav className="d-none d-md-flex gap-4 nav-section">
+            <Link className="nav-link-custom" to="/dwellings">Dwellings</Link>
+            <Link className="nav-link-custom" to="/driveables">Driveables</Link>
+            <Link className="nav-link-custom" to="/messages">Messages</Link>
+          </nav>
 
             <button
               onClick={handleProfileClick}
