@@ -1,5 +1,5 @@
-/* =============================================
-   RentifyX — Light Premium Theme
+﻿/* =============================================
+   RentifyX â€” Light Premium Theme
    ============================================= */
 
 /* === CSS Variables === */
@@ -1451,7 +1451,7 @@
 }
 
 .tier-details li::before {
-  content: '•';
+  content: 'â€¢';
   position: absolute;
   left: 4px;
   color: var(--text-muted);
@@ -1700,4 +1700,22 @@
   .nav-filter-icon { display: none; }
   .modal-content { padding: 24px 16px; }
 }
+
+
+/* === Clean Search Inputs === */
+.date-input-clean::-webkit-calendar-picker-indicator {
+  display: none !important;
+  -webkit-appearance: none;
+}
+.date-input-clean::-webkit-datetime-edit-fields-wrapper {
+  color: inherit;
+}
+.date-input-clean::-webkit-datetime-edit-text,
+.date-input-clean::-webkit-datetime-edit-month-field,
+.date-input-clean::-webkit-datetime-edit-day-field,
+.date-input-clean::-webkit-datetime-edit-year-field {
+  color: inherit;
+}
+
+
 
