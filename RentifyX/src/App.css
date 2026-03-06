@@ -10,6 +10,15 @@
   background-color: #ffffff;
   width: 100%;
 }
+
+:root {
+  --primary: #3aa0ff; /* main light-blue */
+  --primary-2: #6ec8ff; /* secondary light-blue */
+  --primary-grad: linear-gradient(135deg, var(--primary), var(--primary-2));
+  --muted: #6c757d;
+  --card-shadow: 0 12px 40px rgba(2,6,23,0.06);
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -23,8 +32,30 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
+
+#root {
+  animation: fadeIn 0.3s ease-in-out;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  min-height: 100vh;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+/* App-level styles - mostly handled by SellerLayout.css now */
+
+#root {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* App-level styles - mostly handled by SellerLayout.css now */
 

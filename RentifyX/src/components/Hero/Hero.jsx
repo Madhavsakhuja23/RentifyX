@@ -1,177 +1,89 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Search, MapPin, Calendar, Home, Car, Zap, Building2, Bike, Percent, Sofa, Wifi, Shield } from "lucide-react";
 import Button from "../common/Button";
 import Input from "../common/Input";
+import { motion } from "framer-motion";
 import "./Hero.css";
 
 const Hero = () => {
   const [location, setLocation] = useState("");
-
-  // Floating animation variants
-  const floatingVariants = {
-    animate: (i) => ({
-      y: [0, -20, 0],
-      x: [0, 10, -10, 0],
-      transition: {
-        duration: 3 + i * 0.3,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
-    }),
-  };
+  const [date, setDate] = useState("");
+  const [guests, setGuests] = useState(1);
 
   return (
-    <section className="hero-section">
-      {/* Animated Background Elements */}
-      <motion.div className="hero-gradient-overlay"></motion.div>
-      
-      {/* Floating Icons Background */}
-      <motion.div
-        className="floating-icon-1"
-        custom={0}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Home size={150} strokeWidth={1} />
-      </motion.div>
-      
-      <motion.div
-        className="floating-icon-2"
-        custom={1}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Car size={130} strokeWidth={1} />
-      </motion.div>
-      
-      <motion.div
-        className="floating-icon-3"
-        custom={2}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Zap size={120} strokeWidth={1} />
-      </motion.div>
+    <section className="hero-new">
+      {/* Hero Image */}
+      <div className="hero-image-container">
+        <img
+          src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg"
+          alt="Property"
+          className="hero-bg-image"
+        />
 
-      <motion.div
-        className="floating-icon-4"
-        custom={1.5}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Building2 size={140} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-5"
-        custom={0.5}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Bike size={110} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-6"
-        custom={2.5}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Percent size={100} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-7"
-        custom={1.2}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Sofa size={125} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-8"
-        custom={0.8}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Wifi size={115} strokeWidth={1} />
-      </motion.div>
-
-      <motion.div
-        className="floating-icon-9"
-        custom={2}
-        animate="animate"
-        variants={floatingVariants}
-      >
-        <Shield size={110} strokeWidth={1} />
-      </motion.div>
-
-      <div className="container text-center position-relative">
-
-        {/* Animated Heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hero-title"
-        >
-          Rent Homes & Vehicles – Anytime, Anywhere
-        </motion.h1>
-
-        {/* Animated Subtext */}
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="hero-subtitle"
-        >
-          Houses, Flats, PGs, Cars, Bikes & EVs in one place
-        </motion.p>
-
-        {/* Search Box */}
+        {/* Overlay Text */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="hero-search-container"
+          transition={{ duration: 0.6 }}
+          className="hero-text"
         >
-          <div className="hero-search">
-            <div className="row g-3 g-md-2 justify-content-center">
-              <div className="col-12 col-md-4">
-                <div className="search-input-wrapper">
-                  <MapPin size={18} className="search-icon" />
-                  <Input
-                    placeholder="Enter location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="search-input"
-                  />
-                </div>
-              </div>
+          <span className="hero-badge">Welcome to RentifyX</span>
+          <h1>Manage Your Property</h1>
+          <p>
+            Find the perfect rental or list your own property easily.
+          </p>
 
-              <div className="col-12 col-md-3">
-                <div className="search-input-wrapper">
-                  <Calendar size={18} className="search-icon" />
-                  <Input type="date" className="search-input" aria-label="Select date" />
-                </div>
-              </div>
-
-              <div className="col-12 col-md-2">
-                <Button className="w-100 search-btn">
-                  <Search size={18} className="me-2" />
-                  <Link to="/listings" className="text-white text-decoration-none">
-                    Search
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Button className="hero-cta">
+            <Link to="/listings" className="text-decoration-none text-white">
+              Explore Listings
+            </Link>
+          </Button>
         </motion.div>
-
       </div>
+
+      {/* Floating Search */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="hero-search-floating"
+      >
+        <div className="row g-2 align-items-end">
+          <div className="col-12 col-md-3">
+            <Input
+              placeholder="Where to"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-md-3">
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-md-2">
+            <Input
+              type="number"
+              min="1"
+              placeholder="Guests"
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-md-2">
+            <Button className="w-100">
+              <Link to="/listings" className="text-white text-decoration-none">
+                Search
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 };
