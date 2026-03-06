@@ -1,6 +1,5 @@
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-import './Driveables.css';
+// import './Driveables.css'; // Removed custom CSS
 
 const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage }) => {
   const getPageNumbers = () => {
@@ -32,49 +31,54 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
 
   return (
     <motion.div 
-      className="pagination-container"
+      className="d-flex flex-column align-items-center mt-5 mb-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.8 }}
     >
-      <div className="pagination">
-        <motion.button 
-          className="pagination-btn"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
-          whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
-        >
-          ← Prev
-        </motion.button>
-
-        <div className="pagination-numbers">
-          {getPageNumbers().map((page, index) => (
-            <motion.button
-              key={index}
-              className={`page-number ${page === currentPage ? 'active' : ''} ${page === '...' ? 'ellipsis' : ''}`}
-              onClick={() => typeof page === 'number' && onPageChange(page)}
-              disabled={page === '...'}
-              whileHover={page !== '...' && page !== currentPage ? { scale: 1.1 } : {}}
-              whileTap={page !== '...' && page !== currentPage ? { scale: 0.9 } : {}}
+      <nav aria-label="Vehicle pagination">
+        <ul className="pagination mb-2">
+          {/* Previous Button */}
+          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+            <button 
+              className="page-link shadow-none" 
+              onClick={() => onPageChange(currentPage - 1)}
+              tabIndex={currentPage === 1 ? -1 : 0}
             >
-              {page}
-            </motion.button>
+              &laquo; Prev
+            </button>
+          </li>
+
+          {/* Page Numbers */}
+          {getPageNumbers().map((page, index) => (
+            <li 
+              key={index} 
+              className={`page-item ${page === currentPage ? 'active' : ''} ${page === '...' ? 'disabled' : ''}`}
+            >
+              <button
+                className="page-link shadow-none"
+                onClick={() => typeof page === 'number' && onPageChange(page)}
+              >
+                {page}
+              </button>
+            </li>
           ))}
-        </div>
 
-        <motion.button 
-          className="pagination-btn"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
-          whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
-        >
-          Next →
-        </motion.button>
-      </div>
+          {/* Next Button */}
+          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+            <button 
+              className="page-link shadow-none" 
+              onClick={() => onPageChange(currentPage + 1)}
+              tabIndex={currentPage === totalPages ? -1 : 0}
+            >
+              Next &raquo;
+            </button>
+          </li>
+        </ul>
+      </nav>
 
-      <p className="pagination-info">
+      {/* Pagination Info */}
+      <p className="text-muted small mb-0">
         Showing {startItem}–{endItem} of {totalItems} vehicles
       </p>
     </motion.div>
