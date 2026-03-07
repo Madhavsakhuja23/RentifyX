@@ -1,27 +1,3 @@
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import "./App.css";
-// import Home from "./pages/Home";
-// import Login from "./pages/Login";
-// import Signup from "./pages/Signup";
-// import NotFound from "./pages/NotFound";
-// import DriveablesMain from "./Saksham/DriveablesMain"; 
-// const queryClient = new QueryClient();
-
-// function App() {
-//   return (
-//     <QueryClientProvider client={queryClient}>
-//       <Router>
-//         <Routes>
-//           <Route path="/" element={<Home />} />
-//           <Route path="/login" element={<Login />} />
-//           <Route path="/signup" element={<Signup />} />
-//           <Route path="/driveables" element={<DriveablesMain />} />
-//           <Route path="*" element={<NotFound />} />
-//         </Routes>
-//       </Router>
-//     </QueryClientProvider>
-//   );
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -35,6 +11,7 @@ import AddVehicles from './seller/pages/AddVehicles';
 import DriveablesMain from './Saksham/DriveablesMain';
 import Dwellings from "./pages/Dwellings";
 import "./App.css";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -45,6 +22,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
         <Route path="/dwellings" element={<Dwellings />} />
+        <Route path="/profile" element={<Profile />} />
         
      
         <Route path="/seller" element={<SellerLayout />}>

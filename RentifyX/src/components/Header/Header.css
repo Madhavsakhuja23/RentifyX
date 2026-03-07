@@ -1,7 +1,7 @@
 .header {
-  background: white;
+  background: var(--bg-primary);
   z-index: 1000;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 }
 
@@ -23,7 +23,7 @@
 .logo-text {
   font-weight: 700;
   font-size: 18px;
-  color: #111;
+  color: var(--text-primary);
 }
 
 .logo-box {
@@ -35,8 +35,8 @@
   justify-content: center;
   color: white;
   font-weight: 700;
-  background: var(--primary-grad);
-  box-shadow: 0 8px 24px rgba(58,160,255,0.12);
+  background: var(--accent-gradient-btn);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
 }
 
 /* Center search */
@@ -51,11 +51,18 @@
   flex: 1;
   height: 44px;
   border-radius: 12px 0 0 12px;
-  border: 1px solid #e6e9ef;
+  border: 1px solid var(--border-color);
   padding: 0 14px;
   outline: none;
   font-size: 14px;
-  background: #fff;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  transition: all var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--accent-purple);
+  background: var(--bg-card);
 }
 
 .search-btn {
@@ -63,15 +70,19 @@
   height: 44px;
   border-radius: 0 12px 12px 0;
   border: none;
-  background: var(--primary-grad);
+  background: var(--accent-gradient-btn);
   color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all var(--transition);
 }
 
-.search-btn:hover { filter: brightness(0.95); }
+.search-btn:hover { 
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn);
+}
 
 /* Right */
 .header-right {
@@ -87,32 +98,51 @@
 }
 
 .nav-link-custom {
-  color: #333;
+  color: var(--text-secondary);
   text-decoration: none;
   padding: 8px 10px;
-  border-radius: 8px;
-  transition: all .18s ease;
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
 }
-.nav-link-custom:hover { background: rgba(102,126,234,0.08); color: #3b3b3b; }
+
+.nav-link-custom:hover { 
+  background: var(--glow-purple);
+  color: var(--accent-purple);
+}
 
 /* Profile */
+/* Profile */
 .profile-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 999px;
+
   border: 1.5px solid var(--primary);
   background: white;
+
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+
   color: var(--primary);
+  font-weight: 500;
+  font-size: 14px;
+
   transition: all 0.25s ease;
+}
+
+.profile-btn span {
+  white-space: nowrap;
+  font-size: 14px;
 }
 
 .profile-btn:hover {
   background: var(--primary-grad);
   color: white;
   border-color: transparent;
+}
+.profile-btn svg {
+  flex-shrink: 0;
 }
 
 /* Mobile menu styles */
