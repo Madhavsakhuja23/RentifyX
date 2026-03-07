@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Calendar, Users, ChevronDown, Search, PawPrint, Plus, Minus } from "lucide-react";
-import { locations } from "@/data/dwellings";
+import { locations } from "../../data/dwellings";
 import "./FilterBar.css";
 
 const FilterBar = ({ filters, onChange }) => {

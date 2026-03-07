@@ -1,5 +1,5 @@
 import { Star, MapPin, Heart } from "lucide-react";
-import { pricingRules, categoryLabels } from "@/data/dwellings";
+import { pricingRules, categoryLabels } from "../../data/dwellings";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ListingCard.css";

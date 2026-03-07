@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import heroHouses from "@/assets/hero-houses.webp";
-import heroFlats from "@/assets/hero-flats.webp";
-import heroTravel from "@/assets/hero-travel.webp";
-import heroPg from "@/assets/hero-pg.webp";
+import heroHouses from "../../assets/hero-houses.webp";
+import heroFlats from "../../assets/hero-flats.webp";
+import heroTravel from "../../assets/hero-travel.webp";
+import heroPg from "../../assets/hero-pg.webp";
 import "./HeroCarousel.css";
 
 const slides = [

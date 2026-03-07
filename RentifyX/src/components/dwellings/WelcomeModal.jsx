@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Home, MapPin, Shield } from "lucide-react";
-import welcomeImage from "@/assets/hero-houses.webp";
+import welcomeImage from "../../assets/hero-houses.webp";
 import "./WelcomeModal.css";
 
 const WelcomeModal = () => {

@@ -10,7 +10,7 @@ import "./dwelling.css";
 
 const ITEMS_PER_PAGE = 6;
 
-const Index = () => {
+const Dwelling = () => {
     const [activeCategory, setActiveCategory] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [filters, setFilters] = useState({
@@ -124,4 +124,4 @@ const Index = () => {
     );
 };
 
-export default Index;
+export default Dwelling;
