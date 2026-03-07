@@ -1,6 +1,5 @@
 .footer {
-  background: linear-gradient(180deg, #f7f9ff 0%, #ffffff 100%);
-  border-top: 1px solid #e8ecf5;
+  margin-top: 40px;
 }
 
 .footer-inner {
@@ -19,25 +18,25 @@
 .footer-brand-text {
   font-weight: 800;
   font-size: 18px;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .footer-logo {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--accent-gradient-btn);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+  box-shadow: var(--shadow-btn);
 }
 
 .footer-desc {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -52,16 +51,16 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: rgba(102, 126, 234, 0.08);
-  color: #667eea;
+  background: var(--glow-purple);
+  color: var(--accent-purple);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all var(--transition);
 }
 
 .footer-socials a:hover {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--accent-gradient-btn);
   color: white;
   transform: translateY(-3px);
 }
@@ -71,7 +70,7 @@
   font-weight: 700;
   font-size: 14px;
   margin-bottom: 16px;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .footer-list {
@@ -86,13 +85,13 @@
 
 .footer-list a {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-secondary);
   text-decoration: none;
-  transition: all 0.25s ease;
+  transition: all var(--transition);
 }
 
 .footer-list a:hover {
-  color: #667eea;
+  color: var(--accent-purple);
   padding-left: 4px;
 }
 
@@ -100,6 +99,7 @@
 .footer-bottom {
   border-top: 1px solid #e8ecf5;
   margin-top: 40px;
+  margin-bottom: 20px;
   padding-top: 18px;
   text-align: center;
   font-size: 13px;

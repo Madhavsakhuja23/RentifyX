@@ -33,11 +33,11 @@ const Hero = () => {
             Find the perfect rental or list your own property easily.
           </p>
 
-          <Button className="hero-cta">
-            <Link to="/listings" className="text-decoration-none text-white">
+          <Link to="/listings">
+            <Button className="hero-cta">
               Explore Listings
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </motion.div>
       </div>
 
@@ -76,11 +76,11 @@ const Hero = () => {
           </div>
 
           <div className="col-12 col-md-2">
-            <Button className="w-100">
-              <Link to="/listings" className="text-white text-decoration-none">
+            <Link to="/listings">
+              <Button className="w-100">
                 Search
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </motion.div>

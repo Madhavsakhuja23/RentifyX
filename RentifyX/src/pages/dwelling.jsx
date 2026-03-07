@@ -7,6 +7,7 @@ import WelcomeModal from "../components/dwellings/WelcomeModal";
 import { listings } from "../data/dwellings";
 import { Shield } from "lucide-react";
 import "./dwelling.css";
+import Header from "../components/Header/Header";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -55,6 +56,7 @@ const Dwelling = () => {
 
     return (
         <div className="page-container">
+            <Header />
             <WelcomeModal />
             <HeroCarousel activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
             <FilterBar filters={filters} onChange={handleFilterChange} />

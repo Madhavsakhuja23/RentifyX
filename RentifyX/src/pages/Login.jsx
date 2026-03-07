@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import "./Login.css";
@@ -10,15 +10,24 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // TEMP login logic
-    if (email && password) {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const user = users.find(
+      (u) => u.email === email && u.password === password
+    );
+
+    if (user) {
       localStorage.setItem("token", "dummy-token");
-      navigate("/profile");
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      navigate("/");
+    } else {
+      setError("Invalid email or password");
     }
   };
 
@@ -34,6 +43,13 @@ const Login = () => {
             transition={{ duration: 0.5 }}
             className="login-card"
           >
+
+            {/* Back to Home */}
+            <Link to="/" className="back-home-btn">
+              <ArrowLeft size={18} />
+              Home
+            </Link>
+
             <Link to="/" className="login-logo">
               <div className="logo-box">R</div>
               <span>RentifyX</span>
@@ -75,7 +91,11 @@ const Login = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-
+              {error && (
+                <p className="text-danger small mb-3">
+                  {error}
+                </p>
+              )}
               <Button type="submit" className="w-100">
                 Sign In
               </Button>
