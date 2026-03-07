@@ -28,6 +28,21 @@ import listing61 from "../assets/listing-6.1.png";
 import listing62 from "../assets/listing-6.2.png";
 import listing63 from "../assets/listing-6.3.png";
 import listing64 from "../assets/listing-6.4.png";
+import listing7 from "../assets/listing-7.avif";
+import listing71 from "../assets/listing-7.1.png";
+import listing72 from "../assets/listing-7.2.png";
+import listing73 from "../assets/listing-7.3.png";
+import listing74 from "../assets/listing-7.4.png";    
+import listing8 from "../assets/listing-8.avif";
+import listing81 from "../assets/listing-8.1.png";
+import listing82 from "../assets/listing-8.2.png";
+import listing83 from "../assets/listing-8.3.png";
+import listing84 from "../assets/listing-8.4.png";
+import listing9 from "../assets/listing-9.avif";
+import listing91 from "../assets/listing-9.1.png";
+import listing92 from "../assets/listing-9.2.png";
+import listing93 from "../assets/listing-9.3.png";
+import listing94 from "../assets/listing-9.4.png";  
 
 
 export const categoryLabels = {
@@ -337,6 +352,145 @@ highlights:[
 
 image:listing6,
 images:[listing6,listing61,listing62,listing63,listing64],
+available:true
+},
+
+{
+id:"7",
+name:"1BHk in Hyderabad",
+location:"Hyderabad",
+rating:4.4,
+reviews:102,
+type:"flats",
+price: 25000,
+priceUnit:"/mo",
+
+guests:1,
+bedrooms:1,
+beds:1,
+bathrooms:1,
+
+host:{
+name:"Neha",
+avatar:"https://randomuser.me/api/portraits/women/12.jpg",
+rating:4.7,
+reviews:150,
+experience:"4 years hosting",
+languages:["English","Hindi"],
+responseRate:"100%",
+responseTime:"within 1 hour"
+},
+
+description: "Welcome to Cityscape, a modern 1BHK in a peaceful, green and very safe area. Perfect for couples and solos. The home is 30–35 minutes from the airport with easy access to Uber, Ola and nearby food joints. All major food delivery apps work smoothly, and we’re happy to share our top recommendations. You’re 20–25 minutes from GVK Mall, 2 minutes from the nearest hospital, right next to a lovely park for morning or evening strolls. Self-check-in for complete convenience during your stay.",
+
+amenities:[
+"Wifi",
+"Kitchen",
+"Free parking on premises",
+"Pets allowed",
+"Dedicated workspace"
+],
+
+highlights:[
+{title:"Designed for staying cool",desc:"Beat the heat with the A/C and ceiling fan."},
+{title:"Self check-in",desc:"ou can check in with the building staff."},
+{title:"Great location",desc:"Guests who stayed here in the past year loved the location."}
+],
+
+image:listing7,
+images:[listing7,listing71,listing72,listing73,listing74],
+available:true
+},
+
+{
+id:"8",
+name:"The Jade Oasisl",
+location:"Delhi",
+rating:4.4,
+reviews:102,
+type:"flats",
+price:25000,
+priceUnit:"/mo",
+
+guests:2,
+bedrooms:1,
+beds:1,
+bathrooms:1,
+
+host:{
+name:"Neha",
+avatar:"https://randomuser.me/api/portraits/women/12.jpg",
+rating:4.7,
+reviews:150,
+experience:"4 years hosting",
+languages:["English","Hindi"],
+responseRate:"100%",
+responseTime:"within 1 hour"
+},
+
+description: "Luxury studio apartment in Noida’s iconic Supernova Spira. Enjoy breathtaking city skyline views from the 38th floor. This fully furnished entire apartment is ideal for business travelers, couples, and families alike. High-speed Wi-Fi, smart TV, workspace, and a private balcony make it perfect for short stays or workations. Step into modern comfort with: A bright living area and plush double bed, High-speed Wi-Fi and a dedicated workspace and a fully equipped kitchenette, attached private balcony",
+
+amenities:[
+"Wifi",
+"Kitchen",
+"Private patio or balcony",
+"Pets allowed",
+"HDTV with Netflix, Amazon Prime Video"
+],
+
+highlights:[
+{title:"Peace and quiet",desc:"Guests say this home is in a quiet area."},
+{title:"Self check-in",desc:"Check yourself in with the keypad."},
+{title:"Dedicated workspace",desc:"A room with wifi that’s well suited for working."}
+],
+
+image:listing8,
+images:[listing8,listing81,listing82,listing83,listing84],
+available:true
+}, 
+{
+id:"9",
+name:"Hostel in jaipur",
+location:"Jaipur",
+rating:4.4,
+reviews:102,
+type:"pgs",
+price:2000,
+priceUnit:"/night",
+
+guests:2,
+bedrooms:1,
+beds:1,
+bathrooms:1,
+
+host:{
+name:"Neha",
+avatar:"https://randomuser.me/api/portraits/women/12.jpg",
+rating:4.7,
+reviews:150,
+experience:"4 years hosting",
+languages:["English","Hindi"],
+responseRate:"100%",
+responseTime:"within 1 hour"
+},
+
+description:"Budget friendly & Clean Private room near Embassy area in Top rated guest house - JHouse. We are located in a very safe and secure area of Jaipur, with easy access to the airport, railway station, and major tourist attractions. Our guest house offers a comfortable and homely environment, making it an ideal choice for travelers seeking a cozy stay in Jaipur.",
+amenities:[
+"Wifi",
+"Lift",
+"Kitchen",
+"City skyline view",
+"Private deck"
+],
+
+highlights:[
+{title:"24-hour self check-in",desc:"Check yourself in with the porter whenever you arrive."},
+{title:"City view",desc:"Enjoy the beautiful city skyline view from your private deck."},
+{title:"Dedicated workspace",desc:"A common area with wifi that’s well suited for working."}
+],
+
+image:listing9,
+images:[listing9,listing91,listing92,listing93,listing94],
 available:true
 }
 
