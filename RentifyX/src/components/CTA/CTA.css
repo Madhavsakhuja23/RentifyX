@@ -1,7 +1,7 @@
 .cta-section {
   position: relative;
   padding: 110px 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--accent-gradient);
   color: white;
   overflow: hidden;
 }
@@ -47,17 +47,17 @@
   align-items: center;
   gap: 10px;
   padding: 14px 34px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition);
 }
 
 /* Primary */
 .cta-btn.primary {
   background: white;
-  color: #667eea;
+  color: var(--accent-purple);
 }
 
 .cta-btn.primary:hover {

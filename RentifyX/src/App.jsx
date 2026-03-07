@@ -13,6 +13,7 @@ import Dwelling from "./pages/Dwelling";
 import ListingDetails from "./pages/ListingDetails";
 import RequestToBook from "./pages/RequestToBook";
 import "./App.css";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
         <Route path="/dwellings" element={<Dwelling />} />
+        <Route path="/profile" element={<Profile/>} />
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/book/:id" element={<RequestToBook />} />
      
