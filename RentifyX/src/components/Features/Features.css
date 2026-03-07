@@ -47,11 +47,19 @@
   margin: 0 auto 22px;
   border-radius: var(--radius-lg);
   background: var(--accent-gradient-btn);
+
   color: white;
+
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all var(--transition);
+}
+
+/* ADD THIS */
+.feature-icon svg {
+  color: white;
+  stroke: white;
 }
 
 .feature-card:hover .feature-icon {

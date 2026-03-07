@@ -1,7 +1,18 @@
+
+.profile-header-main{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:40px;
+padding-top:10px;
+flex-wrap:wrap;
+gap:20px;
+}
+
 .profile-wrapper{
 min-height:100vh;
 background:linear-gradient(180deg,var(--bg-secondary),var(--bg-primary));
-padding:40px 0;
+padding:20px 0 40px 0;
 }
 
 /* Page Container */
@@ -17,7 +28,10 @@ margin:auto;
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:30px;
+
+margin-top:10px;
+margin-bottom:35px;
+
 flex-wrap:wrap;
 gap:20px;
 }
@@ -57,6 +71,7 @@ transition:var(--transition);
 .back-btn:hover{
 background:var(--accent-gradient-btn);
 color:white;
+border:none;
 }
 
 /* Logout */
@@ -91,12 +106,13 @@ margin-bottom:35px;
 .stat-card{
 background:var(--bg-card);
 border:1px solid var(--border-color);
-padding:24px;
+padding:28px 24px;
 border-radius:var(--radius-lg);
 box-shadow:var(--shadow-card);
 text-align:center;
 transition:var(--transition);
 position:relative;
+overflow:hidden;
 }
 
 .stat-card::before{
@@ -107,16 +123,15 @@ top:0;
 width:4px;
 height:100%;
 background:var(--accent-gradient-btn);
-border-radius:4px;
 }
 
 .stat-card:hover{
-transform:translateY(-4px);
+transform:translateY(-6px);
 box-shadow:var(--shadow-card-hover);
 }
-
 .stat-card svg{
 color:var(--accent-purple);
+stroke:var(--accent-purple);
 margin-bottom:6px;
 }
 
@@ -137,29 +152,45 @@ margin:0;
 
 .profile-tabs{
 display:flex;
-gap:8px;
+gap:12px;
 margin-bottom:30px;
-border-bottom:2px solid var(--border-color);
+border-bottom:1px solid var(--border-color);
+padding-bottom:10px;
 }
 
+/* Default tab */
+
 .tab{
-padding:12px 20px;
+padding:12px 24px;
 border:none;
-background:transparent;
+background:var(--bg-card);
 cursor:pointer;
 font-weight:600;
+font-size:14px;
+
 color:var(--text-secondary);
-border-bottom:3px solid transparent;
+
+border-radius:30px;
+
+border:1px solid var(--border-color);
+
 transition:var(--transition);
 }
 
+/* Hover */
+
 .tab:hover{
-color:var(--text-primary);
+background:var(--glow-purple);
+color:var(--accent-purple);
 }
 
+/* Active tab */
+
 .tab.active{
-color:var(--accent-purple);
-border-bottom:3px solid var(--accent-purple);
+background:var(--accent-gradient-btn);
+color:white;
+border:none;
+box-shadow:var(--shadow-btn);
 }
 
 /* Cards */

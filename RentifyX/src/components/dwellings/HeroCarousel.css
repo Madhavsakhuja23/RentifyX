@@ -11,6 +11,8 @@
     }
 }
 
+/* Slides */
+
 .carousel-slide {
     position: absolute;
     inset: 0;
@@ -23,11 +25,20 @@
     object-fit: cover;
 }
 
+/* Overlay */
+
 .carousel-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgb(38 38 38 / 0.7), rgb(38 38 38 / 0.2), transparent);
+    background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.65),
+        rgba(0,0,0,0.25),
+        transparent
+    );
 }
+
+/* Text Content */
 
 .carousel-content {
     position: absolute;
@@ -40,13 +51,13 @@
 }
 
 .carousel-title {
-    font-family: var(--font-display);
+    font-family: var(--font);
     font-size: 3rem;
     line-height: 1.2;
     font-weight: 700;
-    color: var(--primary-foreground);
+    color: white;
     margin-bottom: 0.5rem;
-    text-shadow: 0 10px 15px rgb(0 0 0 / 0.1), 0 4px 6px rgb(0 0 0 / 0.1);
+    text-shadow: 0 10px 15px rgba(0,0,0,0.2);
 }
 
 @media (min-width: 768px) {
@@ -60,8 +71,8 @@
     font-size: 1.125rem;
     font-weight: 500;
     line-height: 1.5rem;
-    color: rgb(255 255 255 / 0.95);
-    text-shadow: 0 4px 6px rgb(0 0 0 / 0.2), 0 2px 4px rgb(0 0 0 / 0.1);
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 4px 6px rgba(0,0,0,0.25);
     max-width: 36rem;
     margin: 0 auto;
 }
@@ -72,6 +83,8 @@
         line-height: 1.75rem;
     }
 }
+
+/* Category Buttons */
 
 .carousel-categories {
     position: absolute;
@@ -95,31 +108,44 @@
 .category-button {
     padding: 0.5rem 1.25rem;
     border-radius: 9999px;
-    font-size: 0.9375rem;
+
+    font-size: 0.95rem;
     font-weight: 500;
+
     transition: all 0.3s ease;
+
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    border: none;
+
+    border: 1px solid rgba(255,255,255,0.4);
+
     cursor: pointer;
-    background-color: var(--card);
-    color: var(--card-foreground);
+
+    background: rgba(255,255,255,0.9);
+    color: var(--text-primary);
+
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 .category-button:hover {
-    background-color: rgb(245 245 245);
+    background: var(--glow-purple);
+    color: var(--accent-purple);
     transform: scale(1.05);
 }
 
+/* Active category */
+
 .category-button.active {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
+    background: var(--accent-gradient-btn);
+    color: white;
+    border: none;
     transform: scale(1.05);
 }
+
+/* Carousel Dots */
 
 .carousel-dots {
     position: absolute;
-    bottom: 0.5rem;
+    bottom: 0.6rem;
     left: 0;
     right: 0;
     z-index: 10;
@@ -133,12 +159,14 @@
     height: 0.4rem;
     border-radius: 9999px;
     transition: all 0.3s ease;
-    background-color: rgb(255 255 255 / 0.6);
+
+    background-color: rgba(255,255,255,0.6);
+
     border: none;
     cursor: pointer;
 }
 
 .dot.active {
-    background-color: var(--primary);
+    background: var(--accent-purple);
     width: 1.5rem;
 }

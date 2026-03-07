@@ -27,26 +27,28 @@
   height: 52px;
   border-radius: 50%;
   border: none;
-  background: var(--accent-pink);
+
+  background: var(--accent-gradient-btn);
+
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
   cursor: pointer;
   transition: all var(--transition);
 }
 
 .play-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.5);
+  box-shadow: 0 16px 40px rgba(124, 58, 237, 0.5);
 }
-
 /* Text */
 .about-badge {
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent-pink);
+  color: var(--accent-purple);
   text-transform: uppercase;
   margin-bottom: 10px;
 }
@@ -78,7 +80,7 @@
 .about-stat h4 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--accent-pink);
+  color: var(--accent-purple);
   margin-bottom: 4px;
 }
 

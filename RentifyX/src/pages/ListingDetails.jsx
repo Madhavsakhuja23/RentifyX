@@ -81,10 +81,10 @@ const RATING_CATS = [
 ];
 
 const REVIEW_COLORS = [
-  "linear-gradient(135deg,#FF385C,#FF7A5A)",
-  "linear-gradient(135deg,#6C63FF,#48C6EF)",
-  "linear-gradient(135deg,#11998e,#38ef7d)",
-  "linear-gradient(135deg,#F7971E,#FFD200)",
+  "linear-gradient(135deg,var(--primary),var(--accent-purple))",
+  "linear-gradient(135deg,var(--accent-purple),var(--accent-blue))",
+  "linear-gradient(135deg,var(--accent-green),var(--accent-blue))",
+  "linear-gradient(135deg,var(--accent-purple),var(--accent-green))",
 ];
 
 const SAMPLE_REVIEWS = [
@@ -99,7 +99,7 @@ function fmt(n) { return "₹" + n.toLocaleString("en-IN"); }
 
 function StarIcon({ size = 14 }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="#FF385C">
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="var(--primary)">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
     </svg>
   );
@@ -138,7 +138,7 @@ function MapEmbed({ location }) {
       <div className="ld-map-wrap">
         <iframe title={`Map of ${location}`} src={src} loading="lazy" />
         <div className="ld-map-pin">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#FF385C" strokeWidth="2.5">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" strokeWidth="2.5">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
@@ -285,7 +285,7 @@ function BookingCard({ listing }) {
       <GuestSelector guests={guests} onChange={setGuests} max={listing.guests} />
 
       {/* ✅ CHANGED: onClick now calls handleReserve */}
-      <button className="ld-reserve-btn" onClick={handleReserve}>
+      <button className={`ld-reserve-btn ${nights > 0 ? 'active' : 'inactive'}`} onClick={handleReserve}>
         {nights > 0 ? `Reserve · ${fmt(tot)}` : "Check availability"}
       </button>
       <p className="ld-no-charge">You won't be charged yet</p>

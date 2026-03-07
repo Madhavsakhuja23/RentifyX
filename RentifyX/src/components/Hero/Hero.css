@@ -10,7 +10,7 @@
   margin: 28px auto 0;
   width: 94%;
   max-width: 1400px;
-  border-radius: 32px;
+  border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 30px 80px rgba(124, 58, 237, 0.15);
 }
@@ -93,7 +93,7 @@
   background: white;
   padding: 22px 24px;
   border-radius: 22px;
-  box-shadow: 0 25px 70px rgba(102, 126, 234, 0.18);
+  box-shadow: 0 25px 70px rgba(124, 58, 237, 0.18);
   z-index: 10;
 }
 

@@ -640,6 +640,12 @@
   width: 100%; border: none; outline: none;
   font-size: 14px; background: transparent;
   cursor: pointer; color: var(--foreground);
+  padding: 4px 0;
+  border-radius: 4px;
+}
+.ld-date-cell input:focus {
+  background: var(--bg-input);
+  outline: 1px solid var(--accent-blue);
 }
 
 /* Guest selector */
@@ -700,21 +706,33 @@
 /* Reserve button */
 .ld-reserve-btn {
   width: 100%;
-  background: var(--primary);
-  color: var(--primary-foreground);
+  background: var(--text-muted);
+  color: var(--text-secondary);
   border: none; padding: 15px;
   border-radius: var(--radius);
   font-size: 16px; font-weight: 700;
-  cursor: pointer; margin-top: 14px;
+  cursor: not-allowed; margin-top: 14px;
   transition: opacity .2s, transform .15s, box-shadow .2s;
-  box-shadow: 0 4px 14px hsla(16, 80%, 54%, .35);
+  box-shadow: none;
 }
-.ld-reserve-btn:hover {
+.ld-reserve-btn.active {
+  background: var(--accent-green);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+.ld-reserve-btn.active:hover {
   opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px hsla(16, 80%, 54%, .42);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.42);
 }
-.ld-reserve-btn:active { transform: translateY(0); }
+.ld-reserve-btn.active:active { transform: translateY(0); }
+
+.ld-reserve-btn.inactive:hover {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
 
 .ld-no-charge {
   text-align: center; font-size: 13px;

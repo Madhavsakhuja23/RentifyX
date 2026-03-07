@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, LogOut, CalendarCheck, Heart, Star, Clock } from "lucide-react";
 import { motion } from "framer-motion";
@@ -28,9 +28,11 @@ const Profile = () => {
     navigate("/");
   };
 
+ useEffect(() => {
   if (!user) {
     navigate("/");
   }
+}, [user, navigate]);
 
   return (
     <div className="profile-wrapper">
