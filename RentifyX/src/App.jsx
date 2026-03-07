@@ -9,7 +9,9 @@ import Messages from './seller/pages/Messages';
 import AddDwellings from './seller/pages/AddDwellings';
 import AddVehicles from './seller/pages/AddVehicles';
 import DriveablesMain from './Saksham/DriveablesMain';
-import Dwellings from "./pages/Dwellings";
+import Dwelling from "./pages/Dwelling";
+import ListingDetails from "./pages/ListingDetails";
+import RequestToBook from "./pages/RequestToBook";
 import "./App.css";
 import Profile from "./pages/Profile";
 
@@ -21,9 +23,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
-        <Route path="/dwellings" element={<Dwellings />} />
-        <Route path="/profile" element={<Profile />} />
-        
+        <Route path="/dwellings" element={<Dwelling />} />
+        <Route path="/profile" element={<Profile/>} />
+        <Route path="/listing/:id" element={<ListingDetails />} />
+        <Route path="/book/:id" element={<RequestToBook />} />
      
         <Route path="/seller" element={<SellerLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
