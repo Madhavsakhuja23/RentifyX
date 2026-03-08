@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import "./Signup.css";
@@ -16,14 +17,36 @@ const Signup = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (name && email && password) {
-      localStorage.setItem("token", "dummy-token");
-      localStorage.setItem("role", role);
-      navigate("/profile");
+  if (name && email && password) {
+
+    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+    // check if email already exists
+    const userExists = existingUsers.find((user) => user.email === email);
+
+    if (userExists) {
+      alert("User already exists. Please login.");
+      return;
     }
-  };
+
+    const newUser = {
+      name,
+      email,
+      password,
+      role,
+    };
+
+    const updatedUsers = [...existingUsers, newUser];
+
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+    // alert("Signup successful! Please login.");
+
+    navigate("/login");
+  }
+};
 
   return (
     <div className="container-fluid signup-wrapper">
@@ -67,6 +90,13 @@ const Signup = () => {
             transition={{ duration: 0.5 }}
             className="signup-card"
           >
+
+            {/* Back button */}
+            <Link to="/" className="back-home-btn">
+              <ArrowLeft size={18} />
+              Home
+            </Link>
+
             <Link to="/" className="signup-logo">
               <div className="logo-box">R</div>
               <span>RentifyX</span>
@@ -121,35 +151,37 @@ const Signup = () => {
               </div>
 
               {/* Role */}
-              <div className="mb-3">
-                <label className="form-label fw-medium">I want to</label>
-                <div className="d-flex gap-3">
-                  <label className="role-option">
+              <div className="mb-4">
+                <label className="form-label fw-medium" style={{ color: 'var(--text-primary)', fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                  I want to
+                </label>
+                <div className="role-selection">
+                  <label className={`role-option ${role === "user" ? "selected" : ""}`}>
                     <input
                       type="radio"
                       value="user"
                       checked={role === "user"}
                       onChange={(e) => setRole(e.target.value)}
                     />
-                    Rent
+                    <span>Rent</span>
                   </label>
-                  <label className="role-option">
+                  <label className={`role-option ${role === "owner" ? "selected" : ""}`}>
                     <input
                       type="radio"
                       value="owner"
                       checked={role === "owner"}
                       onChange={(e) => setRole(e.target.value)}
                     />
-                    List
+                    <span>List</span>
                   </label>
-                  <label className="role-option">
+                  <label className={`role-option ${role === "both" ? "selected" : ""}`}>
                     <input
                       type="radio"
                       value="both"
                       checked={role === "both"}
                       onChange={(e) => setRole(e.target.value)}
                     />
-                    Both
+                    <span>Both</span>
                   </label>
                 </div>
               </div>

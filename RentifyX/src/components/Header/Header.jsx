@@ -7,6 +7,7 @@ import "./Header.css";
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const user = JSON.parse(localStorage.getItem("currentUser"));
   const navigate = useNavigate();
 
   const isLoggedIn = Boolean(localStorage.getItem("token"));
@@ -55,30 +56,35 @@ const Header = () => {
             </button>
           </form>
 
-          {/* Right section */}
-          <div className="header-right d-none d-md-flex">
-            <nav className="nav-section">
-              <Link className="nav-link-custom" to="/listings?category=dwellings">Dwellings</Link>
-              <Link className="nav-link-custom" to="/listings?category=driveables">Driveables</Link>
-              <Link className="nav-link-custom" to="/messages">Messages</Link>
-            </nav>
+          {/* Desktop Nav */}
+          <nav className="d-none d-md-flex gap-4 nav-section">
+            <Link className="nav-link-custom" to="/dwellings">Dwellings</Link>
+            <Link className="nav-link-custom" to="/driveables">Driveables</Link>
+            <Link className="nav-link-custom" to="/messages">Messages</Link>
+          </nav>
 
+          {/* Right Section */}
+          <div className="header-right">
+
+            {/* Profile Button */}
             <button
               onClick={handleProfileClick}
               className="profile-btn"
               title={isLoggedIn ? "Profile" : "Login"}
             >
               <User size={18} />
+              {isLoggedIn && <span className="ms-2">{user?.name}</span>}
             </button>
-          </div>
 
-          {/* Mobile toggle */}
-          <button
-            className="btn d-md-none"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
+            {/* Mobile Toggle */}
+            <button
+              className="btn d-md-none mobile-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X /> : <Menu />}
+            </button>
+
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -104,9 +110,15 @@ const Header = () => {
                 </button>
               </form>
 
+<<<<<<< HEAD
               <Link className="mobile-link" to="/listings?category=properties">Properties</Link>
               <Link className="mobile-link" to="/listings?category=vehicles">Vehicles</Link>
               <Link className="mobile-link" to="/listings?category=travel">Travel Stays</Link>
+=======
+              <Link className="mobile-link" to="/dwellings">Dwellings</Link>
+            <Link className="mobile-link" to="/driveables">Driveables</Link>
+            <Link className="mobile-link" to="/messages">Messages</Link>
+>>>>>>> main
 
               <button onClick={handleProfileClick} className="mobile-link">
                 <User size={16} />
@@ -115,6 +127,7 @@ const Header = () => {
             </motion.nav>
           )}
         </AnimatePresence>
+
       </div>
     </header>
   );

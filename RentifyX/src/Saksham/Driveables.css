@@ -1,5 +1,5 @@
-/* =============================================
-   RentifyX — Light Premium Theme
+﻿/* =============================================
+   RentifyX â€” Light Premium Theme
    ============================================= */
 
 /* === CSS Variables === */
@@ -70,6 +70,7 @@
   font-weight: 800;
   letter-spacing: -0.03em;
   flex-shrink: 0;
+  margin-left: 32px;
 }
 
 .nav-logo span {
@@ -77,6 +78,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  right: 20px;
 }
 
 .nav-logo .logo-icon {
@@ -159,12 +161,13 @@
 /* === Hero Section === */
 .premium-hero-section {
   position: relative;
-  min-height: 100vh;
+  /* min-height: 70vh; */
   display: flex;
   align-items: center;
-  padding: 100px 48px 60px;
+  justify-content: space-between;
+  padding: 20px 80px 40px 80px;
   overflow: hidden;
-  background: #ffffff;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 50%, #e8f0ff 100%);
 }
 
 .hero-bg-elements {
@@ -172,6 +175,7 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  opacity: 0.7;
 }
 
 .hero-glow-1 {
@@ -204,8 +208,8 @@
   width: 520px;
   height: 520px;
   border-radius: 50%;
-  border: 1px solid rgba(124, 58, 237, 0.1);
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.03) 0%, transparent 70%);
+  border: 2px solid rgba(124, 58, 237, 0.25);
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, transparent 70%);
 }
 
 .hero-circle-inner {
@@ -216,7 +220,7 @@
   width: 400px;
   height: 400px;
   border-radius: 50%;
-  border: 1px solid rgba(59, 130, 246, 0.08);
+  border: 2px solid rgba(59, 130, 246, 0.2);
 }
 
 @keyframes glowFloat {
@@ -303,22 +307,24 @@
 .hero-content {
   position: relative;
   z-index: 5;
-  max-width: 600px;
+  max-width: 500px;
   flex-shrink: 0;
+  text-align: left;
+  margin-left: 40px;
 }
 
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
+  gap: 6px;
+  padding: 6px 16px;
   background: rgba(124, 58, 237, 0.08);
   border: 1px solid rgba(124, 58, 237, 0.15);
   border-radius: var(--radius-full);
   color: var(--accent-purple);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .hero-badge-dot {
@@ -329,6 +335,7 @@
   animation: pulseDot 2s ease-in-out infinite;
 }
 
+<<<<<<< HEAD
 @keyframes pulseDot {
 
   0%,
@@ -342,14 +349,20 @@
     transform: scale(0.8);
   }
 }
+=======
+/* @keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+} */
+>>>>>>> main
 
 .hero-content h1 {
-  font-size: 4rem;
+  font-size: 3.2rem;
   font-weight: 900;
-  line-height: 1.05;
+  line-height: 1.02;
   color: var(--text-primary);
   letter-spacing: -0.04em;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .hero-content h1 .highlight {
@@ -360,26 +373,27 @@
 }
 
 .hero-content p {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--text-secondary);
-  line-height: 1.7;
-  margin-bottom: 36px;
-  max-width: 500px;
+  line-height: 1.65;
+  margin-bottom: 32px;
+  max-width: 450px;
 }
 
 .hero-buttons {
   display: flex;
   gap: 16px;
   margin-bottom: 48px;
+  justify-content: flex-start;
 }
 
 .hero-btn-primary {
-  padding: 14px 32px;
+  padding: 12px 28px;
   background: var(--accent-gradient-btn);
   color: white;
   border: none;
   border-radius: var(--radius-full);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition);
@@ -393,12 +407,12 @@
 }
 
 .hero-btn-secondary {
-  padding: 14px 32px;
+  padding: 12px 28px;
   background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
@@ -414,6 +428,7 @@
 .hero-stats {
   display: flex;
   gap: 40px;
+  justify-content: flex-start;
 }
 
 .hero-stat {
@@ -437,20 +452,20 @@
 }
 
 .hero-car-container {
-  position: absolute;
-  right: -5%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 55%;
-  z-index: 3;
+  position: relative;
+  width: 45%;
+  flex-shrink: 0;
+  z-index: 1;
+  opacity: 0.9;
 }
 
 .hero-car-img {
   width: 100%;
   height: auto;
   object-fit: contain;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 15px 45px rgba(124, 58, 237, 0.12);
+  opacity: 0.95;
 }
 
 /* === Main Container === */
@@ -472,7 +487,7 @@
 /* === Section Header === */
 .section-header {
   text-align: center;
-  padding: 80px 24px 48px;
+  padding: 40px 24px 40px;
   position: relative;
 }
 
@@ -512,6 +527,39 @@
   max-width: 520px;
   margin: 0 auto;
   line-height: 1.6;
+}
+
+/* === Category Filter Buttons === */
+.category-filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.category-filter-btn {
+  padding: 12px 28px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  font-family: var(--font);
+}
+
+.category-filter-btn:hover {
+  color: var(--accent-purple);
+  background: rgba(124, 58, 237, 0.06);
+}
+
+.category-filter-btn.active {
+  background: var(--accent-purple);
+  color: white;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
 }
 
 /* === Results & Sort Bar === */
@@ -1438,7 +1486,7 @@
 }
 
 .tier-details li::before {
-  content: '•';
+  content: 'â€¢';
   position: absolute;
   left: 4px;
   color: var(--text-muted);
@@ -1772,6 +1820,7 @@
     font-size: 2rem;
   }
 
+<<<<<<< HEAD
   .hero-buttons {
     flex-direction: column;
   }
@@ -1789,3 +1838,23 @@
     padding: 24px 16px;
   }
 }
+=======
+
+/* === Clean Search Inputs === */
+.date-input-clean::-webkit-calendar-picker-indicator {
+  display: none !important;
+  -webkit-appearance: none;
+}
+.date-input-clean::-webkit-datetime-edit-fields-wrapper {
+  color: inherit;
+}
+.date-input-clean::-webkit-datetime-edit-text,
+.date-input-clean::-webkit-datetime-edit-month-field,
+.date-input-clean::-webkit-datetime-edit-day-field,
+.date-input-clean::-webkit-datetime-edit-year-field {
+  color: inherit;
+}
+
+
+
+>>>>>>> main
