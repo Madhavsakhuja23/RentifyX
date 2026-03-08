@@ -44,6 +44,7 @@
   transform: translateY(-2px);
   box-shadow: 0 16px 40px rgba(124, 58, 237, 0.5);
 }
+
 /* Text */
 .about-badge {
   font-size: 13px;
@@ -56,7 +57,7 @@
 .about-title {
   font-size: 34px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: black;
   margin-bottom: 16px;
 }
 

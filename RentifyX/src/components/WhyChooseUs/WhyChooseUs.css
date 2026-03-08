@@ -1,12 +1,12 @@
 .why-section {
   padding: 90px 0;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
 }
 
 .why-title {
   font-size: 32px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: black;
   margin-bottom: 8px;
 }
 

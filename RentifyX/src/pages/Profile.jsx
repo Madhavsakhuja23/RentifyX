@@ -18,9 +18,10 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [editMode, setEditMode] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  const bookings = JSON.parse(localStorage.getItem("bookings")) || [];
-  const favourites = JSON.parse(localStorage.getItem("favourites")) || [];
+  const currentUserStr = localStorage.getItem("currentUser");
+  const user = currentUserStr && currentUserStr !== "undefined" && currentUserStr !== "null" ? JSON.parse(currentUserStr) : null;
+  const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+  const favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -30,7 +31,7 @@ const Profile = () => {
 
  useEffect(() => {
   if (!user) {
-    navigate("/");
+    navigate("/login");
   }
 }, [user, navigate]);
 

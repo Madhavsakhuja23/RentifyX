@@ -54,15 +54,6 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
   }, [bannerImages.length]);
 
   return (
-<<<<<<< HEAD
-    <section className="premium-hero-section" id="home">
-      {/* Background elements */}
-      <div className="hero-bg-elements">
-        <div className="hero-glow-1" />
-        <div className="hero-glow-2" />
-        <div className="hero-circle" />
-        <div className="hero-circle-inner" />
-=======
     <section className="w-100 bg-white" id="home">
       {/* 1. Main Banner Image Section */}
       <div
@@ -144,7 +135,6 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
           </div>
 
         </div>
->>>>>>> main
       </div>
 
       {/* 2. Main Search Container - Reduced Size & Functional */}
@@ -153,42 +143,6 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
           className="bg-white rounded-pill shadow-sm d-flex align-items-center p-1 mx-auto border position-relative" 
           style={{ maxWidth: '650px', border: '1px solid #e2e8f0', height: '55px' }}
         >
-<<<<<<< HEAD
-          <span className="hero-badge-dot" />
-          Premium Vehicle Rentals
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.7 }}
-        >
-          UNLOCK THE <br />
-          <span className="highlight">POTENTIAL</span> OF <br />
-          YOUR RIDE WITH US
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-        >
-          Experience premium vehicles at unbeatable prices. From sleek cars to electric scooters —
-          we have everything you need for the perfect journey.
-        </motion.p>
-
-        <motion.div
-          className="hero-buttons"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-        >
-          <motion.button
-            className="hero-btn-primary"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onExplore}
-=======
           {/* WHERE SECTION */}
           <div 
             className={`d-flex align-items-center px-4 flex-grow-1 border-end transition-all position-relative h-100`}
@@ -199,7 +153,6 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
               cursor: 'pointer'
             }}
             onClick={() => setActiveTab('where')}
->>>>>>> main
           >
             <FaMapMarkerAlt className="me-2 fs-6 mt-1" style={{ fill: 'url(#brand-gradient)' }} />
             <div className="text-start w-100 mt-1">

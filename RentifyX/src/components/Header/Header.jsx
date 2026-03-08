@@ -7,10 +7,12 @@ import "./Header.css";
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const currentUserStr = localStorage.getItem("currentUser");
+  const user = currentUserStr && currentUserStr !== "undefined" && currentUserStr !== "null" ? JSON.parse(currentUserStr) : null;
   const navigate = useNavigate();
 
-  const isLoggedIn = Boolean(localStorage.getItem("token"));
+  const token = localStorage.getItem("token");
+  const isLoggedIn = Boolean(token && token !== "undefined" && token !== "null");
 
   const handleProfileClick = () => {
     navigate(isLoggedIn ? "/profile" : "/login");
@@ -110,15 +112,9 @@ const Header = () => {
                 </button>
               </form>
 
-<<<<<<< HEAD
-              <Link className="mobile-link" to="/listings?category=properties">Properties</Link>
-              <Link className="mobile-link" to="/listings?category=vehicles">Vehicles</Link>
-              <Link className="mobile-link" to="/listings?category=travel">Travel Stays</Link>
-=======
               <Link className="mobile-link" to="/dwellings">Dwellings</Link>
             <Link className="mobile-link" to="/driveables">Driveables</Link>
             <Link className="mobile-link" to="/messages">Messages</Link>
->>>>>>> main
 
               <button onClick={handleProfileClick} className="mobile-link">
                 <User size={16} />

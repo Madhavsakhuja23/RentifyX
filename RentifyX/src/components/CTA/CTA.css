@@ -1,20 +1,17 @@
 .cta-section {
   position: relative;
   padding: 110px 0;
-  background: var(--accent-gradient);
+  background: #FF8D21;
   color: white;
   overflow: hidden;
+  width: 90%;
+  max-width: 1500px;
+  margin: 0 auto;
+  border-radius: 28px;
 }
 
 .cta-overlay {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(255, 255, 255, 0.14) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
+  display: none;
 }
 
 /* Title */

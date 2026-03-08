@@ -14,13 +14,15 @@ const Home = () => {
     <>
       <Header />
       <Hero />
-      <Categories />
-      <PopularListings />
-      <WhyChooseUs />
-      <AboutUs />
-      <HowItWorks />
-      <Features />
-      <CTA />
+      <div className="home-sections-wrapper">
+        <Categories />
+        <PopularListings />
+        <WhyChooseUs />
+        <AboutUs />
+        <HowItWorks />
+        <Features />
+        <CTA />
+      </div>
       <Footer />
     </>
   );
