@@ -7,6 +7,7 @@ import "./Header.css";
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const user = JSON.parse(localStorage.getItem("currentUser"));
   const navigate = useNavigate();
 
   const isLoggedIn = Boolean(localStorage.getItem("token"));
@@ -72,6 +73,7 @@ const Header = () => {
               title={isLoggedIn ? "Profile" : "Login"}
             >
               <User size={18} />
+              {isLoggedIn && <span className="ms-2">{user?.name}</span>}
             </button>
 
             {/* Mobile Toggle */}
@@ -108,10 +110,9 @@ const Header = () => {
                 </button>
               </form>
 
-              <Link className="mobile-link" to="/listings">Browse Listings</Link>
-              <Link className="mobile-link" to="/listings?category=properties">Properties</Link>
-              <Link className="mobile-link" to="/listings?category=vehicles">Vehicles</Link>
-              <Link className="mobile-link" to="/listings?category=travel">Travel Stays</Link>
+              <Link className="mobile-link" to="/dwellings">Dwellings</Link>
+            <Link className="mobile-link" to="/driveables">Driveables</Link>
+            <Link className="mobile-link" to="/messages">Messages</Link>
 
               <button onClick={handleProfileClick} className="mobile-link">
                 <User size={16} />

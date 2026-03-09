@@ -25,6 +25,13 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
 
   const bannerImages = [toyotaFortunerImg, hondaCityImg, teslaImg, cretaImg];
 
+  const heroContent = [
+    { title: "Dominate Every Territory", subtitle: "Rugged SUVs for your wildest adventures" },
+    { title: "Navigate the City in Style", subtitle: "Compact sedans for sleek urban driving" },
+    { title: "Experience the Future Today", subtitle: "Premium EVs for an eco-friendly journey" },
+    { title: "Comfort for the Whole Family", subtitle: "Spacious crossovers for memorable road trips" }
+  ];
+
   // EXACT GRADIENT MATCH (Sunset Orange to Coral Pink)
   const brandGradient = 'linear-gradient(90deg, #FF4D00 0%, #FF8A00 100%)';
 
@@ -87,13 +94,24 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
         {/* Content Wrapper */}
         <div className="position-relative d-flex flex-column align-items-center w-100" style={{ zIndex: 2, marginBottom: '20px' }}>
           
-          {/* Main Typography */}
-          <h1 className="display-5 fw-bold mb-2" style={{ fontFamily: 'Georgia, serif', letterSpacing: '-0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-            Find Your Dream Ride
-          </h1>
-          <p className="fs-6 mb-4 opacity-100" style={{ fontWeight: 500, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
-            Premium vehicles for long-term journeys
-          </p>
+          {/* Main Typography - Animated */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <h1 className="display-5 fw-bold mb-2" style={{ fontFamily: 'Georgia, serif', letterSpacing: '-0.5px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                {heroContent[currentSlide].title}
+              </h1>
+              <p className="fs-6 mb-4 opacity-100" style={{ fontWeight: 500, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                {heroContent[currentSlide].subtitle}
+              </p>
+            </motion.div>
+          </AnimatePresence>
 
           {/* Category Pills - Placed exactly like image relative to dots */}
           <div className="d-flex justify-content-center gap-3 mb-3">

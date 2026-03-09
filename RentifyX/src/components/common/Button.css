@@ -1,22 +1,23 @@
 .custom-btn {
   padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--accent-gradient-btn);
   color: #fff;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-btn);
+  font-family: var(--font);
 }
 
 .custom-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
 }
 
 .custom-btn:active {

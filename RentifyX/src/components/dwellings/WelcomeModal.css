@@ -1,0 +1,278 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgb(0 0 0 / 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background-color: var(--card);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    max-width: 900px;
+    width: 90%;
+    max-height: 85vh;
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+    display: flex;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 20;
+}
+
+.modal-close:hover {
+    color: var(--foreground);
+    transform: rotate(90deg);
+}
+
+.modal-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* Left Side - Image Section */
+.modal-left {
+    flex: 1;
+    display: none;
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .modal-left {
+        display: flex;
+    }
+}
+
+.modal-image-section {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.modal-image-placeholder {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.5rem 0 0 1.5rem;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.image-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.55) 100%);
+    z-index: 1;
+}
+
+.image-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    color: white;
+    padding: 2rem;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 1rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.welcome-subtitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.95;
+}
+
+/* Right Side - Features and CTA */
+.modal-right {
+    flex: 1;
+    padding: 3.5rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+    .modal-right {
+        flex: 1;
+        padding: 3.5rem 1.5rem 1.5rem;
+    }
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.feature-block {
+    display: flex;
+    gap: 1rem;
+    animation: slideInFeature 0.6s ease-out forwards;
+    opacity: 0;
+    padding: 1rem;
+    border: 2px solid transparent;
+    border-radius: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.feature-block:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.feature-block:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.feature-block:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+@keyframes slideInFeature {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.feature-block:hover {
+    border-color: var(--primary);
+    background-color: var(--secondary);
+    transform: translateX(4px);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background-color: var(--secondary);
+    color: var(--primary);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.feature-block:hover .feature-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 16px -4px rgb(0 0 0 / 0.2);
+}
+
+.feature-content {
+    flex: 1;
+}
+
+.feature-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--foreground);
+    margin: 0 0 0.4rem;
+}
+
+.feature-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.modal-button {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-button.primary {
+    background-color: hsl(16 70% 55%);
+    color: var(--primary-foreground);
+}
+
+.modal-button.primary:hover {
+    background-color: hsl(16 70% 48%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+@media (max-width: 767px) {
+    .modal-content {
+        flex-direction: column;
+    }
+
+    .modal-left {
+        display: none;
+    }
+
+    .modal-right {
+        width: 100%;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+    }
+}

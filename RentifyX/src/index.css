@@ -504,3 +504,108 @@ img {
 .shadow-md {
   box-shadow: 0 12px 30px rgba(102, 126, 234, 0.15);
 }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* Root variables */
+:root {
+  --background: hsl(30, 25%, 97%);
+  --foreground: hsl(20, 20%, 12%);
+
+  --card: hsl(30, 20%, 99%);
+  --card-foreground: hsl(20, 20%, 12%);
+
+  --popover: hsl(30, 20%, 99%);
+  --popover-foreground: hsl(20, 20%, 12%);
+
+  --primary: hsl(16, 80%, 54%);
+  --primary-foreground: hsl(0, 0%, 100%);
+
+  --secondary: hsl(30, 15%, 93%);
+  --secondary-foreground: hsl(20, 20%, 12%);
+
+  --muted: hsl(30, 10%, 94%);
+  --muted-foreground: hsl(20, 8%, 50%);
+
+  --accent: hsl(30, 15%, 93%);
+  --accent-foreground: hsl(20, 20%, 12%);
+
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+
+  --border: hsl(30, 15%, 90%);
+  --input: hsl(30, 15%, 88%);
+  --ring: hsl(16, 80%, 54%);
+
+  --radius: 0.75rem;
+
+  /* Custom tokens */
+  --warm-gold: hsl(38, 70%, 55%);
+  --warm-gold-foreground: hsl(0, 0%, 100%);
+  --terracotta: hsl(16, 80%, 54%);
+  --sand: hsl(35, 30%, 92%);
+  --forest: hsl(150, 25%, 35%);
+  --forest-foreground: hsl(0, 0%, 100%);
+  --star: hsl(45, 95%, 55%);
+}
+
+/* Dark theme */
+.dark {
+  --background: hsl(20, 20%, 8%);
+  --foreground: hsl(30, 15%, 92%);
+  --card: hsl(20, 18%, 11%);
+  --card-foreground: hsl(30, 15%, 92%);
+
+  --popover: hsl(20, 18%, 11%);
+  --popover-foreground: hsl(30, 15%, 92%);
+
+  --primary: hsl(16, 80%, 54%);
+  --primary-foreground: hsl(0, 0%, 100%);
+
+  --secondary: hsl(20, 15%, 18%);
+  --secondary-foreground: hsl(30, 15%, 92%);
+
+  --muted: hsl(20, 12%, 18%);
+  --muted-foreground: hsl(30, 8%, 55%);
+
+  --accent: hsl(20, 15%, 18%);
+  --accent-foreground: hsl(30, 15%, 92%);
+
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+
+  --border: hsl(20, 12%, 20%);
+  --input: hsl(20, 12%, 20%);
+  --ring: hsl(16, 80%, 54%);
+
+  --sand: hsl(35, 15%, 22%);
+}
+
+/* Global styles */
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'DM Sans', sans-serif;
+  margin: 0;
+}
+
+/* Headings */
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Utility class */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Carousel animation */
+@keyframes carousel-slide {
+  0%, 25% { opacity: 1; }
+  30%, 95% { opacity: 0; }
+  100% { opacity: 1; }
+}
