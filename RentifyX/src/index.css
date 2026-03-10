@@ -485,9 +485,10 @@ img {
 
 /* Selection color */
 ::selection {
-  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
-  color: white;
+  background: var(--accent-purple);
+  color: #ffffff;
 }
+
 
 /* Utility classes */
 .text-gradient {

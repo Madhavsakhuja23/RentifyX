@@ -151,6 +151,17 @@ const DriveablesMain = () => {
     scrollToFleet();
   };
 
+  const checkAuth = () => {
+    const token = localStorage.getItem("token");
+
+    if (token !== "dummy-token") {
+      window.location.href = "/login";
+      return false;
+    }
+
+    return true;
+  };
+
   const categories = [
     { key: 'cars', label: 'Cars', heading: 'Premium cars for every journey', description: 'From compact city cars to luxury SUVs. Find the perfect car rental for your needs.' },
     { key: 'bikes', label: 'Bikes', heading: 'Two-wheelers ready to ride', description: 'Explore the city on two wheels. Browse our collection of bikes and scooters.' },
@@ -248,7 +259,11 @@ const DriveablesMain = () => {
                     key={driveable.id}
                     driveable={driveable}
                     index={index}
-                    onViewDetails={() => setSelectedDriveable(driveable)}
+                    onViewDetails={() => {
+                      if (checkAuth()) {
+                        setSelectedDriveable(driveable);
+                      }
+                    }}
                     onToggleCompare={handleToggleCompare}
                     isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
                   />

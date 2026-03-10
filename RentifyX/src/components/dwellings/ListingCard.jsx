@@ -10,9 +10,17 @@ const ListingCard = ({ listing }) => {
 
     return (
         <div
-    className="listing-card"
-    onClick={() => navigate(`/listing/${listing.id}`)}
->
+            className="listing-card"
+            onClick={() => {
+                const token = localStorage.getItem("token");
+
+                if (token === "dummy-token") {
+                    navigate(`/listing/${listing.id}`);
+                } else {
+                    navigate("/login");
+                }
+            }}
+        >
             <div className="listing-image-container">
                 <img
                     src={listing.image}
@@ -21,12 +29,12 @@ const ListingCard = ({ listing }) => {
                     loading="lazy"
                 />
                 <button
-    onClick={(e) => {
-        e.stopPropagation();
-        setLiked(!liked);
-    }}
-    className="like-button"
->
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setLiked(!liked);
+                    }}
+                    className="like-button"
+                >
                     <Heart
                         className={`heart-icon ${liked ? "liked" : ""}`}
                         fill={liked ? "currentColor" : "none"}
