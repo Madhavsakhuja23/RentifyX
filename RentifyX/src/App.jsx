@@ -14,6 +14,7 @@ import ListingDetails from "./pages/ListingDetails";
 import RequestToBook from "./pages/RequestToBook";
 import "./App.css";
 import Profile from "./pages/Profile";
+import Chatbot from "./components/dwellings/Chatbot";
 
 function App() {
   return (
@@ -36,8 +37,9 @@ function App() {
           <Route path="add-dwellings" element={<AddDwellings />} />
           <Route path="add-vehicles" element={<AddVehicles />} />
         </Route>
-        
+       
       </Routes>
+      <Chatbot />
     </Router>
   )
 }

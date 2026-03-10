@@ -80,13 +80,6 @@ const RATING_CATS = [
   { label: "Value",         pct: 88,  score: "4.4" },
 ];
 
-const REVIEW_COLORS = [
-  "linear-gradient(135deg,var(--primary),var(--accent-purple))",
-  "linear-gradient(135deg,var(--accent-purple),var(--accent-blue))",
-  "linear-gradient(135deg,var(--accent-green),var(--accent-blue))",
-  "linear-gradient(135deg,var(--accent-purple),var(--accent-green))",
-];
-
 const SAMPLE_REVIEWS = [
   { name: "Komal", date: "January 2025",  text: "Beautiful place with amazing surroundings. The host was incredibly welcoming and made sure everything was perfect for our arrival." },
   { name: "Dipen", date: "February 2025", text: "Very cozy and well-maintained. Everything worked flawlessly and the location couldn't be better for exploring the city." },
@@ -95,11 +88,41 @@ const SAMPLE_REVIEWS = [
 ];
 
 /* ── helpers ─────────────────────────────────── */
-function fmt(n) { return "₹" + n.toLocaleString("en-IN"); }
+function fmt(n) {
+  return "₹" + Number(n).toLocaleString("en-IN");
+}
 
+/**
+ * Canonical rental-type detection.
+ * Priority: pricingType field → priceUnit string fallback.
+ * Returns "monthly" | "perNight"
+ */
+function getRentalType(listing) {
+  if (listing.pricingType === "monthly")  return "monthly";
+  if (listing.pricingType === "perNight") return "perNight";
+  // Legacy fallback: infer from priceUnit string
+  const unit = listing.priceUnit?.toLowerCase() || "";
+  if (unit.includes("month") || unit.includes("mo")) return "monthly";
+  return "perNight";
+}
+
+function getMonthDiff(start, end) {
+  const s = new Date(start);
+  const e = new Date(end);
+
+  let months =
+    (e.getFullYear() - s.getFullYear()) * 12 +
+    (e.getMonth() - s.getMonth());
+
+  if (e.getDate() < s.getDate()) {
+    months--;
+  }
+
+  return Math.max(1, months);
+}
 function StarIcon({ size = 14 }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="var(--primary)">
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="#FF385C">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
     </svg>
   );
@@ -138,7 +161,7 @@ function MapEmbed({ location }) {
       <div className="ld-map-wrap">
         <iframe title={`Map of ${location}`} src={src} loading="lazy" />
         <div className="ld-map-pin">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--primary)" strokeWidth="2.5">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#FF385C" strokeWidth="2.5">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
@@ -208,108 +231,181 @@ function GuestSelector({ guests, onChange, max }) {
 }
 
 /* ── Booking Card ────────────────────────────── */
-// ✅ CHANGED: added useNavigate hook and wired up the reserve button
 function BookingCard({ listing }) {
-  const navigate = useNavigate(); // ✅ NEW
+  const navigate = useNavigate();
 
   const [checkIn,  setCheckIn]  = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests,   setGuests]   = useState({ adults: 1, children: 0, infants: 0 });
 
-  const today = new Date().toISOString().split("T")[0];
-  const nights = checkIn && checkOut
-    ? Math.max(0, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000))
-    : 0;
+  const today        = new Date().toISOString().split("T")[0];
+  const rentalType   = getRentalType(listing);           // "monthly" | "perNight"
+  const isMonthly    = rentalType === "monthly";
 
-  const sub = nights * listing.price;
-  const svc = Math.round(sub * 0.12);
-  const tot = sub + 500 + svc;
+  /* ── Step 1: raw day count ─────────────────── */
+  const nights =
+    checkIn && checkOut
+      ? Math.max(0, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000))
+      : 0;
 
-  // ✅ NEW: navigate to booking page with all state
-  function handleReserve() {
-    if (nights > 0) {
-      navigate(`/book/${listing.id}`, {
-        state: {
-          listing,
-          checkIn,
-          checkOut,
-          nights,
-          guests,
-          sub,
-          svc,
-          total: tot,
-        },
-      });
+  /* ── Step 2: validation ────────────────────── */
+  // Monthly: user must span at least 30 days
+  const isBelowMinStay = isMonthly && nights > 0 && nights < 30;
+  // Price is calculable only when dates are chosen AND validation passes
+  const canCalculate   = nights > 0 && !isBelowMinStay;
+
+  /* ── Step 3: price calculation ─────────────── */
+  const months = isMonthly && canCalculate ? getMonthDiff(checkIn, checkOut) : 0;
+  let sub          = 0;
+  let displayUnit  = "";
+
+  if (canCalculate) {
+    if (isMonthly) {
+      sub         = months * listing.price;
+      displayUnit = `× ${months} month${months > 1 ? "s" : ""}`;
+    } else {
+      sub         = nights * listing.price;
+      displayUnit = `× ${nights} night${nights > 1 ? "s" : ""}`;
     }
   }
 
+  const serviceFee  = canCalculate ? Math.round(sub * 0.12) : 0;
+  const cleaningFee = canCalculate ? (isMonthly ? 3500 : 800) : 0;
+  const total       = sub + serviceFee + cleaningFee;
+
+  /* ── Min checkout enforced by the date input ── */
+  const getMinCheckout = () => {
+    if (!checkIn) return today;
+    const d = new Date(checkIn);
+    d.setDate(d.getDate() + (isMonthly ? 30 : 1));
+    return d.toISOString().split("T")[0];
+  };
+
+  /* ── Reserve handler ───────────────────────── */
+  function handleReserve() {
+    if (!checkIn || !checkOut) return;
+    if (isBelowMinStay) return;        // button is disabled anyway
+    navigate(`/book/${listing.id}`, {
+      state: { listing, checkIn, checkOut, nights, guests, sub, serviceFee, cleaningFee, total },
+    });
+  }
+
+  /* ── Button label ──────────────────────────── */
+  const btnLabel = () => {
+    if (!checkIn || !checkOut)  return "Check availability";
+    if (isBelowMinStay)         return "Min. 1-month rental required";
+    return `Reserve · ${fmt(total)}`;
+  };
+
   return (
     <div className="ld-book-card">
+
+      {/* Price header */}
       <div className="ld-book-price">
         <span className="ld-price-big">{fmt(listing.price)}</span>
-        <span className="ld-price-unit">{listing.priceUnit}</span>
+        <span className="ld-price-unit">/ {listing.priceUnit}</span>
       </div>
+
+      {/* Monthly info badge */}
+      {isMonthly && (
+        <div className="ld-monthly-badge">
+          🗓️ Monthly rental · Minimum 30-day stay
+        </div>
+      )}
 
       <div className="ld-book-rating">
-        <StarIcon size={12} />
+        <StarIcon size={14} />
         <strong>{listing.rating}</strong>
-        <span>· {listing.reviews} reviews</span>
+        <span>({listing.reviews} reviews)</span>
       </div>
 
-      <div className="ld-rare-badge">🔥 Rare find — usually booked out</div>
+      {listing.instant && (
+        <div className="ld-rare-badge">⚡ Instant booking available</div>
+      )}
 
+      {/* Date inputs */}
       <div className="ld-date-grid">
         <div className="ld-date-cell ld-date-checkin">
-          <label>CHECK-IN</label>
+          <label htmlFor="checkin">CHECK-IN</label>
           <input
+            id="checkin"
             type="date"
             value={checkIn}
             min={today}
             onChange={(e) => {
               setCheckIn(e.target.value);
-              if (checkOut && e.target.value > checkOut) setCheckOut("");
+              // Reset checkout if it's now before the new minimum
+              if (checkOut) {
+                const newMin = new Date(e.target.value);
+                newMin.setDate(newMin.getDate() + (isMonthly ? 30 : 1));
+                if (new Date(checkOut) < newMin) setCheckOut("");
+              }
             }}
           />
         </div>
-        <div className="ld-date-cell ld-date-checkout">
-          <label>CHECKOUT</label>
+        <div className="ld-date-cell">
+          <label htmlFor="checkout">CHECKOUT</label>
           <input
+            id="checkout"
             type="date"
             value={checkOut}
-            min={checkIn || today}
+            min={getMinCheckout()}
             onChange={(e) => setCheckOut(e.target.value)}
+            disabled={!checkIn}
           />
         </div>
       </div>
 
+      {/* Guest selector */}
       <GuestSelector guests={guests} onChange={setGuests} max={listing.guests} />
 
-      {/* ✅ CHANGED: onClick now calls handleReserve */}
-      <button className={`ld-reserve-btn ${nights > 0 ? 'active' : 'inactive'}`} onClick={handleReserve}>
-        {nights > 0 ? `Reserve · ${fmt(tot)}` : "Check availability"}
-      </button>
-      <p className="ld-no-charge">You won't be charged yet</p>
+      {/* ── Validation error (only reachable if user bypasses min on desktop) ── */}
+      {isBelowMinStay && (
+        <div className="ld-min-stay-warning">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          <span>
+            Minimum 1-month rental required.
+            {checkIn && <> Checkout must be on or after <strong>{getMinCheckout()}</strong>.</>}
+          </span>
+        </div>
+      )}
 
-      {nights > 0 && (
+      {/* Reserve button */}
+      <button
+  className={`ld-reserve-btn${isBelowMinStay ? " ld-reserve-btn--error" : ""}`}
+  onClick={() => {
+    if (!checkIn || !checkOut || isBelowMinStay) return; // prevent click
+    handleReserve();
+  }}
+>
+        {btnLabel()}
+      </button>
+
+      {/* Price breakdown — hidden unless dates are valid */}
+      {canCalculate && (
         <div className="ld-breakdown">
           <div className="ld-br-row">
-            <span className="ld-ul">{fmt(listing.price)} × {nights} {nights === 1 ? "night" : "nights"}</span>
+            <span>{fmt(listing.price)} {displayUnit}</span>
             <span>{fmt(sub)}</span>
           </div>
           <div className="ld-br-row">
-            <span className="ld-ul">Cleaning fee</span>
-            <span>₹500</span>
+            <span>Service fee</span>
+            <span>{fmt(serviceFee)}</span>
           </div>
           <div className="ld-br-row">
-            <span className="ld-ul">RentifyX service fee</span>
-            <span>{fmt(svc)}</span>
+            <span>Cleaning fee</span>
+            <span>{fmt(cleaningFee)}</span>
           </div>
           <div className="ld-br-total">
-            <span>Total before taxes</span>
-            <span>{fmt(tot)}</span>
+            <span>Total</span>
+            <span>{fmt(total)}</span>
           </div>
         </div>
       )}
+
+      <p className="ld-no-charge">You won't be charged yet</p>
     </div>
   );
 }
@@ -351,8 +447,7 @@ export default function ListingDetails() {
   const scrollToSection = (tab) => {
     const el = sectionRefs[tab]?.current;
     if (!el) return;
-    const offset = 120;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    const top = el.getBoundingClientRect().top + window.scrollY - 120;
     window.scrollTo({ top, behavior: "smooth" });
   };
 
@@ -364,8 +459,7 @@ export default function ListingDetails() {
 
   useEffect(() => {
     const observers = [];
-    const TABS = ["Photos", "Amenities", "Reviews", "Location"];
-    TABS.forEach((tab) => {
+    ["Photos", "Amenities", "Reviews", "Location"].forEach((tab) => {
       const el = sectionRefs[tab]?.current;
       if (!el) return;
       const obs = new IntersectionObserver(
@@ -386,34 +480,21 @@ export default function ListingDetails() {
   return (
     <div className="ld-root">
 
-      {/* LIGHTBOX */}
       {lbIndex !== null && (
-        <Lightbox
-          images={allImages}
-          index={lbIndex}
-          onClose={() => setLbIndex(null)}
-          onNav={lbNav}
-        />
+        <Lightbox images={allImages} index={lbIndex} onClose={() => setLbIndex(null)} onNav={lbNav} />
       )}
 
-      {/* STICKY SCROLL BAR */}
       <div className={`ld-scroll-bar${scrolled ? " visible" : ""}`}>
         <span className="ld-scroll-title">{listing.name}</span>
         <div className="ld-scroll-tabs">
           {["Photos", "Amenities", "Reviews", "Location"].map((t) => (
-            <span
-              key={t}
-              className={`ld-scroll-tab${activeTab === t ? " active" : ""}`}
-              onClick={() => scrollToSection(t)}
-            >{t}</span>
+            <span key={t} className={`ld-scroll-tab${activeTab === t ? " active" : ""}`} onClick={() => scrollToSection(t)}>{t}</span>
           ))}
         </div>
-       
       </div>
 
       <div className="ld-page">
 
-        {/* BREADCRUMB */}
         <nav className="ld-breadcrumb">
           <span className="ld-bc-link" onClick={() => navigate("/")}>Home</span>
           <span className="ld-bc-sep">›</span>
@@ -424,7 +505,6 @@ export default function ListingDetails() {
           <span>{listing.name}</span>
         </nav>
 
-        {/* HEADER */}
         <div className="ld-header-row">
           <div className="ld-header-left">
             <h1>{listing.name}</h1>
@@ -437,8 +517,7 @@ export default function ListingDetails() {
               <span className="ld-dot">·</span>
               <span className="ld-ul">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "middle", marginRight: 2 }}>
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
                 </svg>
                 {listing.location}, India
               </span>
@@ -446,10 +525,7 @@ export default function ListingDetails() {
           </div>
           <div className="ld-header-actions">
             <button className="ld-act-btn" onClick={() => setSaved((s) => !s)}>
-              <svg viewBox="0 0 24 24" width="16" height="16"
-                fill={saved ? "#FF385C" : "none"}
-                stroke={saved ? "#FF385C" : "currentColor"}
-                strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill={saved ? "#FF385C" : "none"} stroke={saved ? "#FF385C" : "currentColor"} strokeWidth="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               {saved ? "Saved" : "Save"}
@@ -465,14 +541,8 @@ export default function ListingDetails() {
           </div>
         </div>
 
-        {/* GALLERY */}
         <div className="ld-gallery" ref={sectionRefs.Photos}>
-          <img
-            className="ld-gal-main"
-            src={allImages[0]}
-            alt={listing.name}
-            onClick={() => setLbIndex(0)}
-          />
+          <img className="ld-gal-main" src={allImages[0]} alt={listing.name} onClick={() => setLbIndex(0)} />
           <div className="ld-gal-side">
             {allImages.slice(1, 5).map((img, i) => (
               <div key={i} className="ld-g-cell">
@@ -491,11 +561,9 @@ export default function ListingDetails() {
           </div>
         </div>
 
-        {/* MAIN LAYOUT */}
         <div className="ld-layout">
           <div className="ld-left">
 
-            {/* HOST ROW */}
             <div className="ld-host-row">
               <div>
                 <h2>Entire {listing.type === "pgs" ? "PG" : listing.type.replace(/s$/, "")} hosted by {listing.host.name}</h2>
@@ -514,7 +582,6 @@ export default function ListingDetails() {
 
             <div className="ld-divider" />
 
-            {/* HIGHLIGHTS */}
             <div className="ld-highlights">
               <div className="ld-hi">
                 <span className="ld-hi-icon">🏅</span>
@@ -534,7 +601,6 @@ export default function ListingDetails() {
 
             <div className="ld-divider" />
 
-            {/* DESCRIPTION */}
             <div className="ld-sec">
               <h2>About this place</h2>
               <p className="ld-desc-txt">{listing.description}</p>
@@ -550,7 +616,6 @@ export default function ListingDetails() {
 
             <div className="ld-divider" />
 
-            {/* AMENITIES */}
             <div className="ld-sec" ref={sectionRefs.Amenities}>
               <h2>What this place offers</h2>
               <div className="ld-amenities">
@@ -570,13 +635,11 @@ export default function ListingDetails() {
 
             <div className="ld-divider" />
 
-            {/* REVIEWS */}
             <div className="ld-sec" ref={sectionRefs.Reviews}>
               <div className="ld-rev-header">
                 <span className="ld-star" style={{ fontSize: 16 }}><StarIcon size={16} /> {listing.rating}</span>
                 <h2>· {listing.reviews} reviews</h2>
               </div>
-
               <div className="ld-rev-cats">
                 {RATING_CATS.map((c) => (
                   <div key={c.label} className="ld-rev-cat">
@@ -586,7 +649,6 @@ export default function ListingDetails() {
                   </div>
                 ))}
               </div>
-
               <div className="ld-rev-grid">
                 {SAMPLE_REVIEWS.map((r, i) => (
                   <div key={i} className="ld-rev-card">
@@ -599,13 +661,11 @@ export default function ListingDetails() {
                   </div>
                 ))}
               </div>
-
               <button className="ld-show-all-revs">Show all {listing.reviews} reviews</button>
             </div>
 
             <div className="ld-divider" />
 
-            {/* MAP */}
             <div className="ld-sec" ref={sectionRefs.Location}>
               <h2>Where you'll be</h2>
               <p className="ld-loc-sub">{listing.location}, India</p>
@@ -614,7 +674,6 @@ export default function ListingDetails() {
 
             <div className="ld-divider" />
 
-            {/* HOST PROFILE */}
             <div className="ld-sec">
               <h2>Meet your host</h2>
               <div className="ld-host-card">
@@ -628,29 +687,18 @@ export default function ListingDetails() {
                     <div className="ld-hc-since">Hosting since {new Date().getFullYear() - parseInt(listing.host.experience)} · Superhost</div>
                   </div>
                   <div className="ld-hc-stats">
-                    <div className="ld-hc-stat">
-                      <strong>{listing.host.reviews}</strong>
-                      <span>Reviews</span>
-                    </div>
+                    <div className="ld-hc-stat"><strong>{listing.host.reviews}</strong><span>Reviews</span></div>
                     <div className="ld-hc-stat-sep" />
-                    <div className="ld-hc-stat">
-                      <strong>{listing.host.rating}</strong>
-                      <span>Rating</span>
-                    </div>
+                    <div className="ld-hc-stat"><strong>{listing.host.rating}</strong><span>Rating</span></div>
                     <div className="ld-hc-stat-sep" />
-                    <div className="ld-hc-stat">
-                      <strong>{listing.host.experience.split(" ")[0]}</strong>
-                      <span>Yrs hosting</span>
-                    </div>
+                    <div className="ld-hc-stat"><strong>{listing.host.experience.split(" ")[0]}</strong><span>Yrs hosting</span></div>
                   </div>
                 </div>
-
                 <div className="ld-hc-body">
                   <p className="ld-hc-bio">
                     Hi! I'm {listing.host.name}. I've been hosting for {listing.host.experience} and genuinely love welcoming guests from all over.
                     My goal is to make you feel completely at home — I know {listing.location} inside-out and I'm always happy to share my favourite spots!
                   </p>
-
                   <div className="ld-hc-meta">
                     <div className="ld-hc-meta-item">
                       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -665,7 +713,6 @@ export default function ListingDetails() {
                       Identity verified
                     </div>
                   </div>
-
                   <div className="ld-hc-response">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     <div>
@@ -673,7 +720,6 @@ export default function ListingDetails() {
                       <span> · Response rate: {listing.host.responseRate}</span>
                     </div>
                   </div>
-
                   <button className="ld-contact-btn">Message {listing.host.name}</button>
                 </div>
               </div>
@@ -681,7 +727,6 @@ export default function ListingDetails() {
 
             <div className="ld-divider" />
 
-            {/* THINGS TO KNOW */}
             <div className="ld-sec">
               <h2>Things to know</h2>
               <div className="ld-ttk">
@@ -709,12 +754,10 @@ export default function ListingDetails() {
               </div>
             </div>
 
-          </div>{/* /ld-left */}
+          </div>
 
-          {/* STICKY BOOKING CARD */}
           <div className="ld-sticky-wrap">
             <BookingCard listing={listing} />
-
             <div className="ld-trust-strip">
               <div className="ld-trust-item">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#717171" strokeWidth="2">
@@ -723,7 +766,6 @@ export default function ListingDetails() {
                 Free cancellation within 48 hours of booking
               </div>
             </div>
-
             <p className="ld-report-link">
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "middle", marginRight: 4 }}>
                 <circle cx="12" cy="12" r="10" />
@@ -734,8 +776,8 @@ export default function ListingDetails() {
             </p>
           </div>
 
-        </div>{/* /ld-layout */}
-      </div>{/* /ld-page */}
+        </div>
+      </div>
     </div>
   );
 }

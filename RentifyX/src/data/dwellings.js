@@ -50,13 +50,15 @@ export const categoryLabels = {
   flats: "Flats",
   pgs: "PGs / Hostels",
   travel: "Travel Stays",
+  
+
 };
 
 export const pricingRules = {
-  houses: "Min. 6 months",
+  villa: "Min. 1 month",
   flats: "Min. 1 month",
   pgs: "Min. 1 month",
-  travel: "Hourly basis",
+  travel: "Per night",
 };
 
 export const locations = [
@@ -80,6 +82,7 @@ reviews: 124,
 type: "villa",
 price: 45000,
 priceUnit: "/mo",
+pricingType: "monthly",
 
 guests: 2,
 bedrooms: 1,
@@ -128,6 +131,7 @@ reviews:89,
 type:"travel",
 price:12000,
 priceUnit:"/night",
+pricingType: "perNight",
 
 guests:6,
 bedrooms:3,
@@ -174,8 +178,9 @@ location:"Delhi",
 rating:4.2,
 reviews:56,
 type:"pgs",
-price:1000,
+price:10000,
 priceUnit:"/mo",
+pricingType: "monthly",
 
 guests:2,
 bedrooms:2,
@@ -216,13 +221,14 @@ available:true
 
 {
 id:"4",
-name:"Flat in Banglore",
-location:"Banglore",
+name:"Flat in Banglaore",
+location:"Banglaore",
 rating:4.9,
 reviews:210,
 type:"flats",
 price:35000,
 priceUnit:"/mo",
+pricingType: "monthly",
 
 guests:4,
 bedrooms:2,
@@ -270,6 +276,7 @@ reviews:78,
 type:"villa",
 price:65000,
 priceUnit:"/mo",
+pricingType: "monthly",
 
 guests:8,
 bedrooms:4,
@@ -317,6 +324,7 @@ reviews:102,
 type:"travel",
 price:5000,
 priceUnit:"/night",
+pricingType: "perNight",
 
 guests:2,
 bedrooms:1,
@@ -364,6 +372,7 @@ reviews:102,
 type:"flats",
 price: 25000,
 priceUnit:"/mo",
+pricingType: "monthly",
 
 guests:1,
 bedrooms:1,
@@ -404,13 +413,14 @@ available:true
 
 {
 id:"8",
-name:"The Jade Oasisl",
+name:"The Jade Oasis",
 location:"Delhi",
 rating:4.4,
 reviews:102,
 type:"flats",
 price:25000,
 priceUnit:"/mo",
+pricingType: "monthly",
 
 guests:2,
 bedrooms:1,
@@ -457,6 +467,7 @@ reviews:102,
 type:"pgs",
 price:2000,
 priceUnit:"/night",
+pricingType: "perNight",
 
 guests:2,
 bedrooms:1,

@@ -10,6 +10,44 @@ function StarIcon({ size = 13 }) {
     </svg>
   );
 }
+function calculatePrice(listing, booking) {
+
+  const CLEANING_FEE = 500;
+  const SERVICE_RATE = 0.12; // 12%
+  const TAX_RATE = 0.05; // 5%
+
+  let sub = 0;
+
+  if (listing?.pricingType === "monthly") {
+
+    const checkIn = new Date(booking.checkIn);
+    const checkOut = new Date(booking.checkOut);
+
+    const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+    const perDayPrice = listing.price / 30;
+
+    sub = Math.round(perDayPrice * days);
+
+  } else {
+
+    sub = listing.price * booking.nights;
+
+  }
+
+  const svc = Math.round(sub * SERVICE_RATE);
+  const taxes = Math.round(sub * TAX_RATE);
+
+  const total = sub + svc + taxes + CLEANING_FEE;
+
+  return {
+    sub,
+    svc,
+    taxes,
+    cleaning: CLEANING_FEE,
+    total
+  };
+}
 
 /* ── mock auth state ─────────────────────────── */
 // In a real app this would come from your auth context.
@@ -368,52 +406,6 @@ function ReviewStep({ listing, booking, onConfirm, confirming }) {
   );
 }
 
-/* ── Success Screen ──────────────────────────── */
-function SuccessScreen({ listing, booking, onBack }) {
-  const checkInDate = new Date(booking.checkIn).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-  const checkOutDate = new Date(booking.checkOut).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-
-  return (
-    <div className="rtb-success">
-      <div className="rtb-success-icon">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--primary-foreground)" strokeWidth="2.5">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <h2>Booking confirmed!</h2>
-      <p className="rtb-success-sub">You're all set. A confirmation has been sent to your email.</p>
-
-      <div className="rtb-success-card">
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 20 }}>
-          <img
-            src={listing?.images?.[0] || listing?.image}
-            alt={listing?.name}
-            style={{ width: 72, height: 72, borderRadius: "var(--radius)", objectFit: "cover", flexShrink: 0 }}
-          />
-          <div>
-            <p style={{ fontSize: 12, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 4 }}>Your stay</p>
-            <strong style={{ fontSize: 16, lineHeight: 1.3 }}>{listing?.name}</strong>
-            <p style={{ fontSize: 13, color: "var(--muted-foreground)", marginTop: 4 }}>{listing?.location}, India</p>
-          </div>
-        </div>
-
-        <div className="rtb-success-details">
-          <div className="rtb-sd-row"><span>Check-in</span><strong>{checkInDate}</strong></div>
-          <div className="rtb-sd-row"><span>Check-out</span><strong>{checkOutDate}</strong></div>
-          <div className="rtb-sd-row"><span>Guests</span><strong>{booking.guests.adults + booking.guests.children} guest(s)</strong></div>
-          <div className="rtb-sd-row" style={{ borderTop: "1px solid var(--border)", marginTop: 8, paddingTop: 12 }}>
-            <span>Total paid</span><strong style={{ color: "var(--primary)" }}>{fmt(booking.total)}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: 28 }}>
-        <button className="rtb-outline-btn" onClick={onBack}>Back to listing</button>
-        <button className="rtb-cta-btn" style={{ width: "auto", padding: "13px 28px" }}>View my bookings</button>
-      </div>
-    </div>
-  );
-}
 
 /* ── Main Component ──────────────────────────── */
 export default function RequestToBook() {
@@ -422,16 +414,17 @@ export default function RequestToBook() {
 
   // Pull booking state passed via router state from BookingCard
   const booking = location.state || {
-    checkIn: "2026-03-13",
-    checkOut: "2026-03-15",
-    nights: 2,
-    guests: { adults: 1, children: 0, infants: 0 },
-    sub: 9357,
-    svc: 1122,
-    total: 9979,
-  };
+  checkIn: "2026-03-13",
+  checkOut: "2026-03-15",
+  nights: 2,
+  guests: { adults: 1, children: 0, infants: 0 },
+};
 
-  const listing = booking.listing || null;
+const listing = booking.listing || null;
+
+const price = calculatePrice(listing, booking);
+
+  
 
   // Steps: 0 = auth, 1 = payment, 2 = review
   const startStep = IS_LOGGED_IN ? 1 : 0;
@@ -548,7 +541,7 @@ export default function RequestToBook() {
                   <div className="rtb-sc-rating">
                     <StarIcon />
                     <strong>{listing?.rating || "5.0"}</strong>
-                    <span>· {listing?.reviews || 6} reviews</span>
+                   
                     <span className="rtb-sc-fav">
                       <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                       Guest favourite
@@ -578,7 +571,7 @@ export default function RequestToBook() {
                   <span>Dates</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <strong>{checkInDate} – {checkOutDate}</strong>
-                    <button className="rtb-change-btn">Change</button>
+                    
                   </div>
                 </div>
                 <div className="rtb-sc-meta-row">
@@ -588,7 +581,7 @@ export default function RequestToBook() {
                       {booking.guests.adults} adult{booking.guests.adults > 1 ? "s" : ""}
                       {booking.guests.children ? `, ${booking.guests.children} child` : ""}
                     </strong>
-                    <button className="rtb-change-btn">Change</button>
+                   
                   </div>
                 </div>
               </div>
@@ -596,34 +589,34 @@ export default function RequestToBook() {
               <div className="rtb-sc-divider" />
 
               {/* price breakdown */}
-              <div className="rtb-sc-price">
-                <h4>Price details</h4>
-                <div className="rtb-pr-row">
-                  <span className="rtb-ul">{fmt(listing?.price || booking.sub / booking.nights)} × {booking.nights} night{booking.nights > 1 ? "s" : ""}</span>
-                  <span>{fmt(booking.sub)}</span>
-                </div>
-                <div className="rtb-pr-row">
-                  <span className="rtb-ul">Cleaning fee</span>
-                  <span>₹500</span>
-                </div>
-                <div className="rtb-pr-row">
-                  <span className="rtb-ul">Dwellings service fee</span>
-                  <span>{fmt(booking.svc)}</span>
-                </div>
-                <div className="rtb-pr-row">
-                  <span className="rtb-ul">Taxes</span>
-                  <span>₹410</span>
-                </div>
-              </div>
+              <div className="rtb-pr-row">
+  <span className="rtb-ul">
+    {fmt(listing.price)} × {listing.pricingType === "monthly" ? "per month" : `${booking.nights} night${booking.nights > 1 ? "s" : ""}`}
+  </span>
+  <span>{fmt(price.sub)}</span>
+</div>
 
-              <div className="rtb-sc-divider" />
+<div className="rtb-pr-row">
+  <span className="rtb-ul">Cleaning fee</span>
+  <span>{fmt(price.cleaning)}</span>
+</div>
 
-              <div className="rtb-pr-total">
-                <span>Total <span className="rtb-ul">INR</span></span>
-                <strong>{fmt(booking.total)}</strong>
-              </div>
+<div className="rtb-pr-row">
+  <span className="rtb-ul">Service fee</span>
+  <span>{fmt(price.svc)}</span>
+</div>
 
-              <button className="rtb-price-breakdown-link">Price breakdown ›</button>
+<div className="rtb-pr-row">
+  <span className="rtb-ul">Taxes</span>
+  <span>{fmt(price.taxes)}</span>
+</div>
+
+<div className="rtb-pr-total">
+  <span>Total</span>
+  <strong>{fmt(price.total)}</strong>
+</div>
+
+              
 
             </div>
           </div>
@@ -983,6 +976,40 @@ export default function RequestToBook() {
           .rtb-page { padding: 16px 16px 60px; }
           .rtb-topbar h1 { font-size: 21px; }
         }
+          /* summary meta controls */
+
+.rtb-meta-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.rtb-meta-controls input{
+  padding:6px 8px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--card);
+  color:var(--foreground);
+  font-size:12px;
+  font-family:inherit;
+}
+
+.rtb-guest-control{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.rtb-guest-control label{
+  font-size:11px;
+  color:var(--muted-foreground);
+}
+
+.rtb-guest-control input{
+  width:55px;
+  text-align:center;
+}
       `}</style>
     </div>
   );
