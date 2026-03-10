@@ -269,9 +269,8 @@ function BookingCard({ listing }) {
     }
   }
 
-  const serviceFee  = canCalculate ? Math.round(sub * 0.12) : 0;
-  const cleaningFee = canCalculate ? (isMonthly ? 3500 : 800) : 0;
-  const total       = sub + serviceFee + cleaningFee;
+  
+  const total       = sub ;
 
   /* ── Min checkout enforced by the date input ── */
   const getMinCheckout = () => {
@@ -286,8 +285,8 @@ function BookingCard({ listing }) {
     if (!checkIn || !checkOut) return;
     if (isBelowMinStay) return;        // button is disabled anyway
     navigate(`/book/${listing.id}`, {
-      state: { listing, checkIn, checkOut, nights, guests, sub, serviceFee, cleaningFee, total },
-    });
+  state: { listing, checkIn, checkOut, nights, guests, sub, total },
+});
   }
 
   /* ── Button label ──────────────────────────── */
@@ -384,26 +383,17 @@ function BookingCard({ listing }) {
       </button>
 
       {/* Price breakdown — hidden unless dates are valid */}
-      {canCalculate && (
-        <div className="ld-breakdown">
-          <div className="ld-br-row">
-            <span>{fmt(listing.price)} {displayUnit}</span>
-            <span>{fmt(sub)}</span>
-          </div>
-          <div className="ld-br-row">
-            <span>Service fee</span>
-            <span>{fmt(serviceFee)}</span>
-          </div>
-          <div className="ld-br-row">
-            <span>Cleaning fee</span>
-            <span>{fmt(cleaningFee)}</span>
-          </div>
-          <div className="ld-br-total">
-            <span>Total</span>
-            <span>{fmt(total)}</span>
-          </div>
-        </div>
-      )}
+      <div className="ld-breakdown">
+  <div className="ld-br-row">
+    <span>{fmt(listing.price)} {displayUnit}</span>
+    <span>{fmt(sub)}</span>
+  </div>
+
+  <div className="ld-br-total">
+    <span>Total</span>
+    <span>{fmt(total)}</span>
+  </div>
+</div>
 
       <p className="ld-no-charge">You won't be charged yet</p>
     </div>
