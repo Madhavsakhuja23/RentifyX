@@ -20,15 +20,27 @@ const PricingSection = ({
         
         {/* Booking Type Selection */}
         <div className="btn-group w-100 mb-4" role="group">
-          <button 
-            className={`btn ${bookingType === 'hourly' ? 'btn-primary' : 'btn-outline-primary'}`}
+          <button
+            style={{
+              flex: 1, padding: "10px", border: "2px solid rgb(230,80,0)",
+              background: bookingType === 'hourly' ? "rgb(230,80,0)" : "transparent",
+              color: bookingType === 'hourly' ? "white" : "rgb(230,80,0)",
+              fontWeight: 700, cursor: "pointer", fontSize: 14, borderRadius: "8px 0 0 8px",
+              transition: "all .2s",
+            }}
             onClick={() => onBookingTypeChange('hourly')}
           >
             Hourly Basis
           </button>
           {dayRate && (
-            <button 
-              className={`btn ${bookingType === 'daily' ? 'btn-primary' : 'btn-outline-primary'}`}
+            <button
+              style={{
+                flex: 1, padding: "10px", border: "2px solid rgb(230,80,0)",
+                background: bookingType === 'daily' ? "rgb(230,80,0)" : "transparent",
+                color: bookingType === 'daily' ? "white" : "rgb(230,80,0)",
+                fontWeight: 700, cursor: "pointer", fontSize: 14, borderRadius: "0 8px 8px 0",
+                borderLeft: "none", transition: "all .2s",
+              }}
               onClick={() => onBookingTypeChange('daily')}
             >
               Daily Basis

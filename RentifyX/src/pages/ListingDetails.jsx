@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listings } from "../data/dwellings";
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
 
 /* ── static data ─────────────────────────────── */
@@ -8,34 +10,34 @@ function AmenityIcon({ name }) {
   const props = { width: 20, height: 20, fill: "none", stroke: "currentColor", strokeWidth: 1.6, viewBox: "0 0 24 24", strokeLinecap: "round", strokeLinejoin: "round" };
   const n = name?.toLowerCase() || "";
   if (n.includes("wifi") || n.includes("internet"))
-    return <svg {...props}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>;
+    return <svg {...props}><path d="M5 12.55a11 11 0 0 1 14.08 0" /><path d="M1.42 9a16 16 0 0 1 21.16 0" /><path d="M8.53 16.11a6 6 0 0 1 6.95 0" /><line x1="12" y1="20" x2="12.01" y2="20" /></svg>;
   if (n.includes("kitchen") || n.includes("cook"))
-    return <svg {...props}><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M15 13h6m-3-3v6"/></svg>;
+    return <svg {...props}><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /><rect x="8" y="3" width="8" height="4" rx="1" /><path d="M15 13h6m-3-3v6" /></svg>;
   if (n.includes("park"))
-    return <svg {...props}><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+    return <svg {...props}><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>;
   if (n.includes("air") || n.includes("ac") || n.includes("cool"))
-    return <svg {...props}><path d="M8 16a4 4 0 0 1 8 0"/><path d="M12 3v1m0 16v1M3 12h1m16 0h1"/><path d="m5.6 5.6.7.7m11.4 11.4.7.7M5.6 18.4l.7-.7M17.7 6.3l.7-.7"/><circle cx="12" cy="12" r="3"/></svg>;
+    return <svg {...props}><path d="M8 16a4 4 0 0 1 8 0" /><path d="M12 3v1m0 16v1M3 12h1m16 0h1" /><path d="m5.6 5.6.7.7m11.4 11.4.7.7M5.6 18.4l.7-.7M17.7 6.3l.7-.7" /><circle cx="12" cy="12" r="3" /></svg>;
   if (n.includes("tv") || n.includes("television") || n.includes("netflix"))
-    return <svg {...props}><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>;
+    return <svg {...props}><rect x="2" y="7" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></svg>;
   if (n.includes("wash") || n.includes("laundry"))
-    return <svg {...props}><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 7h.01M11 7h.01M14 7h.01"/></svg>;
+    return <svg {...props}><rect x="2" y="3" width="20" height="18" rx="2" /><circle cx="12" cy="13" r="4" /><path d="M8 7h.01M11 7h.01M14 7h.01" /></svg>;
   if (n.includes("elevator") || n.includes("lift"))
-    return <svg {...props}><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 9l3-3 3 3M9 15l3 3 3-3"/></svg>;
+    return <svg {...props}><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M9 9l3-3 3 3M9 15l3 3 3-3" /></svg>;
   if (n.includes("meal") || n.includes("food") || n.includes("breakfast") || n.includes("coffee"))
-    return <svg {...props}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>;
+    return <svg {...props}><path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" y1="2" x2="6" y2="4" /><line x1="10" y1="2" x2="10" y2="4" /><line x1="14" y1="2" x2="14" y2="4" /></svg>;
   if (n.includes("study") || n.includes("desk") || n.includes("workspace") || n.includes("work"))
-    return <svg {...props}><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>;
+    return <svg {...props}><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>;
   if (n.includes("beach") || n.includes("ocean") || n.includes("sea"))
-    return <svg {...props}><path d="M17 11.5a4 4 0 0 0-5.5-1L3 16"/><path d="m5 17 2.5-2.5"/><path d="M3 21c1.5-1.5 5-3 9-1s7 .5 9-1"/><path d="M15.5 6.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>;
+    return <svg {...props}><path d="M17 11.5a4 4 0 0 0-5.5-1L3 16" /><path d="m5 17 2.5-2.5" /><path d="M3 21c1.5-1.5 5-3 9-1s7 .5 9-1" /><path d="M15.5 6.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" /></svg>;
   if (n.includes("pool") || n.includes("swim"))
-    return <svg {...props}><path d="M2 12h2a2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2h2"/><path d="M2 19h2a2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2h2"/><circle cx="8" cy="5" r="2"/><path d="M10 5c0 2 5 4 5 8"/></svg>;
+    return <svg {...props}><path d="M2 12h2a2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2h2" /><path d="M2 19h2a2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 1 2-2h2" /><circle cx="8" cy="5" r="2" /><path d="M10 5c0 2 5 4 5 8" /></svg>;
   if (n.includes("garden") || n.includes("yard") || n.includes("outdoor"))
-    return <svg {...props}><path d="M12 22v-7"/><path d="M9 8c0 3.5 3 5 3 7"/><path d="M15 8c0 3.5-3 5-3 7"/><path d="M6 12c0 3.5 3 5.5 6 5.5s6-2 6-5.5"/><path d="M3 12c0 5 4 9 9 9"/><path d="M21 12c0 5-4 9-9 9"/></svg>;
+    return <svg {...props}><path d="M12 22v-7" /><path d="M9 8c0 3.5 3 5 3 7" /><path d="M15 8c0 3.5-3 5-3 7" /><path d="M6 12c0 3.5 3 5.5 6 5.5s6-2 6-5.5" /><path d="M3 12c0 5 4 9 9 9" /><path d="M21 12c0 5-4 9-9 9" /></svg>;
   if (n.includes("fireplace") || n.includes("fire"))
-    return <svg {...props}><path d="M12 12c0-3-2-5-2-8 0 5-4 6-4 10a6 6 0 0 0 12 0c0-3-2-4-2-7-1 3-4 4-4 5z"/></svg>;
+    return <svg {...props}><path d="M12 12c0-3-2-5-2-8 0 5-4 6-4 10a6 6 0 0 0 12 0c0-3-2-4-2-7-1 3-4 4-4 5z" /></svg>;
   if (n.includes("safe") || n.includes("security") || n.includes("lock"))
-    return <svg {...props}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>;
-  return <svg {...props}><polyline points="20 6 9 17 4 12"/></svg>;
+    return <svg {...props}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>;
+  return <svg {...props}><polyline points="20 6 9 17 4 12" /></svg>;
 }
 
 const HIGHLIGHT_ICONS = {
@@ -49,42 +51,42 @@ const HIGHLIGHT_ICONS = {
 };
 
 const LOCATION_COORDS = {
-  Mumbai:    { lat: 19.056,  lng: 72.8477, bbox: "72.7977,19.006,72.8977,19.106",  label: "Bandra West, Mumbai" },
-  Delhi:     { lat: 28.6139, lng: 77.209,  bbox: "77.159,28.564,77.259,28.664",    label: "New Delhi" },
-  Bangalore: { lat: 12.9716, lng: 77.5946, bbox: "77.545,12.922,77.645,13.022",    label: "Bangalore" },
-  Hyderabad: { lat: 17.385,  lng: 78.4867, bbox: "78.437,17.335,78.537,17.435",    label: "Hyderabad" },
-  Pune:      { lat: 18.5204, lng: 73.8567, bbox: "73.807,18.470,73.907,18.570",    label: "Pune" },
-  Chennai:   { lat: 13.0827, lng: 80.2707, bbox: "80.221,13.033,80.321,13.133",    label: "Chennai" },
-  Goa:       { lat: 15.2993, lng: 74.124,  bbox: "74.074,15.249,74.174,15.349",    label: "Goa" },
-  Jaipur:    { lat: 26.9124, lng: 75.7873, bbox: "75.737,26.862,75.837,26.962",    label: "Jaipur" },
+  Mumbai: { lat: 19.056, lng: 72.8477, bbox: "72.7977,19.006,72.8977,19.106", label: "Bandra West, Mumbai" },
+  Delhi: { lat: 28.6139, lng: 77.209, bbox: "77.159,28.564,77.259,28.664", label: "New Delhi" },
+  Bangalore: { lat: 12.9716, lng: 77.5946, bbox: "77.545,12.922,77.645,13.022", label: "Bangalore" },
+  Hyderabad: { lat: 17.385, lng: 78.4867, bbox: "78.437,17.335,78.537,17.435", label: "Hyderabad" },
+  Pune: { lat: 18.5204, lng: 73.8567, bbox: "73.807,18.470,73.907,18.570", label: "Pune" },
+  Chennai: { lat: 13.0827, lng: 80.2707, bbox: "80.221,13.033,80.321,13.133", label: "Chennai" },
+  Goa: { lat: 15.2993, lng: 74.124, bbox: "74.074,15.249,74.174,15.349", label: "Goa" },
+  Jaipur: { lat: 26.9124, lng: 75.7873, bbox: "75.737,26.862,75.837,26.962", label: "Jaipur" },
 };
 
 const NEIGHBORHOOD = {
-  Mumbai:    { desc: "Nestled in Bandra West — Mumbai's most vibrant neighbourhood — walking distance from the best cafes, restaurants, and the iconic Bandstand promenade.", pills: ["🚇 Bandra Station · 8 min", "☕ Cafes · 3 min walk", "🏖️ Bandstand · 10 min", "🛒 Linking Road · 5 min", "✈️ Airport · 25 min drive", "🍽️ Restaurants · 2 min"] },
-  Delhi:     { desc: "Located in the heart of New Delhi with excellent metro connectivity and proximity to major landmarks, markets, and cultural sites.", pills: ["🚇 Metro · 5 min walk", "🏛️ India Gate · 15 min", "🛒 Connaught Place · 10 min", "✈️ Airport · 30 min drive"] },
+  Mumbai: { desc: "Nestled in Bandra West — Mumbai's most vibrant neighbourhood — walking distance from the best cafes, restaurants, and the iconic Bandstand promenade.", pills: ["🚇 Bandra Station · 8 min", "☕ Cafes · 3 min walk", "🏖️ Bandstand · 10 min", "🛒 Linking Road · 5 min", "✈️ Airport · 25 min drive", "🍽️ Restaurants · 2 min"] },
+  Delhi: { desc: "Located in the heart of New Delhi with excellent metro connectivity and proximity to major landmarks, markets, and cultural sites.", pills: ["🚇 Metro · 5 min walk", "🏛️ India Gate · 15 min", "🛒 Connaught Place · 10 min", "✈️ Airport · 30 min drive"] },
   Bangalore: { desc: "Situated in central Bangalore close to tech parks, trendy cafes, and vibrant nightlife. Perfect for professionals and explorers alike.", pills: ["🚇 Metro · 8 min walk", "💼 Tech Park · 15 min", "☕ Cafes · 2 min walk", "✈️ Airport · 45 min drive"] },
   Hyderabad: { desc: "Well-located in Hyderabad with easy access to tech corridors, the old city, and great local food.", pills: ["🚇 Metro · 10 min", "🍗 Local Food · 5 min walk", "💼 Cyberabad · 20 min", "✈️ Airport · 35 min drive"] },
-  Pune:      { desc: "Modern apartment near Pune's metro, IT hubs, and the best restaurants the city has to offer.", pills: ["🚇 Metro · 5 min walk", "💼 IT Hub · 15 min", "🛒 Market · 10 min", "✈️ Airport · 30 min drive"] },
-  Chennai:   { desc: "Calm and well-connected neighbourhood in Chennai with easy access to the beach, temples, and business districts.", pills: ["🏖️ Marina Beach · 15 min", "🚇 Metro · 8 min", "🍛 Restaurants · 3 min", "✈️ Airport · 25 min drive"] },
-  Goa:       { desc: "Steps from the beach, surrounded by seafood shacks and tropical vibes — the perfect base for exploring North Goa.", pills: ["🏖️ Beach · 2 min walk", "🍹 Beach shacks · 5 min", "🛵 Bike rental · nearby", "✈️ Airport · 40 min drive"] },
-  Jaipur:    { desc: "Set near the old city forts and vibrant bazaars, with easy access to Rajasthan's royal heritage.", pills: ["🏰 Amber Fort · 20 min", "🛒 Bazaar · 10 min", "☕ Cafes · 5 min walk", "✈️ Airport · 20 min drive"] },
-  default:   { desc: "A well-located property with easy access to local attractions, dining, and transport links.", pills: ["📍 City centre · nearby", "🚗 Easy road access", "✈️ Airport · accessible"] },
+  Pune: { desc: "Modern apartment near Pune's metro, IT hubs, and the best restaurants the city has to offer.", pills: ["🚇 Metro · 5 min walk", "💼 IT Hub · 15 min", "🛒 Market · 10 min", "✈️ Airport · 30 min drive"] },
+  Chennai: { desc: "Calm and well-connected neighbourhood in Chennai with easy access to the beach, temples, and business districts.", pills: ["🏖️ Marina Beach · 15 min", "🚇 Metro · 8 min", "🍛 Restaurants · 3 min", "✈️ Airport · 25 min drive"] },
+  Goa: { desc: "Steps from the beach, surrounded by seafood shacks and tropical vibes — the perfect base for exploring North Goa.", pills: ["🏖️ Beach · 2 min walk", "🍹 Beach shacks · 5 min", "🛵 Bike rental · nearby", "✈️ Airport · 40 min drive"] },
+  Jaipur: { desc: "Set near the old city forts and vibrant bazaars, with easy access to Rajasthan's royal heritage.", pills: ["🏰 Amber Fort · 20 min", "🛒 Bazaar · 10 min", "☕ Cafes · 5 min walk", "✈️ Airport · 20 min drive"] },
+  default: { desc: "A well-located property with easy access to local attractions, dining, and transport links.", pills: ["📍 City centre · nearby", "🚗 Easy road access", "✈️ Airport · accessible"] },
 };
 
 const RATING_CATS = [
-  { label: "Cleanliness",   pct: 96,  score: "4.8" },
-  { label: "Accuracy",      pct: 98,  score: "4.9" },
+  { label: "Cleanliness", pct: 96, score: "4.8" },
+  { label: "Accuracy", pct: 98, score: "4.9" },
   { label: "Communication", pct: 100, score: "5.0" },
-  { label: "Location",      pct: 90,  score: "4.5" },
-  { label: "Check-in",      pct: 100, score: "5.0" },
-  { label: "Value",         pct: 88,  score: "4.4" },
+  { label: "Location", pct: 90, score: "4.5" },
+  { label: "Check-in", pct: 100, score: "5.0" },
+  { label: "Value", pct: 88, score: "4.4" },
 ];
 
 const SAMPLE_REVIEWS = [
-  { name: "Komal", date: "January 2025",  text: "Beautiful place with amazing surroundings. The host was incredibly welcoming and made sure everything was perfect for our arrival." },
+  { name: "Komal", date: "January 2025", text: "Beautiful place with amazing surroundings. The host was incredibly welcoming and made sure everything was perfect for our arrival." },
   { name: "Dipen", date: "February 2025", text: "Very cozy and well-maintained. Everything worked flawlessly and the location couldn't be better for exploring the city." },
-  { name: "Jai",   date: "March 2025",    text: "Perfect escape from city life. Every detail was thoughtful — from the welcome basket to the local restaurant recommendations." },
-  { name: "Anika", date: "March 2025",    text: "The photos don't do it justice — even better in person. Stunning views and a supremely comfortable stay. Will return!" },
+  { name: "Jai", date: "March 2025", text: "Perfect escape from city life. Every detail was thoughtful — from the welcome basket to the local restaurant recommendations." },
+  { name: "Anika", date: "March 2025", text: "The photos don't do it justice — even better in person. Stunning views and a supremely comfortable stay. Will return!" },
 ];
 
 /* ── helpers ─────────────────────────────────── */
@@ -98,7 +100,7 @@ function fmt(n) {
  * Returns "monthly" | "perNight"
  */
 function getRentalType(listing) {
-  if (listing.pricingType === "monthly")  return "monthly";
+  if (listing.pricingType === "monthly") return "monthly";
   if (listing.pricingType === "perNight") return "perNight";
   // Legacy fallback: infer from priceUnit string
   const unit = listing.priceUnit?.toLowerCase() || "";
@@ -132,9 +134,9 @@ function StarIcon({ size = 14 }) {
 function Lightbox({ images, index, onClose, onNav }) {
   useEffect(() => {
     const h = (e) => {
-      if (e.key === "Escape")     onClose();
+      if (e.key === "Escape") onClose();
       if (e.key === "ArrowRight") onNav(1);
-      if (e.key === "ArrowLeft")  onNav(-1);
+      if (e.key === "ArrowLeft") onNav(-1);
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
@@ -154,8 +156,8 @@ function Lightbox({ images, index, onClose, onNav }) {
 /* ── Map ─────────────────────────────────────── */
 function MapEmbed({ location }) {
   const info = LOCATION_COORDS[location] || LOCATION_COORDS.Mumbai;
-  const nb   = NEIGHBORHOOD[location]    || NEIGHBORHOOD.default;
-  const src  = `https://www.openstreetmap.org/export/embed.html?bbox=${info.bbox}&layer=mapnik&marker=${info.lat},${info.lng}`;
+  const nb = NEIGHBORHOOD[location] || NEIGHBORHOOD.default;
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${info.bbox}&layer=mapnik&marker=${info.lat},${info.lng}`;
   return (
     <>
       <div className="ld-map-wrap">
@@ -195,9 +197,9 @@ function GuestSelector({ guests, onChange, max }) {
   }
 
   const parts = [];
-  if (guests.adults)   parts.push(`${guests.adults} ${guests.adults === 1 ? "guest" : "guests"}`);
+  if (guests.adults) parts.push(`${guests.adults} ${guests.adults === 1 ? "guest" : "guests"}`);
   if (guests.children) parts.push(`${guests.children} ${guests.children === 1 ? "child" : "children"}`);
-  if (guests.infants)  parts.push(`${guests.infants} ${guests.infants === 1 ? "infant" : "infants"}`);
+  if (guests.infants) parts.push(`${guests.infants} ${guests.infants === 1 ? "infant" : "infants"}`);
 
   const GuestRow = ({ type, title, subtitle }) => (
     <div className="ld-gt">
@@ -221,9 +223,9 @@ function GuestSelector({ guests, onChange, max }) {
       </svg>
       {open && (
         <div className="ld-guest-drop" onClick={(e) => e.stopPropagation()}>
-          <GuestRow type="adults"   title="Adults"   subtitle="Age 13+" />
+          <GuestRow type="adults" title="Adults" subtitle="Age 13+" />
           <GuestRow type="children" title="Children" subtitle="Ages 2–12" />
-          <GuestRow type="infants"  title="Infants"  subtitle="Under 2" />
+          <GuestRow type="infants" title="Infants" subtitle="Under 2" />
         </div>
       )}
     </div>
@@ -234,13 +236,13 @@ function GuestSelector({ guests, onChange, max }) {
 function BookingCard({ listing }) {
   const navigate = useNavigate();
 
-  const [checkIn,  setCheckIn]  = useState("");
+  const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [guests,   setGuests]   = useState({ adults: 1, children: 0, infants: 0 });
+  const [guests, setGuests] = useState({ adults: 1, children: 0, infants: 0 });
 
-  const today        = new Date().toISOString().split("T")[0];
-  const rentalType   = getRentalType(listing);           // "monthly" | "perNight"
-  const isMonthly    = rentalType === "monthly";
+  const today = new Date().toISOString().split("T")[0];
+  const rentalType = getRentalType(listing);           // "monthly" | "perNight"
+  const isMonthly = rentalType === "monthly";
 
   /* ── Step 1: raw day count ─────────────────── */
   const nights =
@@ -252,25 +254,25 @@ function BookingCard({ listing }) {
   // Monthly: user must span at least 30 days
   const isBelowMinStay = isMonthly && nights > 0 && nights < 30;
   // Price is calculable only when dates are chosen AND validation passes
-  const canCalculate   = nights > 0 && !isBelowMinStay;
+  const canCalculate = nights > 0 && !isBelowMinStay;
 
   /* ── Step 3: price calculation ─────────────── */
   const months = isMonthly && canCalculate ? getMonthDiff(checkIn, checkOut) : 0;
-  let sub          = 0;
-  let displayUnit  = "";
+  let sub = 0;
+  let displayUnit = "";
 
   if (canCalculate) {
     if (isMonthly) {
-      sub         = months * listing.price;
+      sub = months * listing.price;
       displayUnit = `× ${months} month${months > 1 ? "s" : ""}`;
     } else {
-      sub         = nights * listing.price;
+      sub = nights * listing.price;
       displayUnit = `× ${nights} night${nights > 1 ? "s" : ""}`;
     }
   }
 
-  
-  const total       = sub ;
+
+  const total = sub;
 
   /* ── Min checkout enforced by the date input ── */
   const getMinCheckout = () => {
@@ -285,14 +287,14 @@ function BookingCard({ listing }) {
     if (!checkIn || !checkOut) return;
     if (isBelowMinStay) return;        // button is disabled anyway
     navigate(`/book/${listing.id}`, {
-  state: { listing, checkIn, checkOut, nights, guests, sub, total },
-});
+      state: { listing, checkIn, checkOut, nights, guests, sub, total },
+    });
   }
 
   /* ── Button label ──────────────────────────── */
   const btnLabel = () => {
-    if (!checkIn || !checkOut)  return "Check availability";
-    if (isBelowMinStay)         return "Min. 1-month rental required";
+    if (!checkIn || !checkOut) return "Check availability";
+    if (isBelowMinStay) return "Min. 1-month rental required";
     return `Reserve · ${fmt(total)}`;
   };
 
@@ -362,7 +364,7 @@ function BookingCard({ listing }) {
       {isBelowMinStay && (
         <div className="ld-min-stay-warning">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
           </svg>
           <span>
             Minimum 1-month rental required.
@@ -373,27 +375,27 @@ function BookingCard({ listing }) {
 
       {/* Reserve button */}
       <button
-  className={`ld-reserve-btn${isBelowMinStay ? " ld-reserve-btn--error" : ""}`}
-  onClick={() => {
-    if (!checkIn || !checkOut || isBelowMinStay) return; // prevent click
-    handleReserve();
-  }}
->
+        className={`ld-reserve-btn${isBelowMinStay ? " ld-reserve-btn--error" : ""}`}
+        onClick={() => {
+          if (!checkIn || !checkOut || isBelowMinStay) return; // prevent click
+          handleReserve();
+        }}
+      >
         {btnLabel()}
       </button>
 
       {/* Price breakdown — hidden unless dates are valid */}
       <div className="ld-breakdown">
-  <div className="ld-br-row">
-    <span>{fmt(listing.price)} {displayUnit}</span>
-    <span>{fmt(sub)}</span>
-  </div>
+        <div className="ld-br-row">
+          <span>{fmt(listing.price)} {displayUnit}</span>
+          <span>{fmt(sub)}</span>
+        </div>
 
-  <div className="ld-br-total">
-    <span>Total</span>
-    <span>{fmt(total)}</span>
-  </div>
-</div>
+        <div className="ld-br-total">
+          <span>Total</span>
+          <span>{fmt(total)}</span>
+        </div>
+      </div>
 
       <p className="ld-no-charge">You won't be charged yet</p>
     </div>
@@ -416,22 +418,47 @@ function XIcon() {
 
 /* ── Main Component ──────────────────────────── */
 export default function ListingDetails() {
-  const { id }   = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const listing  = listings.find((l) => l.id === id);
+  const listing = listings.find((l) => l.id === id);
 
-  const [lbIndex,      setLbIndex]      = useState(null);
-  const [scrolled,     setScrolled]     = useState(false);
-  const [activeTab,    setActiveTab]    = useState("Photos");
-  const [saved,        setSaved]        = useState(false);
+  const [lbIndex, setLbIndex] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState("Photos");
   const [showFullDesc, setShowFullDesc] = useState(false);
-  const [showAllAm,    setShowAllAm]    = useState(false);
+  const [showAllAm, setShowAllAm] = useState(false);
+
+  // Favourites — persist to localStorage
+  const [saved, setSaved] = useState(() => {
+    const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+    return favs.some((f) => f.id === id);
+  });
+
+  function toggleSaved() {
+    const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+    if (saved) {
+      const updated = favs.filter((f) => f.id !== listing.id);
+      localStorage.setItem("favourites", JSON.stringify(updated));
+    } else {
+      const newFav = {
+        id: listing.id,
+        name: listing.name,
+        image: listing.images?.[0] || listing.image || "",
+        location: listing.location,
+        price: listing.price,
+        priceUnit: listing.priceUnit,
+      };
+      favs.push(newFav);
+      localStorage.setItem("favourites", JSON.stringify(favs));
+    }
+    setSaved((s) => !s);
+  }
 
   const sectionRefs = {
-    Photos:    useRef(null),
+    Photos: useRef(null),
     Amenities: useRef(null),
-    Reviews:   useRef(null),
-    Location:  useRef(null),
+    Reviews: useRef(null),
+    Location: useRef(null),
   };
 
   const scrollToSection = (tab) => {
@@ -465,10 +492,11 @@ export default function ListingDetails() {
   if (!listing) return <div className="ld-page"><p>Listing not found.</p></div>;
 
   const allImages = listing.images?.length ? listing.images : [listing.image];
-  const lbNav    = (d) => setLbIndex((i) => (i + d + allImages.length) % allImages.length);
+  const lbNav = (d) => setLbIndex((i) => (i + d + allImages.length) % allImages.length);
 
   return (
     <div className="ld-root">
+      <Header />
 
       {lbIndex !== null && (
         <Lightbox images={allImages} index={lbIndex} onClose={() => setLbIndex(null)} onNav={lbNav} />
@@ -484,6 +512,11 @@ export default function ListingDetails() {
       </div>
 
       <div className="ld-page">
+
+        {/* Back to Listings */}
+        <button className="ld-back-btn" onClick={() => navigate('/dwellings')}>
+          ← Back to Listings
+        </button>
 
         <nav className="ld-breadcrumb">
           <span className="ld-bc-link" onClick={() => navigate("/")}>Home</span>
@@ -514,11 +547,11 @@ export default function ListingDetails() {
             </div>
           </div>
           <div className="ld-header-actions">
-            <button className="ld-act-btn" onClick={() => setSaved((s) => !s)}>
+            <button className="ld-act-btn" onClick={toggleSaved}>
               <svg viewBox="0 0 24 24" width="16" height="16" fill={saved ? "#FF385C" : "none"} stroke={saved ? "#FF385C" : "currentColor"} strokeWidth="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-              {saved ? "Saved" : "Save"}
+              {saved ? "Saved ♥" : "Save"}
             </button>
             <button className="ld-act-btn">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -691,20 +724,20 @@ export default function ListingDetails() {
                   </p>
                   <div className="ld-hc-meta">
                     <div className="ld-hc-meta-item">
-                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                       Lives in {listing.location}
                     </div>
                     <div className="ld-hc-meta-item">
-                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                       Speaks {listing.host.languages.join(", ")}
                     </div>
                     <div className="ld-hc-meta-item">
-                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
                       Identity verified
                     </div>
                   </div>
                   <div className="ld-hc-response">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                     <div>
                       <strong>Responds {listing.host.responseTime}</strong>
                       <span> · Response rate: {listing.host.responseRate}</span>
@@ -768,6 +801,7 @@ export default function ListingDetails() {
 
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
