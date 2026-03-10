@@ -14,10 +14,9 @@
 /* ========== Profile Hero Card ========== */
 .profile-hero-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
   padding: 36px 40px;
   display: flex;
+  margin-top: 25px;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
