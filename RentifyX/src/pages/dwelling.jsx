@@ -8,6 +8,7 @@ import { listings } from "../data/dwellings";
 import { Shield } from "lucide-react";
 import "./dwelling.css";
 import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -121,7 +122,8 @@ const Dwelling = () => {
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                 </div>
             </div>
-           
+
+            <Footer />
         </div>
     );
 };

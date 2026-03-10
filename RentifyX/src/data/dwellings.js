@@ -129,7 +129,7 @@ location:"Kochi",
 rating:4.5,
 reviews:89,
 type:"travel",
-price:12000,
+price:12,
 priceUnit:"/night",
 pricingType: "perNight",
 

@@ -1,8 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Header from "../components/Header/Header";
 
 /* ── helpers ─────────────────────────────────── */
-function fmt(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
+function fmt(n) {
+  return "₹" + Number(n).toLocaleString("en-IN");
+}
+
+function calculatePrice(listing, booking) {
+  const CLEANING_FEE = 5;
+  const SERVICE_RATE = 0.12;
+  const TAX_RATE = 0.05;
+  let sub = 0;
+  if (listing?.pricingType === "monthly") {
+    const checkIn = new Date(booking.checkIn);
+    const checkOut = new Date(booking.checkOut);
+    const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+    const perDayPrice = listing.price / 30;
+    sub = Math.round(perDayPrice * days);
+  } else {
+    sub = listing.price * booking.nights;
+  }
+  const svc = Math.round(sub * SERVICE_RATE);
+  const taxes = Math.round(sub * TAX_RATE);
+  const total = sub + svc + taxes + CLEANING_FEE;
+  return { sub, svc, taxes, cleaning: CLEANING_FEE, total };
+}
+
 function StarIcon({ size = 13 }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="#FF385C">
@@ -10,466 +34,163 @@ function StarIcon({ size = 13 }) {
     </svg>
   );
 }
-function calculatePrice(listing, booking) {
 
-  const CLEANING_FEE = 500;
-  const SERVICE_RATE = 0.12; // 12%
-  const TAX_RATE = 0.05; // 5%
-
-  let sub = 0;
-
-  if (listing?.pricingType === "monthly") {
-
-    const checkIn = new Date(booking.checkIn);
-    const checkOut = new Date(booking.checkOut);
-
-    const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-
-    const perDayPrice = listing.price / 30;
-
-    sub = Math.round(perDayPrice * days);
-
-  } else {
-
-    sub = listing.price * booking.nights;
-
-  }
-
-  const svc = Math.round(sub * SERVICE_RATE);
-  const taxes = Math.round(sub * TAX_RATE);
-
-  const total = sub + svc + taxes + CLEANING_FEE;
-
-  return {
-    sub,
-    svc,
-    taxes,
-    cleaning: CLEANING_FEE,
-    total
-  };
+/* ── QR Code URL (api.qrserver.com) ─────────── */
+function getQRUrl(upiId, amount, name) {
+  const upiStr = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiStr)}`;
 }
 
-/* ── mock auth state ─────────────────────────── */
-// In a real app this would come from your auth context.
-// Set to `true` to simulate a logged-in user.
-const IS_LOGGED_IN = false;
-
-/* ── payment icons ───────────────────────────── */
-function CardIcon() {
+/* ── Success Screen ───────────────────────────── */
+function SuccessScreen({ booking, listing, onBack }) {
+  const navigate = useNavigate();
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="1" y="4" width="22" height="16" rx="2" />
-      <line x1="1" y1="10" x2="23" y2="10" />
-    </svg>
-  );
-}
-function UpiIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-      <path d="M2 17l10 5 10-5" />
-      <path d="M2 12l10 5 10-5" />
-    </svg>
-  );
-}
-function NetBankingIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="3" y="10" width="18" height="11" rx="1" />
-      <path d="M3 10l9-7 9 7" />
-      <line x1="9" y1="21" x2="9" y2="14" />
-      <line x1="15" y1="21" x2="15" y2="14" />
-    </svg>
-  );
-}
-
-/* ── Step indicator ──────────────────────────── */
-function StepBadge({ n, active, done }) {
-  return (
-    <div style={{
-      width: 28, height: 28, borderRadius: "50%",
-      background: done ? "var(--primary)" : active ? "var(--foreground)" : "transparent",
-      border: done || active ? "none" : "1.5px solid var(--border)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      flexShrink: 0,
-      color: done || active ? "var(--primary-foreground)" : "var(--muted-foreground)",
-      fontSize: 13, fontWeight: 700,
-      transition: "all .3s",
-    }}>
-      {done
-        ? <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        : n}
-    </div>
-  );
-}
-
-/* ── Login / Signup Step ─────────────────────── */
-function LoginStep({ onDone }) {
-  const [mode, setMode] = useState("login"); // "login" | "signup"
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState({});
-
-  function validate() {
-    const e = {};
-    if (!email.includes("@")) e.email = "Enter a valid email";
-    if (password.length < 6)  e.password = "Password must be 6+ characters";
-    if (mode === "signup" && !name.trim()) e.name = "Enter your name";
-    if (mode === "signup" && phone.length < 10) e.phone = "Enter a valid phone number";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
-
-  return (
-    <div className="rtb-step-body">
-      <div className="rtb-auth-tabs">
-        <button
-          className={`rtb-auth-tab${mode === "login" ? " active" : ""}`}
-          onClick={() => { setMode("login"); setErrors({}); }}
-        >Log in</button>
-        <button
-          className={`rtb-auth-tab${mode === "signup" ? " active" : ""}`}
-          onClick={() => { setMode("signup"); setErrors({}); }}
-        >Sign up</button>
+    <div className="rtb-success">
+      <div className="rtb-success-icon">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="white" strokeWidth="2.5">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
       </div>
-
-      <div className="rtb-form">
-        {mode === "signup" && (
-          <div className="rtb-field">
-            <label>Full name</label>
-            <input
-              type="text"
-              placeholder="Arjun Sharma"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className={errors.name ? "error" : ""}
-            />
-            {errors.name && <span className="rtb-err">{errors.name}</span>}
-          </div>
-        )}
-        <div className="rtb-field">
-          <label>Email address</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className={errors.email ? "error" : ""}
-          />
-          {errors.email && <span className="rtb-err">{errors.email}</span>}
-        </div>
-        {mode === "signup" && (
-          <div className="rtb-field">
-            <label>Phone number</label>
-            <div className="rtb-phone-wrap">
-              <span className="rtb-country-code">🇮🇳 +91</span>
-              <input
-                type="tel"
-                placeholder="9876543210"
-                value={phone}
-                onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0,10))}
-                className={errors.phone ? "error" : ""}
-              />
-            </div>
-            {errors.phone && <span className="rtb-err">{errors.phone}</span>}
-          </div>
-        )}
-        <div className="rtb-field">
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className={errors.password ? "error" : ""}
-          />
-          {errors.password && <span className="rtb-err">{errors.password}</span>}
-        </div>
-
-        {mode === "login" && (
-          <div style={{ textAlign: "right", marginTop: -8, marginBottom: 8 }}>
-            <span className="rtb-link">Forgot password?</span>
-          </div>
-        )}
-
-        <button className="rtb-cta-btn" onClick={() => validate() && onDone()}>
-          {mode === "login" ? "Continue" : "Create account"}
-        </button>
-
-        <div className="rtb-divider-or"><span>or</span></div>
-
-        <button className="rtb-social-btn">
-          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Continue with Google
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ── Payment Step ────────────────────────────── */
-function PaymentStep({ onDone, total }) {
-  const [method, setMethod] = useState("card");
-  const [cardNum, setCardNum] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [upiId, setUpiId] = useState("");
-  const [bank, setBank] = useState("");
-  const [errors, setErrors] = useState({});
-
-  function formatCard(v) {
-    return v.replace(/\D/g,"").slice(0,16).replace(/(.{4})/g,"$1 ").trim();
-  }
-  function formatExpiry(v) {
-    const d = v.replace(/\D/g,"").slice(0,4);
-    return d.length > 2 ? d.slice(0,2) + "/" + d.slice(2) : d;
-  }
-
-  function validate() {
-    const e = {};
-    if (method === "card") {
-      if (cardNum.replace(/\s/g,"").length < 16) e.cardNum = "Enter a valid 16-digit card number";
-      if (expiry.length < 5) e.expiry = "Enter expiry MM/YY";
-      if (cvv.length < 3) e.cvv = "Enter CVV";
-      if (!cardName.trim()) e.cardName = "Enter name on card";
-    }
-    if (method === "upi") {
-      if (!upiId.includes("@")) e.upiId = "Enter a valid UPI ID (e.g. name@upi)";
-    }
-    if (method === "netbanking") {
-      if (!bank) e.bank = "Select your bank";
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
-
-  const methods = [
-    { id: "card", label: "Credit / Debit Card", icon: <CardIcon /> },
-    { id: "upi", label: "UPI", icon: <UpiIcon /> },
-    { id: "netbanking", label: "Net Banking", icon: <NetBankingIcon /> },
-  ];
-
-  const banks = ["State Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Kotak Mahindra", "Punjab National Bank", "Bank of Baroda", "Yes Bank"];
-
-  return (
-    <div className="rtb-step-body">
-      <div className="rtb-pay-methods">
-        {methods.map(m => (
-          <button
-            key={m.id}
-            className={`rtb-pay-method${method === m.id ? " active" : ""}`}
-            onClick={() => { setMethod(m.id); setErrors({}); }}
-          >
-            {m.icon}
-            <span>{m.label}</span>
-            <div className="rtb-pm-radio">
-              <div className={`rtb-pm-dot${method === m.id ? " active" : ""}`} />
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <div className="rtb-form" style={{ marginTop: 20 }}>
-        {method === "card" && (
-          <>
-            <div className="rtb-field">
-              <label>Card number</label>
-              <div style={{ position: "relative" }}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardNum}
-                  onChange={e => setCardNum(formatCard(e.target.value))}
-                  className={errors.cardNum ? "error" : ""}
-                />
-                <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 4 }}>
-                  <svg viewBox="0 0 38 24" width="32" height="20"><rect width="38" height="24" rx="4" fill="#1434CB"/><text x="19" y="16" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">VISA</text></svg>
-                </span>
-              </div>
-              {errors.cardNum && <span className="rtb-err">{errors.cardNum}</span>}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <div className="rtb-field">
-                <label>Expiry date</label>
-                <input type="text" placeholder="MM/YY" value={expiry} onChange={e => setExpiry(formatExpiry(e.target.value))} className={errors.expiry ? "error" : ""} />
-                {errors.expiry && <span className="rtb-err">{errors.expiry}</span>}
-              </div>
-              <div className="rtb-field">
-                <label>CVV</label>
-                <input type="password" placeholder="•••" maxLength={4} value={cvv} onChange={e => setCvv(e.target.value.replace(/\D/g,"").slice(0,4))} className={errors.cvv ? "error" : ""} />
-                {errors.cvv && <span className="rtb-err">{errors.cvv}</span>}
-              </div>
-            </div>
-            <div className="rtb-field">
-              <label>Name on card</label>
-              <input type="text" placeholder="Arjun Sharma" value={cardName} onChange={e => setCardName(e.target.value)} className={errors.cardName ? "error" : ""} />
-              {errors.cardName && <span className="rtb-err">{errors.cardName}</span>}
-            </div>
-          </>
-        )}
-
-        {method === "upi" && (
-          <div className="rtb-field">
-            <label>UPI ID</label>
-            <input type="text" placeholder="yourname@upi" value={upiId} onChange={e => setUpiId(e.target.value)} className={errors.upiId ? "error" : ""} />
-            {errors.upiId && <span className="rtb-err">{errors.upiId}</span>}
-            <p style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 6 }}>You'll receive a payment request on your UPI app</p>
-          </div>
-        )}
-
-        {method === "netbanking" && (
-          <div className="rtb-field">
-            <label>Select your bank</label>
-            <select value={bank} onChange={e => setBank(e.target.value)} className={errors.bank ? "error" : ""} style={{ width: "100%", padding: "12px 14px", borderRadius: "var(--radius)", border: "1.5px solid var(--input)", background: "var(--card)", color: "var(--foreground)", fontSize: 14, cursor: "pointer" }}>
-              <option value="">— Choose bank —</option>
-              {banks.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-            {errors.bank && <span className="rtb-err">{errors.bank}</span>}
-          </div>
-        )}
-
-        <div className="rtb-secure-note">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Your payment info is encrypted and secure. Dwellings never stores your full card details.
-        </div>
-
-        <button className="rtb-cta-btn" onClick={() => validate() && onDone()}>
-          Add payment method
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ── Review Step ─────────────────────────────── */
-function ReviewStep({ listing, booking, onConfirm, confirming }) {
-  const { checkIn, checkOut, nights, guests, sub, svc, total } = booking;
-
-  const checkInDate  = new Date(checkIn).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
-  const checkOutDate = new Date(checkOut).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
-
-  return (
-    <div className="rtb-step-body">
-      <div className="rtb-review-section">
-        <h4>Trip details</h4>
-        <div className="rtb-review-row">
-          <div>
-            <strong>Dates</strong>
-            <p>{checkInDate} → {checkOutDate}</p>
-          </div>
-          <span className="rtb-link">Edit</span>
-        </div>
-        <div className="rtb-review-row">
-          <div>
-            <strong>Guests</strong>
-            <p>{guests.adults} adult{guests.adults > 1 ? "s" : ""}{guests.children ? `, ${guests.children} child${guests.children > 1 ? "ren" : ""}` : ""}{guests.infants ? `, ${guests.infants} infant${guests.infants > 1 ? "s" : ""}` : ""}</p>
-          </div>
-          <span className="rtb-link">Edit</span>
-        </div>
-      </div>
-
-      <div className="rtb-review-section">
-        <h4>Cancellation policy</h4>
-        <p style={{ fontSize: 14, color: "var(--foreground)", lineHeight: 1.65 }}>
-          <strong>Free cancellation within 48 hours.</strong> After that, cancel before check-in and get a 50% refund, minus the first night and service fee.
-        </p>
-        <span className="rtb-link" style={{ fontSize: 13, marginTop: 6, display: "inline-block" }}>Full policy ›</span>
-      </div>
-
-      <div className="rtb-review-section">
-        <h4>Ground rules</h4>
-        <p style={{ fontSize: 14, color: "var(--muted-foreground)", lineHeight: 1.7 }}>
-          We ask every guest to remember a few simple things about what makes a great host and guest.
-        </p>
-        <ul style={{ fontSize: 14, color: "var(--foreground)", paddingLeft: 20, lineHeight: 2, margin: "8px 0 0" }}>
-          <li>Follow the house rules</li>
-          <li>Treat your Host's home like your own</li>
-          <li>Communicate openly and honestly</li>
-        </ul>
-      </div>
-
-      <p style={{ fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.6, marginTop: 8 }}>
-        By selecting the button below, I agree to the <span className="rtb-link">Host's House Rules</span>, <span className="rtb-link">Dwellings Rebooking & Refund Policy</span>, and that Dwellings can charge my payment method.
+      <h2>Booking Confirmed! 🎉</h2>
+      <p className="rtb-success-sub">
+        Your payment has been verified and your booking is confirmed.
       </p>
-
-      <button className="rtb-cta-btn rtb-confirm-btn" onClick={onConfirm} disabled={confirming}>
-        {confirming
-          ? <span className="rtb-spinner" />
-          : `Confirm and pay · ${fmt(total)}`
-        }
-      </button>
+      <div className="rtb-success-detail">
+        <div className="rtb-success-row"><span>Property</span><strong>{listing?.name || "Your Booked Property"}</strong></div>
+        <div className="rtb-success-row"><span>Check-in</span><strong>{new Date(booking.checkIn).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</strong></div>
+        <div className="rtb-success-row"><span>Check-out</span><strong>{new Date(booking.checkOut).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</strong></div>
+        <div className="rtb-success-row"><span>UTR ID</span><strong>{booking.utr}</strong></div>
+      </div>
+      <div className="rtb-success-actions">
+        <button className="rtb-success-profile-btn" onClick={() => navigate("/profile")}>
+          View My Bookings
+        </button>
+        <button className="rtb-success-home-btn" onClick={() => navigate("/dwellings")}>
+          Browse More
+        </button>
+      </div>
     </div>
   );
 }
 
+/* ── Success screen styles (injected into early-return branch) ─── */
+const successStyles = `
+  .rtb-root { font-family: 'Inter', -apple-system, sans-serif; background: #f5f5f5; min-height: 100vh; }
+  .rtb-root * { box-sizing: border-box; margin: 0; padding: 0; }
+  .rtb-page { max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; }
+  .rtb-success { max-width: 520px; margin: 60px auto; text-align: center; background: white; border-radius: 20px; padding: 50px 40px; box-shadow: 0 8px 40px rgba(0,0,0,.1); border: 1px solid #eee; }
+  .rtb-success-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0)); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 6px 20px rgba(255,102,0,.35); }
+  .rtb-success h2 { font-size: 26px; font-weight: 800; color: #222; margin-bottom: 10px; }
+  .rtb-success-sub { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 32px; }
+  .rtb-success-detail { background: #fafafa; border-radius: 12px; border: 1px solid #eee; padding: 20px; margin-bottom: 28px; text-align: left; }
+  .rtb-success-row { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+  .rtb-success-row:last-child { border: none; }
+  .rtb-success-row span { color: #888; }
+  .rtb-success-row strong { color: #222; }
+  .rtb-success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .rtb-success-profile-btn { padding: 13px 24px; border: none; border-radius: 10px; background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0)); color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 4px 14px rgba(255,102,0,.3); }
+  .rtb-success-profile-btn:hover { opacity: .9; }
+  .rtb-success-home-btn { padding: 13px 24px; border: 1.5px solid #ddd; border-radius: 10px; background: white; color: #333; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .rtb-success-home-btn:hover { background: #f5f5f5; }
+`;
 
 /* ── Main Component ──────────────────────────── */
 export default function RequestToBook() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Pull booking state passed via router state from BookingCard
   const booking = location.state || {
-  checkIn: "2026-03-13",
-  checkOut: "2026-03-15",
-  nights: 2,
-  guests: { adults: 1, children: 0, infants: 0 },
-};
+    checkIn: "2026-03-13",
+    checkOut: "2026-03-15",
+    nights: 2,
+    guests: { adults: 1, children: 0, infants: 0 },
+  };
 
-const listing = booking.listing || null;
+  const listing = booking.listing || null;
 
-const price = calculatePrice(listing, booking);
-
-  
-
-  // Steps: 0 = auth, 1 = payment, 2 = review
-  const startStep = IS_LOGGED_IN ? 1 : 0;
-  const [step, setStep] = useState(startStep);
-  const [done, setDone] = useState({ 0: IS_LOGGED_IN, 1: false, 2: false });
-  const [confirming, setConfirming] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-
-  const stepLabels = IS_LOGGED_IN
-    ? ["Add a payment method", "Review your request"]
-    : ["Log in or sign up", "Add a payment method", "Review your request"];
-
-  const totalSteps = stepLabels.length;
-  const stepOffset = IS_LOGGED_IN ? 1 : 0;
-
-  function markDone(s) {
-    setDone(d => ({ ...d, [s]: true }));
-    setStep(s + 1);
-  }
-
-  function handleConfirm() {
-    setConfirming(true);
-    setTimeout(() => {
-      setConfirming(false);
-      setConfirmed(true);
-    }, 2000);
-  }
-
-  if (confirmed) {
+  // If navigated directly with no listing data, redirect back
+  if (!listing) {
     return (
-      <div className="rtb-root">
-        <SuccessScreen listing={listing} booking={booking} onBack={() => navigate(-1)} />
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, fontFamily: "sans-serif" }}>
+        <p style={{ fontSize: 18, color: "#666" }}>No booking details found.</p>
+        <button onClick={() => navigate("/dwellings")} style={{ padding: "12px 24px", background: "rgb(255,102,0)", color: "white", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
+          Browse Dwellings
+        </button>
       </div>
     );
   }
 
-  // dates
-  const checkInDate  = new Date(booking.checkIn).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-  const checkOutDate = new Date(booking.checkOut).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const price = calculatePrice(listing, booking);
+
+  const UPI_ID = "8295190177@ybl";
+  const HOST_NAME = "RentifyX";
+
+  const [utr, setUtr] = useState("");
+  const [utrError, setUtrError] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  const checkInDate = new Date(booking.checkIn).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+  const checkOutDate = new Date(booking.checkOut).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+
+  function handleConfirm() {
+    const cleaned = utr.trim().replace(/\s/g, "");
+    if (cleaned.length < 12) {
+      setUtrError("Please enter a valid UTR ID (minimum 12 digits).");
+      return;
+    }
+    setUtrError("");
+    setConfirming(true);
+
+    setTimeout(() => {
+      // Build and save booking to localStorage
+      const newBooking = {
+        id: Date.now().toString(),
+        listingId: listing?.id || "",
+        title: listing?.name || "Booked Property",
+        location: listing?.location || "",
+        image: listing?.images?.[0] || listing?.image || "",
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        guests: booking.guests,
+        amount: fmt(price.total),
+        status: "upcoming",
+        utr: cleaned,
+        bookedAt: new Date().toISOString(),
+      };
+
+      const existing = JSON.parse(localStorage.getItem("bookings") || "[]");
+      existing.push(newBooking);
+      localStorage.setItem("bookings", JSON.stringify(existing));
+
+      setConfirmedBooking(newBooking);
+      setConfirming(false);
+      setConfirmed(true);
+    }, 1800);
+  }
+
+  if (confirmed && confirmedBooking) {
+    return (
+      <div className="rtb-root">
+        <div className="rtb-page">
+          <SuccessScreen booking={confirmedBooking} listing={listing} onBack={() => navigate(-1)} />
+        </div>
+        <style>{successStyles}</style>
+      </div>
+    );
+  }
+
 
   return (
     <div className="rtb-root">
       <div className="rtb-page">
 
-        {/* Header */}
+        {/* Topbar */}
         <div className="rtb-topbar">
           <button className="rtb-back-btn" onClick={() => navigate(-1)}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -477,55 +198,13 @@ const price = calculatePrice(listing, booking);
               <polyline points="12 19 5 12 12 5" />
             </svg>
           </button>
-          <h1>Request to book</h1>
+          <h1>Complete Your Booking</h1>
         </div>
 
         <div className="rtb-layout">
 
-          {/* LEFT — steps */}
+          {/* LEFT — booking summary */}
           <div className="rtb-left">
-
-            {stepLabels.map((label, idx) => {
-              const globalStep = idx + stepOffset;
-              const isActive   = step === globalStep;
-              const isDone     = done[globalStep];
-              const isLocked   = !isDone && !isActive;
-
-              return (
-                <div key={globalStep} className={`rtb-step${isActive ? " active" : ""}${isDone ? " done" : ""}${isLocked ? " locked" : ""}`}>
-
-                  <div className="rtb-step-head" onClick={() => isDone && setStep(globalStep)}>
-                    <StepBadge n={idx + 1} active={isActive} done={isDone} />
-                    <span className="rtb-step-label">{label}</span>
-                    {isDone && !isActive && (
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--muted-foreground)" strokeWidth="2" style={{ marginLeft: "auto" }}>
-                        <polyline points="6 9 12 15 18 9"/>
-                      </svg>
-                    )}
-                  </div>
-
-                  {isActive && (
-                    <div className="rtb-step-content">
-                      {!IS_LOGGED_IN && globalStep === 0 && <LoginStep onDone={() => markDone(0)} />}
-                      {globalStep === 1 && <PaymentStep onDone={() => markDone(1)} total={booking.total} />}
-                      {globalStep === 2 && (
-                        <ReviewStep
-                          listing={listing}
-                          booking={booking}
-                          onConfirm={handleConfirm}
-                          confirming={confirming}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-          </div>
-
-          {/* RIGHT — booking summary */}
-          <div className="rtb-right">
             <div className="rtb-summary-card">
 
               {/* property */}
@@ -537,29 +216,12 @@ const price = calculatePrice(listing, booking);
                 />
                 <div className="rtb-sc-info">
                   <p className="rtb-sc-type">{listing?.type === "pgs" ? "PG" : listing?.type || "Apartment"}</p>
-                  <p className="rtb-sc-name">{listing?.name || "Luxury 2BHK · BTM Layout"}</p>
+                  <p className="rtb-sc-name">{listing?.name || "Booked Property"}</p>
                   <div className="rtb-sc-rating">
                     <StarIcon />
                     <strong>{listing?.rating || "5.0"}</strong>
-                   
-                    <span className="rtb-sc-fav">
-                      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                      Guest favourite
-                    </span>
+                    <span style={{ fontSize: 12, color: "#888", marginLeft: 4 }}>({listing?.reviews || 0} reviews)</span>
                   </div>
-                </div>
-              </div>
-
-              <div className="rtb-sc-divider" />
-
-              {/* free cancel */}
-              <div className="rtb-sc-free-cancel">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--forest, #2d6a4f)" strokeWidth="2">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <div>
-                  <strong>Free cancellation</strong>
-                  <p>Cancel before check-in date for a full refund.</p>
                 </div>
               </div>
 
@@ -568,55 +230,158 @@ const price = calculatePrice(listing, booking);
               {/* dates & guests */}
               <div className="rtb-sc-meta">
                 <div className="rtb-sc-meta-row">
-                  <span>Dates</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <strong>{checkInDate} – {checkOutDate}</strong>
-                    
-                  </div>
+                  <span>Check-in</span>
+                  <strong>{checkInDate}</strong>
+                </div>
+                <div className="rtb-sc-meta-row">
+                  <span>Check-out</span>
+                  <strong>{checkOutDate}</strong>
                 </div>
                 <div className="rtb-sc-meta-row">
                   <span>Guests</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <strong>
-                      {booking.guests.adults} adult{booking.guests.adults > 1 ? "s" : ""}
-                      {booking.guests.children ? `, ${booking.guests.children} child` : ""}
-                    </strong>
-                   
-                  </div>
+                  <strong>
+                    {booking.guests?.adults || 1} adult{(booking.guests?.adults || 1) > 1 ? "s" : ""}
+                    {booking.guests?.children ? `, ${booking.guests.children} child` : ""}
+                  </strong>
                 </div>
               </div>
 
               <div className="rtb-sc-divider" />
 
               {/* price breakdown */}
-              <div className="rtb-pr-row">
-  <span className="rtb-ul">
-    {fmt(listing.price)} × {listing.pricingType === "monthly" ? "per month" : `${booking.nights} night${booking.nights > 1 ? "s" : ""}`}
-  </span>
-  <span>{fmt(price.sub)}</span>
-</div>
+              <div className="rtb-pr-section">
+                <h4 style={{ marginBottom: 14, fontWeight: 700, fontSize: 15 }}>Price Breakdown</h4>
+                <div className="rtb-pr-row">
+                  <span className="rtb-ul">
+                    {fmt(listing?.price || 0)} ×{" "}
+                    {listing?.pricingType === "monthly"
+                      ? "per month"
+                      : `${booking.nights || 0} night${(booking.nights || 0) > 1 ? "s" : ""}`}
+                  </span>
+                  <span>{fmt(price.sub)}</span>
+                </div>
+                <div className="rtb-pr-row">
+                  <span className="rtb-ul">Cleaning fee</span>
+                  <span>{fmt(price.cleaning)}</span>
+                </div>
+                <div className="rtb-pr-row">
+                  <span className="rtb-ul">Service fee (12%)</span>
+                  <span>{fmt(price.svc)}</span>
+                </div>
+                <div className="rtb-pr-row">
+                  <span className="rtb-ul">Taxes (5%)</span>
+                  <span>{fmt(price.taxes)}</span>
+                </div>
+                <div className="rtb-pr-total">
+                  <span>Total</span>
+                  <strong>{fmt(price.total)}</strong>
+                </div>
+              </div>
 
-<div className="rtb-pr-row">
-  <span className="rtb-ul">Cleaning fee</span>
-  <span>{fmt(price.cleaning)}</span>
-</div>
+            </div>
+          </div>
 
-<div className="rtb-pr-row">
-  <span className="rtb-ul">Service fee</span>
-  <span>{fmt(price.svc)}</span>
-</div>
+          {/* RIGHT — QR Payment */}
+          <div className="rtb-right">
+            <div className="rtb-qr-card">
 
-<div className="rtb-pr-row">
-  <span className="rtb-ul">Taxes</span>
-  <span>{fmt(price.taxes)}</span>
-</div>
+              <div className="rtb-qr-header">
+                <div className="rtb-qr-badge">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" /><rect x="11" y="11" width="3" height="3" />
+                    <rect x="11" y="18" width="3" height="3" /><rect x="18" y="11" width="3" height="3" />
+                    <rect x="15" y="15" width="6" height="6" />
+                  </svg>
+                </div>
+                <div>
+                  <h3>Scan &amp; Pay via UPI</h3>
+                  <p>Use any UPI app — GPay, PhonePe, Paytm</p>
+                </div>
+              </div>
 
-<div className="rtb-pr-total">
-  <span>Total</span>
-  <strong>{fmt(price.total)}</strong>
-</div>
+              {/* QR Code */}
+              <div className="rtb-qr-wrap">
+                <img
+                  src={getQRUrl(UPI_ID, price.total, HOST_NAME)}
+                  alt="UPI QR Code"
+                  className="rtb-qr-img"
+                />
+                <p className="rtb-qr-amount">Pay {fmt(price.total)}</p>
+              </div>
 
-              
+              {/* UPI ID */}
+              <div className="rtb-upi-info">
+                <span className="rtb-upi-label">UPI ID</span>
+                <div className="rtb-upi-id-wrap">
+                  <span className="rtb-upi-id">{UPI_ID}</span>
+                  <button
+                    className="rtb-copy-btn"
+                    onClick={() => navigator.clipboard.writeText(UPI_ID)}
+                    title="Copy UPI ID"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              <div className="rtb-qr-divider" />
+
+              {/* UTR Input */}
+              <div className="rtb-utr-section">
+                <label className="rtb-utr-label">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Enter UTR / Transaction Reference ID
+                </label>
+                <p className="rtb-utr-hint">
+                  After payment, find your UTR ID in the payment app under transaction details.
+                </p>
+                <input
+                  className={`rtb-utr-input${utrError ? " error" : ""}`}
+                  type="text"
+                  placeholder="e.g. 123456789012"
+                  value={utr}
+                  onChange={(e) => {
+                    setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+                    setUtrError("");
+                  }}
+                  maxLength={25}
+                />
+                {utrError && <span className="rtb-utr-error">{utrError}</span>}
+              </div>
+
+              <button
+                className="rtb-confirm-pay-btn"
+                onClick={handleConfirm}
+                disabled={confirming}
+              >
+                {confirming ? (
+                  <>
+                    <span className="rtb-spinner" />
+                    Verifying Payment...
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Confirm &amp; Complete Booking
+                  </>
+                )}
+              </button>
+
+              <p className="rtb-secure-note">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Secured by UPI. Your transaction is protected.
+              </p>
 
             </div>
           </div>
@@ -626,22 +391,19 @@ const price = calculatePrice(listing, booking);
 
       <style>{`
         .rtb-root {
-          font-family: var(--font-sans, 'Circular', -apple-system, BlinkMacSystemFont, sans-serif);
-          color: var(--foreground);
-          background: var(--background);
+          font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
+          background: var(--bg-secondary, #f5f5f5);
           min-height: 100vh;
           -webkit-font-smoothing: antialiased;
         }
-        .rtb-root * { box-sizing: border-box; margin: 0; padding: 0; }
+        .rtb-root * { box-sizing: border-box; }
 
-        /* Page */
         .rtb-page {
-          max-width: 1100px;
+          max-width: 1060px;
           margin: 0 auto;
-          padding: 28px 24px 80px;
+          padding: 32px 24px 80px;
         }
 
-        /* Topbar */
         .rtb-topbar {
           display: flex;
           align-items: center;
@@ -649,367 +411,388 @@ const price = calculatePrice(listing, booking);
           margin-bottom: 36px;
         }
         .rtb-topbar h1 {
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 700;
-          letter-spacing: -.3px;
-          color: var(--foreground);
+          color: var(--text-primary, #222);
         }
         .rtb-back-btn {
-          width: 36px; height: 36px;
+          width: 38px; height: 38px;
           border-radius: 50%;
-          border: 1.5px solid var(--border);
-          background: none;
+          border: 1.5px solid var(--border-color, #ddd);
+          background: white;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
-          color: var(--foreground);
+          color: var(--text-primary, #222);
           transition: background .2s, box-shadow .2s;
           flex-shrink: 0;
         }
         .rtb-back-btn:hover {
-          background: var(--secondary);
-          box-shadow: 0 2px 8px hsla(20,20%,12%,.1);
+          background: #f0f0f0;
+          box-shadow: 0 2px 8px rgba(0,0,0,.1);
         }
 
         /* Layout */
         .rtb-layout {
           display: grid;
-          grid-template-columns: 1fr 380px;
-          gap: 80px;
+          grid-template-columns: 1fr 420px;
+          gap: 40px;
           align-items: start;
         }
 
-        /* Steps */
-        .rtb-step {
-          border: 1px solid var(--border);
-          border-radius: calc(var(--radius, 8px) * 1.5);
-          margin-bottom: 16px;
-          background: var(--card);
-          overflow: hidden;
-          transition: box-shadow .25s;
+        /* Summary Card */
+        .rtb-summary-card {
+          background: white;
+          border: 1px solid var(--border-color, #e5e5e5);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.06);
         }
-        .rtb-step.active {
-          box-shadow: 0 4px 20px hsla(20,20%,12%,.1);
+
+        .rtb-sc-prop {
+          display: flex;
+          gap: 14px;
+          align-items: center;
+          margin-bottom: 20px;
         }
-        .rtb-step.locked {
-          opacity: .6;
+        .rtb-sc-img {
+          width: 90px; height: 70px;
+          border-radius: 10px;
+          object-fit: cover;
+          flex-shrink: 0;
         }
-        .rtb-step-head {
+        .rtb-sc-info { flex: 1; }
+        .rtb-sc-type {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+          color: #888;
+          margin-bottom: 2px;
+        }
+        .rtb-sc-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-primary, #222);
+          margin-bottom: 4px;
+          line-height: 1.3;
+        }
+        .rtb-sc-rating {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 13px;
+        }
+
+        .rtb-sc-divider { border: none; border-top: 1px solid #f0f0f0; margin: 16px 0; }
+
+        .rtb-sc-meta { display: flex; flex-direction: column; gap: 10px; }
+        .rtb-sc-meta-row { display: flex; justify-content: space-between; font-size: 14px; }
+        .rtb-sc-meta-row span { color: #888; }
+        .rtb-sc-meta-row strong { color: var(--text-primary, #222); }
+
+        .rtb-pr-section { margin-top: 4px; }
+        .rtb-pr-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          padding: 6px 0;
+          color: var(--text-primary, #333);
+        }
+        .rtb-ul { text-decoration: underline; text-underline-offset: 2px; }
+        .rtb-pr-total {
+          display: flex;
+          justify-content: space-between;
+          font-size: 16px;
+          font-weight: 700;
+          padding: 14px 0 0;
+          border-top: 1.5px solid #e5e5e5;
+          margin-top: 8px;
+          color: var(--text-primary, #222);
+        }
+
+        /* QR Card */
+        .rtb-qr-card {
+          background: white;
+          border: 1px solid var(--border-color, #e5e5e5);
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.06);
+          position: sticky;
+          top: 100px;
+        }
+
+        .rtb-qr-header {
           display: flex;
           align-items: center;
           gap: 14px;
-          padding: 20px 22px;
-          cursor: default;
+          margin-bottom: 24px;
         }
-        .rtb-step.done .rtb-step-head { cursor: pointer; }
-        .rtb-step-label {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--foreground);
-          flex: 1;
+        .rtb-qr-badge {
+          width: 48px; height: 48px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(255,160,50));
+          display: flex; align-items: center; justify-content: center;
+          color: white;
+          flex-shrink: 0;
         }
-        .rtb-step-content { border-top: 1px solid var(--border); }
-        .rtb-step-body { padding: 22px; }
-
-        /* Auth tabs */
-        .rtb-auth-tabs {
-          display: flex;
-          border-bottom: 1px solid var(--border);
-          margin-bottom: 22px;
-        }
-        .rtb-auth-tab {
-          flex: 1;
-          padding: 10px;
-          border: none;
-          background: none;
-          font-size: 15px;
-          font-weight: 500;
-          cursor: pointer;
-          color: var(--muted-foreground);
-          border-bottom: 2px solid transparent;
-          transition: color .2s, border-color .2s;
-          font-family: inherit;
-        }
-        .rtb-auth-tab.active {
-          color: var(--foreground);
-          border-bottom-color: var(--foreground);
-        }
-
-        /* Form */
-        .rtb-form { display: flex; flex-direction: column; gap: 14px; }
-        .rtb-field { display: flex; flex-direction: column; gap: 6px; }
-        .rtb-field label { font-size: 13px; font-weight: 600; color: var(--foreground); }
-        .rtb-field input {
-          padding: 12px 14px;
-          border: 1.5px solid var(--input, var(--border));
-          border-radius: var(--radius, 8px);
-          background: var(--card);
-          color: var(--foreground);
-          font-size: 14px;
-          font-family: inherit;
-          transition: border-color .2s, box-shadow .2s;
-          outline: none;
-          width: 100%;
-        }
-        .rtb-field input:focus {
-          border-color: var(--foreground);
-          box-shadow: 0 0 0 3px hsla(20,20%,12%,.06);
-        }
-        .rtb-field input.error { border-color: #e53e3e; }
-        .rtb-err { font-size: 12px; color: #e53e3e; margin-top: 2px; }
-
-        /* Phone */
-        .rtb-phone-wrap { display: flex; align-items: center; border: 1.5px solid var(--input, var(--border)); border-radius: var(--radius, 8px); overflow: hidden; }
-        .rtb-phone-wrap input { border: none; border-radius: 0; padding-left: 8px; }
-        .rtb-phone-wrap input:focus { box-shadow: none; }
-        .rtb-phone-wrap:focus-within { border-color: var(--foreground); box-shadow: 0 0 0 3px hsla(20,20%,12%,.06); }
-        .rtb-country-code { padding: 12px 12px; font-size: 14px; border-right: 1px solid var(--border); white-space: nowrap; color: var(--foreground); background: var(--secondary); }
-
-        /* Buttons */
-        .rtb-cta-btn {
-          width: 100%;
-          padding: 14px;
-          border: none;
-          border-radius: var(--radius, 8px);
-          background: var(--primary);
-          color: var(--primary-foreground);
-          font-size: 15px;
+        .rtb-qr-header h3 {
+          font-size: 17px;
           font-weight: 700;
-          cursor: pointer;
-          font-family: inherit;
-          transition: opacity .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 4px 14px hsla(16,80%,54%,.32);
-          display: flex; align-items: center; justify-content: center; gap: 8px;
+          color: var(--text-primary, #222);
+          margin-bottom: 2px;
         }
-        .rtb-cta-btn:hover:not(:disabled) {
-          opacity: .9;
-          transform: translateY(-1px);
-          box-shadow: 0 6px 18px hsla(16,80%,54%,.42);
+        .rtb-qr-header p {
+          font-size: 12px;
+          color: #888;
         }
-        .rtb-cta-btn:disabled { opacity: .65; cursor: not-allowed; transform: none; }
-        .rtb-confirm-btn { margin-top: 8px; }
 
-        .rtb-outline-btn {
-          padding: 12px 22px;
-          border: 1.5px solid var(--foreground);
-          border-radius: var(--radius, 8px);
-          background: none;
-          color: var(--foreground);
+        .rtb-qr-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 20px;
+          padding: 20px;
+          background: #fafafa;
+          border-radius: 12px;
+          border: 1px solid #f0f0f0;
+        }
+        .rtb-qr-img {
+          width: 200px; height: 200px;
+          border-radius: 8px;
+          border: 4px solid white;
+          box-shadow: 0 4px 14px rgba(0,0,0,.1);
+        }
+        .rtb-qr-amount {
+          font-size: 20px;
+          font-weight: 800;
+          color: rgb(255, 102, 0);
+        }
+
+        .rtb-upi-info { margin-bottom: 18px; }
+        .rtb-upi-label {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+          color: #888;
+          display: block;
+          margin-bottom: 6px;
+        }
+        .rtb-upi-id-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f8f8f8;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          padding: 10px 14px;
+        }
+        .rtb-upi-id {
           font-size: 14px;
           font-weight: 600;
+          color: var(--text-primary, #222);
+          font-family: monospace;
+        }
+        .rtb-copy-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          color: rgb(255, 102, 0);
+          border: 1px solid rgb(255, 102, 0);
+          background: none;
+          border-radius: 6px;
+          padding: 4px 10px;
           cursor: pointer;
-          font-family: inherit;
           transition: background .2s;
         }
-        .rtb-outline-btn:hover { background: var(--secondary); }
+        .rtb-copy-btn:hover { background: rgba(255,102,0,.06); }
+
+        .rtb-qr-divider { border: none; border-top: 1px solid #f0f0f0; margin: 18px 0; }
+
+        /* UTR Section */
+        .rtb-utr-section { margin-bottom: 20px; }
+        .rtb-utr-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--text-primary, #222);
+          margin-bottom: 6px;
+        }
+        .rtb-utr-hint {
+          font-size: 12px;
+          color: #888;
+          margin-bottom: 10px;
+          line-height: 1.5;
+        }
+        .rtb-utr-input {
+          width: 100%;
+          padding: 13px 16px;
+          border: 1.5px solid #ddd;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 600;
+          font-family: monospace;
+          color: var(--text-primary, #222);
+          background: white;
+          letter-spacing: 1px;
+          outline: none;
+          transition: border-color .2s, box-shadow .2s;
+        }
+        .rtb-utr-input:focus {
+          border-color: rgb(255, 102, 0);
+          box-shadow: 0 0 0 3px rgba(255,102,0,.1);
+        }
+        .rtb-utr-input.error { border-color: #e53e3e; }
+        .rtb-utr-error {
+          display: block;
+          margin-top: 6px;
+          font-size: 12px;
+          color: #e53e3e;
+        }
+
+        /* Confirm button */
+        .rtb-confirm-pay-btn {
+          width: 100%;
+          padding: 15px;
+          border: none;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          color: white;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: opacity .2s, transform .15s, box-shadow .2s;
+          box-shadow: 0 4px 14px rgba(255,102,0,.35);
+          margin-bottom: 14px;
+          font-family: inherit;
+        }
+        .rtb-confirm-pay-btn:hover:not(:disabled) {
+          opacity: .92;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(255,102,0,.45);
+        }
+        .rtb-confirm-pay-btn:disabled { opacity: .65; cursor: not-allowed; }
+
+        .rtb-secure-note {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          color: #aaa;
+          justify-content: center;
+        }
 
         /* Spinner */
         .rtb-spinner {
           width: 18px; height: 18px;
-          border: 2px solid hsla(0,0%,100%,.3);
+          border: 2.5px solid rgba(255,255,255,.3);
           border-top-color: white;
           border-radius: 50%;
-          animation: rtbSpin .7s linear infinite;
+          animation: spin .8s linear infinite;
           display: inline-block;
         }
-        @keyframes rtbSpin { to { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Divider OR */
-        .rtb-divider-or {
-          display: flex; align-items: center; gap: 12px;
-          color: var(--muted-foreground); font-size: 13px;
-        }
-        .rtb-divider-or::before, .rtb-divider-or::after {
-          content: ""; flex: 1; height: 1px; background: var(--border);
-        }
-
-        /* Social btn */
-        .rtb-social-btn {
-          width: 100%; padding: 12px;
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius, 8px);
-          background: var(--card);
-          color: var(--foreground);
-          font-size: 14px; font-weight: 500;
-          cursor: pointer; font-family: inherit;
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          transition: background .2s, box-shadow .2s;
-        }
-        .rtb-social-btn:hover { background: var(--secondary); box-shadow: 0 2px 8px hsla(20,20%,12%,.08); }
-
-        /* Secure note */
-        .rtb-secure-note {
-          display: flex; align-items: flex-start; gap: 8px;
-          font-size: 12px; color: var(--muted-foreground);
-          background: var(--muted, var(--secondary));
-          padding: 10px 12px; border-radius: var(--radius, 8px);
-          line-height: 1.5;
-        }
-        .rtb-secure-note svg { flex-shrink: 0; margin-top: 1px; }
-
-        /* Pay methods */
-        .rtb-pay-methods { display: flex; flex-direction: column; gap: 8px; }
-        .rtb-pay-method {
-          display: flex; align-items: center; gap: 14px;
-          padding: 14px 16px;
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius, 8px);
-          background: var(--card);
-          color: var(--foreground);
-          font-size: 14px; font-weight: 500;
-          cursor: pointer; font-family: inherit;
-          transition: border-color .2s, background .2s;
-          text-align: left; width: 100%;
-        }
-        .rtb-pay-method.active { border-color: var(--foreground); background: var(--secondary); }
-        .rtb-pm-radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
-        .rtb-pm-dot { width: 9px; height: 9px; border-radius: 50%; background: transparent; transition: background .2s; }
-        .rtb-pm-dot.active { background: var(--foreground); }
-
-        /* Review sections */
-        .rtb-review-section { margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--border); }
-        .rtb-review-section:last-of-type { border-bottom: none; }
-        .rtb-review-section h4 { font-size: 17px; font-weight: 600; margin-bottom: 14px; color: var(--foreground); }
-        .rtb-review-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 10px; }
-        .rtb-review-row strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; color: var(--foreground); }
-        .rtb-review-row p { font-size: 13px; color: var(--muted-foreground); }
-        .rtb-link { font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; color: var(--foreground); white-space: nowrap; }
-        .rtb-link:hover { color: var(--primary); }
-
-        /* Summary card */
-        .rtb-right { position: sticky; top: 100px; height: fit-content; }
-        .rtb-summary-card {
-          border: 1px solid var(--border);
-          border-radius: calc(var(--radius, 8px) * 1.5);
-          padding: 24px;
-          background: var(--card);
-          box-shadow: 0 6px 24px hsla(20,20%,12%,.1);
-        }
-        .rtb-sc-prop { display: flex; gap: 14px; }
-        .rtb-sc-img { width: 100px; height: 80px; border-radius: var(--radius, 8px); object-fit: cover; flex-shrink: 0; }
-        .rtb-sc-info { flex: 1; min-width: 0; }
-        .rtb-sc-type { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted-foreground); margin-bottom: 4px; }
-        .rtb-sc-name { font-size: 14px; font-weight: 600; color: var(--foreground); line-height: 1.3; margin-bottom: 8px; }
-        .rtb-sc-rating { display: flex; align-items: center; gap: 4px; font-size: 12px; }
-        .rtb-sc-rating strong { font-weight: 600; color: var(--foreground); }
-        .rtb-sc-rating span { color: var(--muted-foreground); }
-        .rtb-sc-fav { display: flex; align-items: center; gap: 3px; background: var(--secondary); padding: 2px 7px; border-radius: 10px; font-size: 11px; color: var(--foreground); border: 1px solid var(--border); margin-left: 4px; }
-
-        .rtb-sc-divider { height: 1px; background: var(--border); margin: 18px 0; }
-
-        .rtb-sc-free-cancel { display: flex; gap: 10px; }
-        .rtb-sc-free-cancel svg { flex-shrink: 0; margin-top: 2px; }
-        .rtb-sc-free-cancel strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-        .rtb-sc-free-cancel p { font-size: 12px; color: var(--muted-foreground); line-height: 1.5; }
-
-        .rtb-sc-meta { display: flex; flex-direction: column; gap: 12px; }
-        .rtb-sc-meta-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; }
-        .rtb-sc-meta-row > span { color: var(--muted-foreground); font-weight: 500; }
-        .rtb-sc-meta-row strong { font-size: 13px; font-weight: 600; color: var(--foreground); }
-
-        .rtb-change-btn {
-          background: var(--secondary); border: none;
-          border-radius: 6px; padding: 3px 8px;
-          font-size: 11px; font-weight: 600;
-          cursor: pointer; color: var(--foreground);
-          font-family: inherit;
-          transition: background .2s;
-          text-decoration: underline; text-underline-offset: 2px;
-        }
-        .rtb-change-btn:hover { background: var(--border); }
-
-        .rtb-sc-price h4 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--foreground); }
-        .rtb-pr-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--foreground); }
-        .rtb-ul { text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
-        .rtb-pr-total { display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
-        .rtb-pr-total span { font-weight: 500; }
-        .rtb-pr-total strong { font-size: 17px; font-weight: 700; }
-
-        .rtb-price-breakdown-link {
-          background: none; border: none;
-          font-size: 13px; font-weight: 600;
-          cursor: pointer; font-family: inherit;
-          text-decoration: underline; text-underline-offset: 2px;
-          color: var(--foreground); margin-top: 8px;
-          display: block;
-          transition: color .15s;
-        }
-        .rtb-price-breakdown-link:hover { color: var(--primary); }
-
-        /* Success */
+        /* Success Screen */
         .rtb-success {
-          max-width: 560px;
+          max-width: 520px;
           margin: 60px auto;
           text-align: center;
-          padding: 0 24px 80px;
+          background: white;
+          border-radius: 20px;
+          padding: 50px 40px;
+          box-shadow: 0 8px 40px rgba(0,0,0,.1);
+          border: 1px solid #eee;
         }
         .rtb-success-icon {
-          width: 72px; height: 72px;
+          width: 80px; height: 80px;
           border-radius: 50%;
-          background: var(--primary);
-          display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          display: flex;
+          align-items: center;
+          justify-content: center;
           margin: 0 auto 24px;
-          box-shadow: 0 8px 24px hsla(16,80%,54%,.35);
-          animation: rtbPop .5s cubic-bezier(.34,1.56,.64,1) both;
+          box-shadow: 0 6px 20px rgba(255,102,0,.35);
         }
-        @keyframes rtbPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .rtb-success h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--foreground); }
-        .rtb-success-sub { font-size: 15px; color: var(--muted-foreground); margin-bottom: 32px; }
-        .rtb-success-card {
-          border: 1px solid var(--border);
-          border-radius: calc(var(--radius, 8px) * 1.5);
-          padding: 24px;
-          background: var(--card);
+        .rtb-success h2 {
+          font-size: 26px;
+          font-weight: 800;
+          color: var(--text-primary, #222);
+          margin-bottom: 10px;
+        }
+        .rtb-success-sub {
+          font-size: 15px;
+          color: #666;
+          line-height: 1.6;
+          margin-bottom: 32px;
+        }
+        .rtb-success-detail {
+          background: #fafafa;
+          border-radius: 12px;
+          border: 1px solid #eee;
+          padding: 20px;
+          margin-bottom: 28px;
           text-align: left;
-          box-shadow: 0 4px 16px hsla(20,20%,12%,.08);
         }
-        .rtb-success-details { display: flex; flex-direction: column; gap: 10px; }
-        .rtb-sd-row { display: flex; justify-content: space-between; font-size: 14px; }
-        .rtb-sd-row span { color: var(--muted-foreground); }
-        .rtb-sd-row strong { font-weight: 600; color: var(--foreground); }
+        .rtb-success-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          padding: 8px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .rtb-success-row:last-child { border: none; }
+        .rtb-success-row span { color: #888; }
+        .rtb-success-row strong { color: #222; }
+        .rtb-success-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+        }
+        .rtb-success-profile-btn {
+          padding: 13px 24px;
+          border: none;
+          border-radius: 10px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          color: white;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: opacity .2s;
+          font-family: inherit;
+          box-shadow: 0 4px 14px rgba(255,102,0,.3);
+        }
+        .rtb-success-profile-btn:hover { opacity: .9; }
+        .rtb-success-home-btn {
+          padding: 13px 24px;
+          border: 1.5px solid #ddd;
+          border-radius: 10px;
+          background: white;
+          color: #333;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background .2s;
+        }
+        .rtb-success-home-btn:hover { background: #f5f5f5; }
 
-        /* Responsive */
         @media (max-width: 900px) {
-          .rtb-layout { grid-template-columns: 1fr; gap: 32px; }
-          .rtb-right { position: static; }
+          .rtb-layout {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+          .rtb-qr-card { position: static; }
         }
-        @media (max-width: 560px) {
-          .rtb-page { padding: 16px 16px 60px; }
-          .rtb-topbar h1 { font-size: 21px; }
-        }
-          /* summary meta controls */
-
-.rtb-meta-controls{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-.rtb-meta-controls input{
-  padding:6px 8px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  background:var(--card);
-  color:var(--foreground);
-  font-size:12px;
-  font-family:inherit;
-}
-
-.rtb-guest-control{
-  display:flex;
-  align-items:center;
-  gap:4px;
-}
-
-.rtb-guest-control label{
-  font-size:11px;
-  color:var(--muted-foreground);
-}
-
-.rtb-guest-control input{
-  width:55px;
-  text-align:center;
-}
       `}</style>
     </div>
   );
