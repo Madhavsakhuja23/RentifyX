@@ -1,9 +1,17 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 // You can keep this import if you have any specific overrides, 
 // but the layout is now primarily handled by Bootstrap.
 import './Driveables.css'; 
 
 const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, isSelectedForComparison }) => {
+  const navigate = useNavigate();
+
+  const handleRentNow = (e) => {
+    e.stopPropagation();
+    navigate('/payment', { state: { vehicle: driveable } });
+  };
+
   return (
     <motion.div 
       className={`card h-100 shadow-sm border-0 overflow-hidden ${isSelectedForComparison ? 'ring-2 ring-primary' : ''}`}
@@ -85,14 +93,14 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
         <div className="text-center text-sm-start order-1 order-sm-1">
           <span className="text-muted small d-block" style={{ lineHeight: '1' }}>From</span>
           <span className="fs-6 fw-bold text-primary">
-            ${driveable.hourlyRate}<span className="small text-muted fw-normal">/hr</span>
+            ₹{driveable.hourlyRate}<span className="small text-muted fw-normal">/hr</span>
           </span>
         </div>
         
         {/* 2. Middle - Button */}
-        <div className="text-center order-2 order-sm-2 my-1 my-sm-0">
+        <div className="text-center order-2 order-sm-2 my-1 my-sm-0 d-flex gap-2">
           <motion.button 
-            className="btn btn-primary btn-sm px-3 rounded-pill shadow-sm"
+            className="btn btn-outline-primary btn-sm px-3 rounded-pill shadow-sm"
             onClick={(e) => { 
               e.stopPropagation(); 
               onViewDetails(); 
@@ -100,7 +108,16 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            View Details
+            Details
+          </motion.button>
+          
+          <motion.button 
+            className="btn btn-primary btn-sm px-3 rounded-pill shadow-sm"
+            onClick={handleRentNow}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Rent
           </motion.button>
         </div>
 

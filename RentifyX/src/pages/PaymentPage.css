@@ -1,0 +1,94 @@
+.payment-page {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+.payment-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: white;
+  transition: transform 0.2s ease;
+}
+
+.payment-card:hover {
+  transform: translateY(-2px);
+}
+
+.payment-method-option {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.payment-method-option:hover {
+  border-color: #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.payment-method-option.selected {
+  border-color: #0d6efd;
+  background-color: #f0f7ff;
+}
+
+.payment-method-icon {
+  font-size: 1.5rem;
+  color: #6c757d;
+}
+
+.payment-method-option.selected .payment-method-icon {
+  color: #0d6efd;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  color: #6c757d;
+}
+
+.summary-total {
+  border-top: 2px dashed #e9ecef;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #212529;
+}
+
+.secure-badge {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: slideIn 0.4s ease-out forwards;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+  color: #0d6efd;
+}
+
+.form-control:focus {
+  border-color: #8bb9fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
