@@ -7,10 +7,12 @@ import "./Header.css";
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const currentUserStr = localStorage.getItem("currentUser");
+  const user = currentUserStr && currentUserStr !== "undefined" && currentUserStr !== "null" ? JSON.parse(currentUserStr) : null;
   const navigate = useNavigate();
 
-  const isLoggedIn = Boolean(localStorage.getItem("token"));
+  const token = localStorage.getItem("token");
+  const isLoggedIn = Boolean(token && token !== "undefined" && token !== "null");
 
   const handleProfileClick = () => {
     navigate(isLoggedIn ? "/profile" : "/login");
@@ -37,7 +39,6 @@ const Header = () => {
             className="header-left"
           >
             <Link to="/" className="logo-link">
-              <div className="logo-box">R</div>
               <span className="logo-text">RentifyX</span>
             </Link>
           </motion.div>
@@ -46,7 +47,7 @@ const Header = () => {
           <form onSubmit={handleSearch} className="search-bar d-none d-lg-flex">
             <input
               type="text"
-              placeholder="Search listings..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -69,11 +70,14 @@ const Header = () => {
             {/* Profile Button */}
             <button
               onClick={handleProfileClick}
-              className="profile-btn"
+              className={isLoggedIn ? "profile-avatar-btn" : "profile-btn"}
               title={isLoggedIn ? "Profile" : "Login"}
             >
-              <User size={18} />
-              {isLoggedIn && <span className="ms-2">{user?.name}</span>}
+              {isLoggedIn ? (
+                <span className="nav-avatar">{user?.name?.charAt(0)?.toUpperCase()}</span>
+              ) : (
+                <User size={18} />
+              )}
             </button>
 
             {/* Mobile Toggle */}
@@ -100,10 +104,10 @@ const Header = () => {
               <form onSubmit={handleSearch} className="mobile-search">
                 <input
                   type="text"
-                  placeholder="Search listings..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
+                  className="search-input w-100"
                 />
                 <button type="submit" className="search-btn">
                   <Search size={16} />
