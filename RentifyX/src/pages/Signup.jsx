@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import "./Signup.css";
@@ -13,21 +12,87 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
+  /* Email format validation */
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
 
-  if (name && email && password) {
+  /* Password validation */
+  const validatePassword = (password) => {
 
-    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-    // check if email already exists
-    const userExists = existingUsers.find((user) => user.email === email);
+    return passwordRegex.test(password);
+  };
+
+  /* Email existence check via API */
+  const checkEmailExists = async (email) => {
+    try {
+
+      const API_KEY = "ema_live_aT2sCSLqi4X4qma3ZjkkeZ0fQI7sKPxXt3We9ZTZ";
+
+      const response = await fetch(
+        `https://api.emailvalidator.io/v1/info?email=${email}&apikey=${API_KEY}`
+      );
+
+      const data = await response.json();
+
+      return data.smtp_check === true;
+
+    } catch (error) {
+      console.log("Email validation API error", error);
+      return true;
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!name || !email || !password) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError(
+        "Password must contain 8+ characters, uppercase, lowercase, number and special character."
+      );
+      return;
+    }
+
+    const existingUsers =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const userExists = existingUsers.find(
+      (user) => user.email === email
+    );
 
     if (userExists) {
-      alert("User already exists. Please login.");
+      setError("User already exists. Please login.");
+      return;
+    }
+
+    setLoading(true);
+
+    const emailValid = await checkEmailExists(email);
+
+    setLoading(false);
+
+    if (!emailValid) {
+      setError("This email address does not exist.");
       return;
     }
 
@@ -42,11 +107,8 @@ const Signup = () => {
 
     localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-    // alert("Signup successful! Please login.");
-
     navigate("/login");
-  }
-};
+  };
 
   return (
     <div className="container-fluid signup-wrapper">
@@ -91,7 +153,6 @@ const Signup = () => {
             className="signup-card"
           >
 
-            {/* Back button */}
             <Link to="/" className="back-home-btn">
               <ArrowLeft size={18} />
               Home
@@ -107,7 +168,14 @@ const Signup = () => {
               Enter your details to get started
             </p>
 
+            {error && (
+              <div className="alert alert-danger small">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
+
               {/* Name */}
               <div className="mb-3 position-relative">
                 <User className="input-icon" size={18} />
@@ -152,9 +220,10 @@ const Signup = () => {
 
               {/* Role */}
               <div className="mb-4">
-                <label className="form-label fw-medium" style={{ color: 'var(--text-primary)', fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                <label className="form-label fw-medium">
                   I want to
                 </label>
+
                 <div className="role-selection">
                   <label className={`role-option ${role === "user" ? "selected" : ""}`}>
                     <input
@@ -165,6 +234,7 @@ const Signup = () => {
                     />
                     <span>Rent</span>
                   </label>
+
                   <label className={`role-option ${role === "owner" ? "selected" : ""}`}>
                     <input
                       type="radio"
@@ -174,6 +244,7 @@ const Signup = () => {
                     />
                     <span>List</span>
                   </label>
+
                   <label className={`role-option ${role === "both" ? "selected" : ""}`}>
                     <input
                       type="radio"
@@ -187,14 +258,16 @@ const Signup = () => {
               </div>
 
               <Button type="submit" className="w-100">
-                Create Account
+                {loading ? "Checking email..." : "Create Account"}
               </Button>
+
             </form>
 
             <p className="text-center mt-3 small">
               Already have an account?{" "}
               <Link to="/login">Sign in</Link>
             </p>
+
           </motion.div>
         </div>
 
