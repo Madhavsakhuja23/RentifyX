@@ -1,5 +1,5 @@
 .about-section {
-  padding: 100px 0;
+  padding: 60px 0;
   background: var(--bg-secondary);
 }
 
@@ -28,7 +28,7 @@
   border-radius: 50%;
   border: none;
 
-  background: var(--accent-gradient-btn);
+  background: rgb(255, 102, 0);
 
   color: white;
   display: flex;
@@ -42,13 +42,14 @@
 
 .play-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 16px 40px rgba(255, 102, 0, 0.5);
 }
+
 /* Text */
 .about-badge {
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent-purple);
+  color: rgb(255, 102, 0);
   text-transform: uppercase;
   margin-bottom: 10px;
 }
@@ -56,7 +57,7 @@
 .about-title {
   font-size: 34px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: black;
   margin-bottom: 16px;
 }
 
@@ -91,7 +92,7 @@
 
 /* Button */
 .about-btn {
-  background: var(--accent-gradient-btn);
+  background: rgb(255, 102, 0);
   color: white;
   border: none;
   padding: 12px 26px;
@@ -103,5 +104,5 @@
 
 .about-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 12px 30px rgba(255, 102, 0, 0.4);
 }

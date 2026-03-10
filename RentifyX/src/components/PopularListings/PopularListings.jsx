@@ -1,57 +1,59 @@
 import { motion } from "framer-motion";
-import { Heart, Star, MapPin } from "lucide-react";
-import { useState } from "react";
+import ListingCard from "../dwellings/ListingCard";
 import "./PopularListings.css";
 
 const listings = [
   {
     id: 1,
-    title: "Luxury Beach Villa",
+    name: "Luxury Beach Villa",
     location: "Malibu",
-    price: "$250 / night",
+    price: 250,
+    priceUnit: "/ night",
     image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811",
     rating: 4.8,
     reviews: 128,
-    featured: true,
+    type: "villa",
+    available: true,
   },
   {
     id: 2,
-    title: "Tesla Model S",
+    name: "Modern Urban Flat",
     location: "Los Angeles",
-    price: "$120 / day",
+    price: 120,
+    priceUnit: "/ day",
     image: "https://images.unsplash.com/photo-1617788138017-80ad40651399",
     rating: 4.9,
     reviews: 95,
-    featured: true,
+    type: "flats",
+    available: true,
   },
   {
     id: 3,
-    title: "Modern Apartment",
+    name: "Cozy Studio Flat",
     location: "San Francisco",
-    price: "$180 / night",
+    price: 180,
+    priceUnit: "/ night",
     image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
     rating: 4.7,
     reviews: 82,
-    featured: false,
+    type: "flats",
+    available: true,
   },
   {
     id: 4,
-    title: "Mountain Cabin",
+    name: "Mountain View PG",
     location: "Colorado",
-    price: "$150 / night",
+    price: 150,
+    priceUnit: "/ month",
     image: "https://images.unsplash.com/photo-1570129477492-45289003c313",
     rating: 4.6,
     reviews: 64,
-    featured: false,
+    type: "pgs",
+    available: true,
   },
 ];
 
 const PopularListings = () => {
-  const [hearts, setHearts] = useState({});
-
-  const toggleHeart = (id) => {
-    setHearts((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   return (
     <section className="popular-section">
@@ -82,39 +84,7 @@ const PopularListings = () => {
               viewport={{ once: true }}
               className="col-12 col-md-6 col-lg-3"
             >
-              <div className="listing-card h-100">
-                <div className="listing-image-wrapper">
-                  <img src={item.image} alt={item.title} />
-
-                  {item.featured && (
-                    <span className="featured-badge">Featured</span>
-                  )}
-
-                  <button
-                    className={`heart-btn ${hearts[item.id] ? "active" : ""}`}
-                    onClick={() => toggleHeart(item.id)}
-                  >
-                    <Heart size={18} fill={hearts[item.id] ? "currentColor" : "none"} />
-                  </button>
-                </div>
-
-                <div className="listing-content">
-                  <h6>{item.title}</h6>
-
-                  <div className="listing-location">
-                    <MapPin size={14} />
-                    <span>{item.location}</span>
-                  </div>
-
-                  <div className="listing-rating">
-                    <Star size={14} fill="#ffc107" color="#ffc107" />
-                    <strong>{item.rating}</strong>
-                    <span>({item.reviews})</span>
-                  </div>
-
-                  <div className="listing-price">{item.price}</div>
-                </div>
-              </div>
+              <ListingCard listing={item} />
             </motion.div>
           ))}
         </div>
