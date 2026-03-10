@@ -39,24 +39,16 @@ const Profile = () => {
 
       <div className="container profile-page">
 
-        {/* Profile Card */}
+        {/* Profile Header */}
         <motion.div
           className="profile-hero-card"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="profile-hero-left">
-            <div className="profile-avatar-large">
-              <span className="avatar-letter">{initial}</span>
-              <div className="avatar-badge">📷</div>
-            </div>
-
-            <div className="profile-hero-info">
-              <h2 className="profile-name">{user?.name}</h2>
-              <p className="profile-email">{user?.email}</p>
-              <p className="profile-bio">RentifyX member</p>
-            </div>
+          <div className="profile-hero-info">
+            <h2 className="profile-name">Hi, {user?.name}</h2>
+            <p className="profile-email">{user?.email}</p>
           </div>
 
           <div className="profile-hero-actions">
@@ -64,8 +56,9 @@ const Profile = () => {
               <Edit size={16} />
               Edit Profile
             </button>
-            <button className="delete-profile-btn" onClick={handleLogout} title="Logout">
-              <Trash2 size={18} />
+            <button className="logout-profile-btn" onClick={handleLogout}>
+              <LogOut size={16} />
+              Logout
             </button>
           </div>
         </motion.div>
@@ -78,25 +71,21 @@ const Profile = () => {
           transition={{ duration: 0.4, delay: 0.1 }}
         >
           <div className="stat-card">
-            <span className="stat-emoji">❤️</span>
+            <p className="stat-label">FAVOURITES</p>
             <h3>{favourites.length}</h3>
-            <p>FAVOURITES</p>
+            <p className="stat-desc">Saved listings</p>
           </div>
           <div className="stat-card">
-            <span className="stat-emoji">📋</span>
+            <p className="stat-label">BOOKINGS</p>
             <h3>{bookings.length}</h3>
-            <p>BOOKINGS</p>
+            <p className="stat-desc">All time bookings</p>
           </div>
           <div className="stat-card">
-            <span className="stat-emoji">🏠</span>
+            <p className="stat-label">ACTIVE RENTALS</p>
             <h3>{bookings.filter(b => b.status === "upcoming").length}</h3>
-            <p>ACTIVE RENTALS</p>
+            <p className="stat-desc">Currently active</p>
           </div>
-          <div className="stat-card">
-            <span className="stat-emoji">⭐</span>
-            <h3>4.9</h3>
-            <p>RATING</p>
-          </div>
+
         </motion.div>
 
         {/* Tabs */}
