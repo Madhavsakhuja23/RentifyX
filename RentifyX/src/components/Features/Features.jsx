@@ -7,23 +7,26 @@ const features = [
     name: "Verified Listings",
     description: "All listings are verified for authenticity and quality.",
     icon: CheckCircle,
+    color: "blue",
   },
   {
     name: "24/7 Support",
     description: "Round-the-clock customer support whenever you need help.",
     icon: Phone,
+    color: "orange",
   },
   {
     name: "Trusted Community",
     description: "Join thousands of users who trust RentifyX every day.",
     icon: Users,
+    color: "green",
   },
 ];
 
 const Features = () => {
   return (
     <section className="features-section">
-      <div className="container">
+      <div className="container text-center">
 
         {/* Title */}
         <motion.div
@@ -31,7 +34,7 @@ const Features = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           viewport={{ once: true }}
-          className="text-center mb-5"
+          className="mb-5"
         >
           <h2 className="features-title">Why RentifyX?</h2>
           <p className="features-subtitle">
@@ -53,10 +56,10 @@ const Features = () => {
                 className="col-12 col-md-4"
               >
                 <div className="feature-card">
-                  <div className="feature-icon">
-                    <Icon size={30} />
+                  <div className={`feature-icon ${feature.color}`}>
+                    <Icon size={22} />
                   </div>
-                  <h5>{feature.name}</h5>
+                  <h6>{feature.name}</h6>
                   <p>{feature.description}</p>
                 </div>
               </motion.div>

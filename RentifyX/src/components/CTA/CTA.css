@@ -1,7 +1,7 @@
 .cta-section {
   position: relative;
   padding: 110px 0;
-  background: #FF8D21;
+  background: rgb(255, 102, 0);
   color: white;
   overflow: hidden;
   width: 90%;
@@ -54,7 +54,7 @@
 /* Primary */
 .cta-btn.primary {
   background: white;
-  color: var(--accent-purple);
+  color: rgb(255, 102, 0);
 }
 
 .cta-btn.primary:hover {

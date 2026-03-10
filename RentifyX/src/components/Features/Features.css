@@ -1,73 +1,46 @@
 .features-section {
-  padding: 100px 0;
+  padding: 60px 0;
   background: var(--bg-secondary);
 }
 
 /* Title */
 .features-title {
-  font-size: 36px;
-  font-weight: 800;
-  margin-bottom: 12px;
+  font-size: 32px;
+  font-weight: 700;
   color: black;
+  margin-bottom: 8px;
 }
 
 .features-subtitle {
-  margin-top: 10px;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--text-secondary);
-  margin-bottom: 48px;
+  max-width: 520px;
+  margin: 0 auto 40px;
 }
 
 /* Card */
 .feature-card {
   background: var(--bg-card);
-  padding: 48px 32px;
+  padding: 36px 24px;
   border-radius: var(--radius-lg);
-  text-align: center;
+  box-shadow: var(--shadow-card);
   height: 100%;
   transition: all var(--transition);
-  box-shadow: var(--shadow-card);
   border: 1px solid var(--border-color);
+  text-align: center;
 }
 
 .feature-card:hover {
-  transform: translateY(-12px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-card-hover);
   border-color: var(--accent-purple);
 }
 
-/* Icon */
-.feature-icon {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 22px;
-  border-radius: var(--radius-lg);
-  background: var(--accent-gradient-btn);
-
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition);
-}
-
-/* ADD THIS */
-.feature-icon svg {
-  color: white;
-  stroke: white;
-}
-
-.feature-card:hover .feature-icon {
-  transform: scale(1.15) rotate(-6deg);
-}
-
-/* Text */
-.feature-card h5 {
-  font-size: 18px;
-  font-weight: 700;
+.feature-card h6 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 18px 0 10px;
   color: var(--text-primary);
-  margin-bottom: 10px;
 }
 
 .feature-card p {
@@ -75,4 +48,43 @@
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
+}
+
+/* Icon */
+.feature-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  transition: transform 0.35s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+/* Icon color themes */
+.feature-icon.blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+}
+
+.feature-icon.orange {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f97316;
+}
+
+.feature-icon.green {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .features-section {
+    padding: 60px 0;
+  }
 }

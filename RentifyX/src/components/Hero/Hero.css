@@ -1,21 +1,23 @@
 .hero-new {
   position: relative;
-  padding-bottom: 140px;
-  background: #FFF4DF;
+  min-height: 650px;
+  background: linear-gradient(to left, #d6e4ef, #f0e0c8);
   display: flex;
   justify-content: center;
-  width: 100%;
-  margin: 0;
-  border-radius: 0;
+  width: 96%;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
 }
 
 .hero-content-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 96%;
+  width: 100%;
   gap: 40px;
-  padding-top: 40px;
+  padding: 0;
+  min-height: inherit;
 }
 
 /* Text on left */
@@ -24,7 +26,8 @@
   max-width: 500px;
   color: #111;
   z-index: 2;
-  margin-left: 20px;
+  margin-left: 40px;
+  padding: 40px 0;
 }
 
 .hero-badge {
@@ -59,7 +62,7 @@
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  background: var(--accent-gradient-btn);
+  background: rgb(255, 102, 0);
   color: white;
   border: none;
   border-radius: var(--radius-full);
@@ -70,45 +73,23 @@
 
 .hero-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
 }
 
 /* Image on right */
 .hero-image-container {
-  flex: 1.4;
+  flex: 0.6;
   position: relative;
-  border-radius: 28px;
+  border-radius: 14px 0 0 14px;
   overflow: hidden;
-  box-shadow: 0 30px 80px rgba(124, 58, 237, 0.15);
+  align-self: stretch;
 }
 
 .hero-bg-image {
   width: 100%;
-  height: 65vh;
-  min-height: 450px;
-  max-height: 700px;
+  height: 100%;
   object-fit: cover;
   display: block;
-}
-
-/* Floating search bar */
-.hero-search-floating {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -40px;
-  display: flex;
-  justify-content: center;
-  z-index: 10;
-}
-
-/* Center FilterBar */
-.hero-search-floating .filter-bar-wrapper {
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  box-shadow: 0 25px 70px rgba(124, 58, 237, 0.18);
-  border-radius: 60px;
 }
 
 @media (max-width: 991px) {
@@ -122,10 +103,6 @@
     margin-left: 0;
     margin-bottom: 40px;
   }
-
-  .hero-search-floating {
-    bottom: -80px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -135,9 +112,5 @@
 
   .hero-text p {
     font-size: 15px;
-  }
-
-  .hero-search-floating {
-    bottom: -100px;
   }
 }

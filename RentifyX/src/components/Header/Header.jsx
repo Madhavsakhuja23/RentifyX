@@ -39,7 +39,6 @@ const Header = () => {
             className="header-left"
           >
             <Link to="/" className="logo-link">
-              <div className="logo-box">R</div>
               <span className="logo-text">RentifyX</span>
             </Link>
           </motion.div>
@@ -71,11 +70,14 @@ const Header = () => {
             {/* Profile Button */}
             <button
               onClick={handleProfileClick}
-              className="profile-btn"
+              className={isLoggedIn ? "profile-avatar-btn" : "profile-btn"}
               title={isLoggedIn ? "Profile" : "Login"}
             >
-              <User size={18} />
-              {isLoggedIn && <span className="ms-2">{user?.name}</span>}
+              {isLoggedIn ? (
+                <span className="nav-avatar">{user?.name?.charAt(0)?.toUpperCase()}</span>
+              ) : (
+                <User size={18} />
+              )}
             </button>
 
             {/* Mobile Toggle */}

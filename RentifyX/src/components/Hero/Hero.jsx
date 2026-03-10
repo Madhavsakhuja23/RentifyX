@@ -1,19 +1,9 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../common/Button";
 import { motion } from "framer-motion";
-import FilterBar from "../dwellings/FilterBar";
 import "./Hero.css";
 
 const Hero = () => {
-  const [filters, setFilters] = useState({
-    location: "",
-    checkIn: undefined,
-    checkOut: undefined,
-    guests: 1,
-    pets: false,
-  });
-
   return (
     <section className="hero-new">
       <div className="hero-content-wrapper">
@@ -45,25 +35,12 @@ const Hero = () => {
           className="hero-image-container"
         >
           <img
-            src="https://assets.allurausa.com/web/general-images/_749xAUTO_crop_center-center_none/16-Green-Exterior-House-Design-Ideas04.jpg"
+            src="https://www.architectureideas.info/wp-content/uploads/2019/05/modern-house.jpg"
             alt="Beautiful Exterior House"
             className="hero-bg-image"
           />
         </motion.div>
       </div>
-
-      {/* Floating Search Bar (like dwellings) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="hero-search-floating"
-      >
-        <FilterBar
-          filters={filters}
-          onChange={(newFilters) => setFilters(newFilters)}
-        />
-      </motion.div>
     </section>
   );
 };
