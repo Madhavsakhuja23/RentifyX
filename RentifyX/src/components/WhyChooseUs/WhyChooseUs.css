@@ -1,12 +1,12 @@
 .why-section {
-  padding: 90px 0;
-  background: var(--bg-primary);
+  padding: 60px 0;
+  background: var(--bg-secondary);
 }
 
 .why-title {
   font-size: 32px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: black;
   margin-bottom: 8px;
 }
 
@@ -26,6 +26,7 @@
   height: 100%;
   transition: all var(--transition);
   border: 1px solid var(--border-color);
+  text-align: center;
 }
 
 .why-card:hover {
@@ -52,10 +53,10 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin: 0 auto 8px;
 }
 
 /* Icon color themes */
