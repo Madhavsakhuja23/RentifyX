@@ -58,7 +58,7 @@ const BookingConfirmationModal = ({ show, onClose, vehicle, totalPrice, duration
                     <div>
                       <h6 className="fw-bold mb-1">{vehicle.name}</h6>
                       <p className="mb-0 text-muted small">
-                        {bookingType === 'daily' ? `${duration} Day(s)` : `${duration} Hour(s)`} • Total: <span className="text-primary fw-bold">${totalPrice}</span>
+                        {bookingType === 'daily' ? `${duration} Day(s)` : `${duration} Hour(s)`} • Total: <span className="text-primary fw-bold">₹{totalPrice}</span>
                       </p>
                     </div>
                   </div>
@@ -131,7 +131,7 @@ const BookingConfirmationModal = ({ show, onClose, vehicle, totalPrice, duration
 
                   <div className="d-grid">
                     <button type="submit" className="btn btn-primary py-2 fw-bold">
-                      Confirm Booking — ${totalPrice}
+                      Confirm Booking — ₹{totalPrice}
                     </button>
                   </div>
                 </form>

@@ -41,11 +41,11 @@ const PricingSection = ({
           <div className="bg-light p-3 rounded mb-4">
             <div className="d-flex justify-content-between mb-1">
               <span className="text-muted fw-medium">Base Rate (Hourly)</span>
-              <span className="fw-bold">${hourlyRate}/hour</span>
+              <span className="fw-bold">₹{hourlyRate}/hour</span>
             </div>
             <div className="d-flex justify-content-between mb-3 border-bottom pb-3">
               <span className="text-muted small">Extra charge for time exceeded</span>
-              <span className="text-danger small">${extraChargeRate}/hour</span>
+              <span className="text-danger small">₹{extraChargeRate}/hour</span>
             </div>
             
             <div className="d-flex justify-content-between align-items-center">
@@ -82,11 +82,11 @@ const PricingSection = ({
           <div className="bg-light p-3 rounded mb-4">
             <div className="d-flex justify-content-between mb-1">
               <span className="text-muted fw-medium">Base Rate (Daily)</span>
-              <span className="fw-bold">${dayRate}/day</span>
+              <span className="fw-bold">₹{dayRate}/day</span>
             </div>
             <div className="d-flex justify-content-between mb-3 border-bottom pb-3">
               <span className="text-muted small">Extra charge for time exceeded</span>
-              <span className="text-danger small">${extraChargeRate}/hour</span>
+              <span className="text-danger small">₹{extraChargeRate}/hour</span>
             </div>
             
             <div className="d-flex justify-content-between align-items-center">
@@ -122,19 +122,19 @@ const PricingSection = ({
         <div className="mt-3">
           <div className="d-flex justify-content-between text-muted mb-2">
             <span>Subtotal</span>
-            <span>${calculateTotal()}</span>
+            <span>₹{calculateTotal()}</span>
           </div>
           <div className="d-flex justify-content-between text-muted mb-2">
             <span>Service Fee (5%)</span>
-            <span>${(calculateTotal() * 0.05).toFixed(2)}</span>
+            <span>₹{(calculateTotal() * 0.05).toFixed(2)}</span>
           </div>
           <div className="d-flex justify-content-between text-muted mb-3">
             <span>Insurance</span>
-            <span>${(calculateTotal() * 0.10).toFixed(2)}</span>
+            <span>₹{(calculateTotal() * 0.10).toFixed(2)}</span>
           </div>
           <div className="d-flex justify-content-between fw-bold fs-5 border-top pt-3">
             <span>Total</span>
-            <span className="text-primary">${(calculateTotal() * 1.15).toFixed(2)}</span>
+            <span className="text-primary">₹{(calculateTotal() * 1.15).toFixed(2)}</span>
           </div>
         </div>
 
@@ -142,7 +142,7 @@ const PricingSection = ({
         <div className="alert alert-info d-flex align-items-start mt-4 mb-0 py-2" role="alert">
           <span className="me-2">💡</span>
           <p className="mb-0 small">
-            <strong>Note:</strong> If you exceed your booking time, additional charges of <strong>${extraChargeRate}/hour</strong> will apply automatically.
+            <strong>Note:</strong> If you exceed your booking time, additional charges of <strong>₹{extraChargeRate}/hour</strong> will apply automatically.
           </p>
         </div>
       </div>

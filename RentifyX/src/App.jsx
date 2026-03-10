@@ -34,6 +34,7 @@ import AddDwellings from './seller/pages/AddDwellings';
 import AddVehicles from './seller/pages/AddVehicles';
 import DriveablesMain from './Saksham/DriveablesMain';
 import Dwellings from "./pages/Dwellings";
+import PaymentPage from "./pages/PaymentPage";
 import "./App.css";
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
         <Route path="/dwellings" element={<Dwellings />} />
+        <Route path="/payment" element={<PaymentPage />} />
         
      
         <Route path="/seller" element={<SellerLayout />}>

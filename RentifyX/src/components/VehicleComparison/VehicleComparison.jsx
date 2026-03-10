@@ -29,7 +29,7 @@ const VehicleComparison = ({ vehicles, onRemove }) => {
                   >
                     <FaTimes size={12} className="text-danger" />
                   </button>
-                  <img src={v.image} alt={v.name} className="img-fluid rounded mb-2 shadow-sm" style={{ maxHeight: '120px', objectFit: 'cover' }} />
+                  <img src={v.image} alt={`${v.name} - ${v.category}`} className="img-fluid rounded mb-2 shadow-sm" style={{ maxHeight: '120px', objectFit: 'cover' }} />
                   <h6 className="fw-bold mb-0 text-dark">{v.name}</h6>
                   <span className="badge bg-secondary bg-opacity-10 text-secondary mt-1">{v.category}</span>
                 </th>
