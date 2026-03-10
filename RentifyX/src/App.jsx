@@ -9,7 +9,7 @@ import Messages from './seller/pages/Messages';
 import AddDwellings from './seller/pages/AddDwellings';
 import AddVehicles from './seller/pages/AddVehicles';
 import DriveablesMain from './Saksham/DriveablesMain';
-import Dwelling from "./pages/Dwelling";
+import Dwelling from "./pages/dwelling";
 import ListingDetails from "./pages/ListingDetails";
 import RequestToBook from "./pages/RequestToBook";
 import PaymentPage from "./pages/PaymentPage";
