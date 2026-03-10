@@ -1,21 +1,23 @@
 .custom-input {
   width: 100%;
   padding: 12px 16px;
-  border-radius: 10px;
-  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
   outline: none;
   font-size: 14px;
   font-weight: 500;
-  background-color: #f8f9fa;
-  transition: all 0.3s ease;
+  background-color: var(--bg-input);
+  transition: all var(--transition);
+  color: var(--text-primary);
+  font-family: var(--font);
 }
 
 .custom-input:focus {
-  border-color: #667eea;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--accent-purple);
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 3px var(--glow-purple);
 }
 
 .custom-input::placeholder {
-  color: #999;
+  color: var(--text-muted);
 }

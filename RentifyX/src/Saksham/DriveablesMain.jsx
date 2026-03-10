@@ -2,7 +2,6 @@ import { useState, useMemo, useRef } from 'react';
 import { Shield } from 'lucide-react';
 
 // Component Imports
-import Navbar from './Navbar';
 import Header from '../components/Header/Header';
 import HeroSection from './HeroSection';
 import DriveableCard from './DriveableCard';

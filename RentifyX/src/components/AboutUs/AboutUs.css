@@ -1,6 +1,6 @@
 .about-section {
   padding: 100px 0;
-  background: #fafafa;
+  background: var(--bg-secondary);
 }
 
 /* Image */
@@ -8,7 +8,7 @@
   position: relative;
   border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.15);
+  box-shadow: 0 20px 60px rgba(124, 58, 237, 0.15);
 }
 
 .about-image-wrapper img {
@@ -27,20 +27,28 @@
   height: 52px;
   border-radius: 50%;
   border: none;
-  background: #ff7a45;
+
+  background: var(--accent-gradient-btn);
+
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(255, 122, 69, 0.4);
+
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
   cursor: pointer;
+  transition: all var(--transition);
 }
 
+.play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(124, 58, 237, 0.5);
+}
 /* Text */
 .about-badge {
   font-size: 13px;
   font-weight: 600;
-  color: #ff7a45;
+  color: var(--accent-purple);
   text-transform: uppercase;
   margin-bottom: 10px;
 }
@@ -48,50 +56,52 @@
 .about-title {
   font-size: 34px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
 .about-text {
   font-size: 15px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.7;
   max-width: 520px;
 }
 
 /* Stats */
 .about-stat {
-  background: white;
-  border-radius: 14px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
   padding: 18px 16px;
   text-align: center;
-  box-shadow: 0 8px 30px rgba(2, 6, 23, 0.06);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-color);
 }
 
 .about-stat h4 {
   font-size: 20px;
   font-weight: 700;
-  color: #ff7a45;
+  color: var(--accent-purple);
   margin-bottom: 4px;
 }
 
 .about-stat span {
   font-size: 12px;
-  color: #777;
+  color: var(--text-secondary);
 }
 
 /* Button */
 .about-btn {
-  background: #ff7a45;
+  background: var(--accent-gradient-btn);
   color: white;
   border: none;
   padding: 12px 26px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-btn);
 }
 
 .about-btn:hover {
-  background: #ff6a2d;
   transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.4);
 }

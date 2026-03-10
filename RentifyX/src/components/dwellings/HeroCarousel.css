@@ -1,0 +1,172 @@
+.hero-carousel {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .hero-carousel {
+        height: 520px;
+    }
+}
+
+/* Slides */
+
+.carousel-slide {
+    position: absolute;
+    inset: 0;
+    transition: opacity 1s ease;
+}
+
+.carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Overlay */
+
+.carousel-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.65),
+        rgba(0,0,0,0.25),
+        transparent
+    );
+}
+
+/* Text Content */
+
+.carousel-content {
+    position: absolute;
+    bottom: 5rem;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.carousel-title {
+    font-family: var(--font);
+    font-size: 3rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 10px 15px rgba(0,0,0,0.2);
+}
+
+@media (min-width: 768px) {
+    .carousel-title {
+        font-size: 4rem;
+        line-height: 1;
+    }
+}
+
+.carousel-desc {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.5rem;
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 4px 6px rgba(0,0,0,0.25);
+    max-width: 36rem;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .carousel-desc {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+    }
+}
+
+/* Category Buttons */
+
+.carousel-categories {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+    .carousel-categories {
+        bottom: 2.5rem;
+        gap: 1rem;
+    }
+}
+
+.category-button {
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    transition: all 0.3s ease;
+
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255,255,255,0.4);
+
+    cursor: pointer;
+
+    background: rgba(255,255,255,0.9);
+    color: var(--text-primary);
+
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.category-button:hover {
+    background: var(--glow-purple);
+    color: var(--accent-purple);
+    transform: scale(1.05);
+}
+
+/* Active category */
+
+.category-button.active {
+    background: var(--accent-gradient-btn);
+    color: white;
+    border: none;
+    transform: scale(1.05);
+}
+
+/* Carousel Dots */
+
+.carousel-dots {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+
+    background-color: rgba(255,255,255,0.6);
+
+    border: none;
+    cursor: pointer;
+}
+
+.dot.active {
+    background: var(--accent-purple);
+    width: 1.5rem;
+}
