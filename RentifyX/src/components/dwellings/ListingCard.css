@@ -114,13 +114,20 @@ color:white;
 bottom:0.75rem;
 left:0.75rem;
 
-background:rgba(255,255,255,0.85);
+background: rgba(255, 255, 255, 0.18);
 
-backdrop-filter:blur(6px);
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
 
-color:var(--text-primary);
+border: 1px solid rgba(255, 255, 255, 0.35);
 
-font-weight:500;
+color: white;
+
+font-weight: 600;
+
+letter-spacing: 0.02em;
+
+text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 /* Content */
