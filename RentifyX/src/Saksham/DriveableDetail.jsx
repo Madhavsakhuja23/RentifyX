@@ -1,14 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PricingSection from './PricingSection';
 import LicenseVerification from './LicenseVerification';
 import CancellationPolicy from './CancellationPolicy';
-import BookingConfirmationModal from './BookingConfirmationModal';
 // import './Driveables.css'; // Removed custom CSS
 
 const DriveableDetail = ({ driveable, onClose }) => {
+  const navigate = useNavigate();
   const [selectedHours, setSelectedHours] = useState(1);
   const [selectedDays, setSelectedDays] = useState(0);
-  const [showBookingForm, setShowBookingForm] = useState(false);
   const [licenseVerified, setLicenseVerified] = useState(false);
   const [bookingType, setBookingType] = useState('hourly'); // 'hourly' or 'daily'
 
@@ -26,7 +26,22 @@ const DriveableDetail = ({ driveable, onClose }) => {
       alert('Please verify your driving license first!');
       return;
     }
-    setShowBookingForm(true);
+    
+    // Calculate final price and duration for the payment page
+    const totalPrice = calculateTotalPrice();
+    const durationValue = bookingType === 'daily' ? selectedDays : selectedHours;
+    const durationLabel = bookingType === 'daily' ? 'Days' : 'Hours';
+
+    navigate('/payment', {
+      state: {
+        vehicle: driveable,
+        bookingDetails: {
+          totalPrice: totalPrice,
+          duration: `${durationValue} ${durationLabel}`,
+          bookingType: bookingType
+        }
+      }
+    });
   };
 
   return (
@@ -122,27 +137,18 @@ const DriveableDetail = ({ driveable, onClose }) => {
           <div className="bg-light p-4 rounded shadow-sm d-flex justify-content-between align-items-center mt-4 border">
             <div>
               <span className="text-muted d-block small">Total Estimated Price</span>
-              <span className="h3 fw-bold text-primary mb-0">${calculateTotalPrice()}</span>
+              <span className="h3 fw-bold text-primary mb-0">₹{calculateTotalPrice()}</span>
             </div>
             <button 
               className={`btn btn-lg ${licenseVerified ? 'btn-primary' : 'btn-secondary'}`}
               onClick={handleBooking}
+              disabled={!licenseVerified}
             >
-              {licenseVerified ? 'Book Now' : 'Verify License to Book'}
+              Book Now
             </button>
           </div>
         </div>
       </div>
-
-      {/* Booking Confirmation Modal */}
-      <BookingConfirmationModal
-        show={showBookingForm}
-        onClose={() => setShowBookingForm(false)}
-        vehicle={driveable}
-        totalPrice={calculateTotalPrice()}
-        bookingType={bookingType}
-        duration={bookingType === 'daily' ? selectedDays : selectedHours}
-      />
     </div>
   );
 };
