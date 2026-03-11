@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import toyotaFortunerImg from '../assets/toyota-fortuner.webp';
-import royalEnfieldImg from '../assets/royal-enfield.avif';
+import bajajPulsarImg from '../assets/bajaj-pulsar.avif';
 import activaImg from '../assets/activa-6g.avif';
 import mountainBikeImg from '../assets/mountain-bike.jpg';
 import '../components/dwellings/HeroCarousel.css';
 
 const slides = [
   { image: toyotaFortunerImg, title: "Find Your Dream Ride", desc: "Premium vehicles for long-term journeys", category: "cars" },
-  { image: royalEnfieldImg, title: "Ride the Legend", desc: "Classic bikes for the ultimate road trip", category: "bikes" },
+  { image: bajajPulsarImg, title: "Ride the Legend", desc: "Classic bikes for the ultimate road trip", category: "bikes" },
   { image: activaImg, title: "Zip Through Traffic", desc: "Efficient scooters for your daily commute", category: "bikes" },
   { image: mountainBikeImg, title: "Adventure on Two Wheels", desc: "Explore off-road trails with our best cycles", category: "bicycles" },
 ];

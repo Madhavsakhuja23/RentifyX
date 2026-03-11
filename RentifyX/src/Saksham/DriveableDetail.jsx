@@ -126,14 +126,25 @@ const DriveableDetail = ({ driveable, onClose }) => {
           </div>
         </div>
 
-        <div className="ld-gallery">
-          <img className="ld-gal-main" src={allImages[0]} alt={driveable.name} style={{ objectFit: 'cover' }} />
-          <div className="ld-gal-side">
-            {allImages.slice(1, 5).map((img, i) => (
-              <div key={i} className="ld-g-cell">
-                <img src={img} alt={`view ${i + 2}`} style={{ objectFit: 'cover' }} />
-                {i === 3 && (
-                  <button className="ld-show-all-btn">
+        // ...existing code...
+<div className="ld-gallery">
+  <img
+    className="ld-gal-main"
+    src={allImages[0]}
+    alt={`${driveable.name} - main view`}
+    style={{ objectFit: 'cover' }}
+  />
+  <div className="ld-gal-side">
+    {allImages.slice(1, 5).map((img, i) => (
+      <div key={i} className="ld-g-cell">
+        <img
+          src={img}
+          alt={i < 3 ? `${driveable.name} - gallery view ${i + 2}` : ""}
+          style={{ objectFit: 'cover' }}
+        />
+        {i === 3 && (
+          <button className="ld-show-all-btn">
+// ...existing code...
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
                       <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
                       <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
