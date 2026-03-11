@@ -35,6 +35,7 @@ import tataNexomImg from '../assets/tatanexom.jpg';
 import ktmDukeImg from '../assets/ktmduke.avif';
 import KiaSeltosImg from '../assets/KiaSeltos.avif';
 import gravelBikeImg from '../assets/gravelbike.jpg';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const mockData = [
   { id: 1, name: 'Honda City', category: 'cars', image: hondaCityImg, hourlyRate: 200, dayRate: 2000, rating: 4.5, location: 'Downtown', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 5 } },
@@ -69,7 +70,7 @@ const DriveablesMain = () => {
   const [sortOrder, setSortOrder] = useState('default');
   const [compareList, setCompareList] = useState([]);
   const [searchFilters, setSearchFilters] = useState({ location: '', guests: 1, checkIn: undefined, checkOut: undefined });
-
+  const navigate = useNavigate();
   const fleetRef = useRef(null);
 
   // useMemo used just like the filtered variable in Dwellings
@@ -151,16 +152,7 @@ const DriveablesMain = () => {
     scrollToFleet();
   };
 
-  const checkAuth = () => {
-    const token = localStorage.getItem("token");
-
-    if (token !== "dummy-token") {
-      window.location.href = "/login";
-      return false;
-    }
-
-    return true;
-  };
+  
 
   const categories = [
     { key: 'cars', label: 'Cars', heading: 'Premium cars for every journey', description: 'From compact city cars to luxury SUVs. Find the perfect car rental for your needs.' },
@@ -170,7 +162,7 @@ const DriveablesMain = () => {
   ];
 
   const currentCategory = categories.find(c => c.key === activeCategory);
-
+  
   // Detail View Overlay
   if (selectedDriveable) {
     return (
@@ -259,11 +251,8 @@ const DriveablesMain = () => {
                     key={driveable.id}
                     driveable={driveable}
                     index={index}
-                    onViewDetails={() => {
-                      if (checkAuth()) {
-                        setSelectedDriveable(driveable);
-                      }
-                    }}
+                    onViewDetails={() => setSelectedDriveable(driveable)
+                    }
                     onToggleCompare={handleToggleCompare}
                     isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
                   />

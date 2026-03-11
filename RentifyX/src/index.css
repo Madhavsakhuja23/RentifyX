@@ -475,12 +475,12 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, #7B61FF, #E85D9E, #F4A261);
+  background:   rgba(255, 102, 0, 0.915);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7B61FF;
+  background:  rgba(255, 102, 0, 0.915);
 }
 
 /* Selection color */

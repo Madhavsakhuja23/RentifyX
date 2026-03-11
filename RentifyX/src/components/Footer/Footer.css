@@ -1,5 +1,6 @@
 .footer {
-  margin-top: 20px;
+  margin-top: 0px;
+  margin-bottom: 0px;
   padding-top: 40px;
   background: var(--bg-secondary);
 }
@@ -33,7 +34,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  box-shadow: var(--shadow-btn);
+  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
 }
 
 .footer-desc {
