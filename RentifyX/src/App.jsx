@@ -33,6 +33,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
         <Route path="/dwellings" element={<Dwelling />} />
+        <Route path="/listing" element={<Dwelling />} />
         <Route path="/profile" element={<Profile/>} />
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/book/:id" element={<RequestToBook />} />
