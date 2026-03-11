@@ -850,7 +850,6 @@ export default function ListingDetails() {
                 <div className="ld-ttk-col">
                   <h4>Cancellation policy</h4>
                   <div className="ld-ttk-row"><CheckIcon />Free cancellation within 48 hrs</div>
-                  <div className="ld-ttk-row"><CheckIcon />50% refund up to check-in</div>
                   <div className="ld-ttk-row"><XIcon />No refund after check-in</div>
                   <div className="ld-ttk-row"><CheckIcon />Dwellings cover included</div>
                 </div>
