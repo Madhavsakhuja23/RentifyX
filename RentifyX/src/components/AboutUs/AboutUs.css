@@ -99,7 +99,7 @@
   border-radius: var(--radius-md);
   font-weight: 600;
   transition: all var(--transition);
-  box-shadow: var(--shadow-btn);
+  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
 }
 
 .about-btn:hover {
