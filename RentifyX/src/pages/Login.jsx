@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useAuth } from "../seller/context/AuthContext";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import "./Login.css";
@@ -11,6 +12,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -23,9 +25,13 @@ const Login = () => {
     );
 
     if (user) {
-      localStorage.setItem("token", "dummy-token");
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      navigate("/");
+      login(user);
+      
+      if (user.role === "owner" || user.role === "both") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/");
+      }
     } else {
       setError("Invalid email or password");
     }

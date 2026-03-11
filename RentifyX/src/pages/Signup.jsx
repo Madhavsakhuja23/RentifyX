@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "../seller/context/AuthContext";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import "./Signup.css";
@@ -14,6 +15,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
 
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -42,9 +44,14 @@ const Signup = () => {
 
     localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-    // alert("Signup successful! Please login.");
+    // Auto-login the user after signup for better UX
+    login(newUser);
 
-    navigate("/login");
+    if (role === "owner" || role === "both") {
+      navigate("/seller/dashboard");
+    } else {
+      navigate("/");
+    }
   }
 };
 
