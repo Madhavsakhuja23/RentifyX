@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="container footer-inner">
         <div className="row g-4">
-
+        
           {/* Brand */}
           <div className="col-12 col-md-3">
             <Link to="/" className="footer-brand">

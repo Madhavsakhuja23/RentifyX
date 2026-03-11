@@ -10,17 +10,11 @@ const ListingCard = ({ listing }) => {
 
     return (
         <div
-            className="listing-card"
-            onClick={() => {
-                const token = localStorage.getItem("token");
-
-                if (token === "dummy-token") {
-                    navigate(`/listing/${listing.id}`);
-                } else {
-                    navigate("/login");
-                }
-            }}
-        >
+    className="listing-card"
+    onClick={() => {
+        navigate(`/listing/${listing.id}`);
+    }}
+>
             <div className="listing-image-container">
                 <img
                     src={listing.image}
@@ -45,7 +39,7 @@ const ListingCard = ({ listing }) => {
                         Unavailable
                     </div>
                 )}
-                <div className="badge badge-category">
+                <div className="badge-category">
                     {categoryLabels[listing.type]}
                 </div>
             </div>

@@ -4,6 +4,7 @@ import { listings } from "../data/dwellings";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
+import emailjs from "@emailjs/browser";
 
 /* ── static data ─────────────────────────────── */
 function AmenityIcon({ name }) {
@@ -89,6 +90,7 @@ const SAMPLE_REVIEWS = [
   { name: "Anika", date: "March 2025", text: "The photos don't do it justice — even better in person. Stunning views and a supremely comfortable stay. Will return!" },
 ];
 
+
 /* ── helpers ─────────────────────────────────── */
 function fmt(n) {
   return "₹" + Number(n).toLocaleString("en-IN");
@@ -152,7 +154,74 @@ function Lightbox({ images, index, onClose, onNav }) {
     </div>
   );
 }
+/* ── Message Host Modal ───────────────────────── */
+function MessageHostModal({ host, listing, onClose }) {
+  const formRef = useRef();
 
+  const sendEmail = (e) => {
+    e.preventDefault();
+
+    emailjs
+      .sendForm(
+       "service_z6wavoa",
+       "template_jhv1w9k",
+        formRef.current,
+        "Utoi2SbtmtWx2iJjf"
+      )
+      .then(
+        () => {
+          alert("Message sent successfully!");
+          onClose();
+        },
+        (error) => {
+          alert("Failed to send message");
+          console.error(error);
+        }
+      );
+  };
+
+  return (
+    <div className="ld-modal-overlay" onClick={onClose}>
+      <div
+        className="ld-message-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="ld-modal-close" onClick={onClose}>
+          ✕
+        </button>
+
+        <h2>Message {host}</h2>
+        <p>Regarding: <strong>{listing}</strong></p>
+
+        <form ref={formRef} onSubmit={sendEmail}>
+          <input
+            type="text"
+            name="user_name"
+            placeholder="Your name"
+            required
+          />
+
+          <input
+            type="email"
+            name="user_email"
+            placeholder="Your email"
+            required
+          />
+
+          <textarea
+            name="message"
+            placeholder="Write your message to the host..."
+            required
+          />
+
+          <button type="submit" className="ld-send-btn">
+            Send Message
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
 /* ── Map ─────────────────────────────────────── */
 function MapEmbed({ location }) {
   const info = LOCATION_COORDS[location] || LOCATION_COORDS.Mumbai;
@@ -284,12 +353,21 @@ function BookingCard({ listing }) {
 
   /* ── Reserve handler ───────────────────────── */
   function handleReserve() {
-    if (!checkIn || !checkOut) return;
-    if (isBelowMinStay) return;        // button is disabled anyway
-    navigate(`/book/${listing.id}`, {
-      state: { listing, checkIn, checkOut, nights, guests, sub, total },
-    });
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    navigate("/login");
+    return;
   }
+
+  if (!checkIn || !checkOut) return;
+  if (isBelowMinStay) return;
+
+  navigate(`/book/${listing.id}`, {
+    state: { listing, checkIn, checkOut, nights, guests, sub, total },
+  });
+}
 
   /* ── Button label ──────────────────────────── */
   const btnLabel = () => {
@@ -418,6 +496,7 @@ function XIcon() {
 
 /* ── Main Component ──────────────────────────── */
 export default function ListingDetails() {
+  const [showMessageModal, setShowMessageModal] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const listing = listings.find((l) => l.id === id);
@@ -743,7 +822,8 @@ export default function ListingDetails() {
                       <span> · Response rate: {listing.host.responseRate}</span>
                     </div>
                   </div>
-                  <button className="ld-contact-btn">Message {listing.host.name}</button>
+                 <button className="ld-contact-btn" onClick={() => setShowMessageModal(true)}> Message {listing.host.name}
+                  </button>
                 </div>
               </div>
             </div>
@@ -770,7 +850,6 @@ export default function ListingDetails() {
                 <div className="ld-ttk-col">
                   <h4>Cancellation policy</h4>
                   <div className="ld-ttk-row"><CheckIcon />Free cancellation within 48 hrs</div>
-                  <div className="ld-ttk-row"><CheckIcon />50% refund up to check-in</div>
                   <div className="ld-ttk-row"><XIcon />No refund after check-in</div>
                   <div className="ld-ttk-row"><CheckIcon />Dwellings cover included</div>
                 </div>
@@ -801,6 +880,13 @@ export default function ListingDetails() {
 
         </div>
       </div>
+      {showMessageModal && (
+  <MessageHostModal
+    host={listing.host.name}
+    listing={listing.name}
+    onClose={() => setShowMessageModal(false)}
+  />
+)}
       <Footer />
     </div>
   );

@@ -43,13 +43,26 @@ const DriveableDetail = ({ driveable, onClose }) => {
     }
     return selectedHours * driveable.hourlyRate;
   };
+  const checkAuth = () => {
+    const token = localStorage.getItem("token");
 
+    if (token !== "dummy-token") {
+      window.location.href = "/login";
+      return false;
+    }
+
+    return true;
+  };
   const handleBooking = () => {
+    let auth = checkAuth();
     if (!licenseVerified) {
       alert('Please verify your driving license first!');
       return;
     }
-
+    if(!auth){
+      window.location.href="/login";
+    }
+    
     // Calculate final price and duration for the payment page
     const totalPrice = calculateTotalPrice();
     const durationValue = bookingType === 'daily' ? selectedDays : selectedHours;
