@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../firebase";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import "./Login.css";
@@ -11,20 +13,56 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+
+  const handleGoogleLogin = async () => {
+    try {
+      setError("");
+      setLoading(true);
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userData = {
+        uid: user.uid,
+        name: user.displayName || "Google User",
+        email: user.email || "",
+        photo: user.photoURL || "",
+        role: "user",
+        authType: "google",
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+      localStorage.setItem("token", "dummy-token");
+
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      setError(error.message || "Google login failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
 
     const user = users.find(
-      (u) => u.email === email && u.password === password
+      (u) =>
+        u.email.toLowerCase() === email.toLowerCase() &&
+        u.password === password
     );
 
     if (user) {
       localStorage.setItem("token", "dummy-token");
       localStorage.setItem("currentUser", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
       navigate("/");
     } else {
       setError("Invalid email or password");
@@ -34,8 +72,6 @@ const Login = () => {
   return (
     <div className="container-fluid login-wrapper">
       <div className="row min-vh-100">
-
-        {/* Left side – Login Form */}
         <div className="col-12 col-lg-6 d-flex align-items-center justify-content-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -43,8 +79,6 @@ const Login = () => {
             transition={{ duration: 0.5 }}
             className="login-card"
           >
-
-            {/* Back to Home */}
             <Link to="/" className="back-home-btn">
               <ArrowLeft size={18} />
               Home
@@ -61,7 +95,6 @@ const Login = () => {
             </p>
 
             <form onSubmit={handleSubmit}>
-              {/* Email */}
               <div className="mb-3 position-relative">
                 <Mail className="input-icon" size={18} />
                 <Input
@@ -73,7 +106,6 @@ const Login = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="mb-3 position-relative">
                 <Lock className="input-icon" size={18} />
                 <Input
@@ -91,15 +123,26 @@ const Login = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+
               {error && (
                 <p className="text-danger small mb-3">
                   {error}
                 </p>
               )}
+
               <Button type="submit" className="w-100">
                 Sign In
               </Button>
             </form>
+
+            <button
+              type="button"
+              className="google-btn"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              {loading ? "Please wait..." : "Continue with Google"}
+            </button>
 
             <p className="text-center mt-3 small">
               Don’t have an account?{" "}
@@ -108,7 +151,6 @@ const Login = () => {
           </motion.div>
         </div>
 
-        {/* Right side – Branding */}
         <div className="col-lg-6 d-none d-lg-flex login-brand">
           <motion.div
             initial={{ opacity: 0, x: 30 }}
@@ -137,7 +179,6 @@ const Login = () => {
             </div>
           </motion.div>
         </div>
-
       </div>
     </div>
   );
