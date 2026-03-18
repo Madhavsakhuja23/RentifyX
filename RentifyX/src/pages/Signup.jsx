@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../firebase";
 import "./Signup.css";
 
 const Signup = () => {
@@ -17,39 +19,45 @@ const Signup = () => {
 
   const navigate = useNavigate();
 
-  /* Email format validation */
+  const handleGoogleLogin = async () => {
+    try {
+      setError("");
+      setLoading(true);
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userData = {
+        uid: user.uid,
+        name: user.displayName || "Google User",
+        email: user.email || "",
+        photo: user.photoURL || "",
+        role: "user",
+        authType: "google",
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+      localStorage.setItem("token", "dummy-token");
+
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      setError(error.message || "Google sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
-  /* Password validation */
   const validatePassword = (password) => {
-
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
     return passwordRegex.test(password);
-  };
-
-  /* Email existence check via API */
-  const checkEmailExists = async (email) => {
-    try {
-
-      const API_KEY = "ema_live_aT2sCSLqi4X4qma3ZjkkeZ0fQI7sKPxXt3We9ZTZ";
-
-      const response = await fetch(
-        `https://api.emailvalidator.io/v1/info?email=${email}&apikey=${API_KEY}`
-      );
-
-      const data = await response.json();
-
-      return data.smtp_check === true;
-
-    } catch (error) {
-      console.log("Email validation API error", error);
-      return true;
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -73,11 +81,10 @@ const Signup = () => {
       return;
     }
 
-    const existingUsers =
-      JSON.parse(localStorage.getItem("users")) || [];
+    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
 
     const userExists = existingUsers.find(
-      (user) => user.email === email
+      (user) => user.email.toLowerCase() === email.toLowerCase()
     );
 
     if (userExists) {
@@ -87,34 +94,24 @@ const Signup = () => {
 
     setLoading(true);
 
-    const emailValid = await checkEmailExists(email);
-
-    setLoading(false);
-
-    if (!emailValid) {
-      setError("This email address does not exist.");
-      return;
-    }
-
     const newUser = {
       name,
       email,
       password,
       role,
+      authType: "local",
     };
 
     const updatedUsers = [...existingUsers, newUser];
-
     localStorage.setItem("users", JSON.stringify(updatedUsers));
 
+    setLoading(false);
     navigate("/login");
   };
 
   return (
     <div className="container-fluid signup-wrapper">
       <div className="row min-vh-100">
-
-        {/* Left – Branding */}
         <div className="col-lg-6 d-none d-lg-flex signup-brand">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -144,7 +141,6 @@ const Signup = () => {
           </motion.div>
         </div>
 
-        {/* Right – Form */}
         <div className="col-12 col-lg-6 d-flex align-items-center justify-content-center">
           <motion.div
             initial={{ opacity: 0, x: 30 }}
@@ -152,7 +148,6 @@ const Signup = () => {
             transition={{ duration: 0.5 }}
             className="signup-card"
           >
-
             <Link to="/" className="back-home-btn">
               <ArrowLeft size={18} />
               Home
@@ -175,8 +170,6 @@ const Signup = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-
-              {/* Name */}
               <div className="mb-3 position-relative">
                 <User className="input-icon" size={18} />
                 <Input
@@ -187,7 +180,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="mb-3 position-relative">
                 <Mail className="input-icon" size={18} />
                 <Input
@@ -199,7 +191,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="mb-3 position-relative">
                 <Lock className="input-icon" size={18} />
                 <Input
@@ -218,7 +209,6 @@ const Signup = () => {
                 </button>
               </div>
 
-              {/* Role */}
               <div className="mb-4">
                 <label className="form-label fw-medium">
                   I want to
@@ -258,19 +248,25 @@ const Signup = () => {
               </div>
 
               <Button type="submit" className="w-100">
-                {loading ? "Checking email..." : "Create Account"}
+                {loading ? "Creating account..." : "Create Account"}
               </Button>
-
             </form>
+
+            <button
+              type="button"
+              className="google-btn"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              {loading ? "Please wait..." : "Continue with Google"}
+            </button>
 
             <p className="text-center mt-3 small">
               Already have an account?{" "}
               <Link to="/login">Sign in</Link>
             </p>
-
           </motion.div>
         </div>
-
       </div>
     </div>
   );
