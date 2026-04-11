@@ -1,20 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-// Images for Carousel
+import { useState, useEffect } from 'react';
 import toyotaFortunerImg from '../assets/toyota-fortuner.webp';
-import hondaCityImg from '../assets/honda-city.webp';
-import teslaImg from '../assets/tesla3.avif';
-import cretaImg from '../assets/creta.avif';
-import { FaCalendarAlt, FaUser, FaSearch, FaMapMarkerAlt, FaCar, FaMotorcycle, FaLeaf, FaBicycle } from 'react-icons/fa';
+import bajajPulsarImg from '../assets/bajaj-pulsar.avif';
+import activaImg from '../assets/activa-6g.avif';
+import mountainBikeImg from '../assets/mountain-bike.jpg';
+import '../components/dwellings/HeroCarousel.css';
 
-const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
-  const [activeTab, setActiveTab] = useState(null);
-  const [currentSlide, setCurrentSlide] = useState(0); 
-  const [searchData, setSearchData] = useState({
-    location: '',
-    date: '',
-    guests: 1
-  });
+const slides = [
+  { image: toyotaFortunerImg, title: "Find Your Dream Ride", desc: "Premium vehicles for long-term journeys", category: "cars" },
+  { image: bajajPulsarImg, title: "Ride the Legend", desc: "Classic bikes for the ultimate road trip", category: "bikes" },
+  { image: activaImg, title: "Zip Through Traffic", desc: "Efficient scooters for your daily commute", category: "bikes" },
+  { image: mountainBikeImg, title: "Adventure on Two Wheels", desc: "Explore off-road trails with our best cycles", category: "bicycles" },
+];
 
   const handleSearch = () => {
     if (onSearchClick) onSearchClick(searchData);
@@ -42,49 +38,53 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
     { id: 'evs', label: 'EVs', icon: <FaLeaf size={12} /> },
     { id: 'bicycles', label: 'Bicycles', icon: <FaBicycle size={12} /> },
   ];
+const HeroSection = () => {
+  const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setActiveTab(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
-    }, 3000); // 3 seconds between images with smooth fade
-    return () => clearInterval(slideInterval);
-  }, [bannerImages.length]);
+  const slide = slides[current];
 
   return (
-    <section className="w-100 bg-white" id="home">
-      {/* 1. Main Banner Image Section */}
-      <div
-        className="position-relative d-flex flex-column align-items-center justify-content-end text-center text-white"
-        style={{
-          height: '400px', // Reduced height further
-          borderRadius: '0',
-          overflow: 'hidden',
-          paddingBottom: '20px' 
-        }}
-      >
-        {/* Background Images with Fade Effect */}
-        {bannerImages.map((img, index) => (
-          <div
-            key={index}
-            className="position-absolute top-0 start-0 w-100 h-100"
-            style={{
-              backgroundImage: `url(${img})`,
-              backgroundSize: 'cover',
-              backgroundPosition: '100% 30%', // Adjusted to center better vertically
-              opacity: currentSlide === index ? 1 : 0,
-              transition: 'opacity 1s ease-in-out',
-              zIndex: 0
-            }}
+    <section className="hero-carousel">
+      {slides.map((s, i) => (
+        <div
+          key={s.category + i}
+          className="carousel-slide"
+          style={{
+            opacity: i === current ? 1 : 0,
+            zIndex: i === current ? 1 : 0
+          }}
+        >
+          <img
+            src={s.image}
+            alt={s.title}
+            className="carousel-image"
+          />
+          <div className="carousel-overlay" />
+        </div>
+      ))}
+
+      <div className="carousel-content">
+        <h1 className="carousel-title">
+          {slide.title}
+        </h1>
+        <p className="carousel-desc">
+          {slide.desc}
+        </p>
+      </div>
+
+      <div className="carousel-dots">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`dot ${i === current ? "active" : ""}`}
           />
         ))}
 
@@ -154,126 +154,6 @@ const HeroSection = ({ activeCategory, onCategoryChange, onSearchClick }) => {
 
         </div>
       </div>
-
-      {/* 2. Main Search Container - Reduced Size & Functional */}
-      <div className="container" style={{ marginTop: '20px', marginBottom: '40px', position: 'relative', zIndex: 20 }} ref={menuRef}>
-        <div 
-          className="bg-white rounded-pill shadow-sm d-flex align-items-center p-1 mx-auto border position-relative" 
-          style={{ maxWidth: '650px', border: '1px solid #e2e8f0', height: '55px' }}
-        >
-          {/* WHERE SECTION */}
-          <div 
-            className={`d-flex align-items-center px-4 flex-grow-1 border-end transition-all position-relative h-100`}
-            style={{ 
-              borderRadius: '50px 0 0 50px',
-              backgroundColor: activeTab === 'where' ? '#fcfcfc' : 'transparent',
-              flexBasis: '35%',
-              cursor: 'pointer'
-            }}
-            onClick={() => setActiveTab('where')}
-          >
-            <FaMapMarkerAlt className="me-2 fs-6 mt-1" style={{ fill: 'url(#brand-gradient)' }} />
-            <div className="text-start w-100 mt-1">
-              <label className="text-uppercase fw-bold text-muted mb-0 d-block" style={{ fontSize: '0.55rem', letterSpacing: '0.5px', cursor: 'pointer' }}>Where</label>
-              <input 
-                type="text" 
-                placeholder="Search destinations" 
-                className="border-0 bg-transparent p-0 m-0 w-100 fw-medium"
-                style={{ fontSize: '0.85rem', outline: 'none', color: '#333' }}
-                value={searchData.location}
-                onChange={(e) => setSearchData({...searchData, location: e.target.value})}
-                onFocus={() => setActiveTab('where')}
-              />
-            </div>
-          </div>
-
-          {/* WHEN SECTION */}
-          <div 
-            className={`d-flex align-items-center px-4 flex-grow-1 border-end transition-all position-relative h-100`}
-            style={{ 
-              backgroundColor: activeTab === 'when' ? '#fcfcfc' : 'transparent',
-              flexBasis: '35%',
-              cursor: 'pointer'
-            }}
-            onClick={() => {
-              setActiveTab('when');
-              if (dateInputRef.current && typeof dateInputRef.current.showPicker === 'function') {
-                dateInputRef.current.showPicker();
-              }
-            }}
-          >
-            <FaCalendarAlt className="me-2 fs-6 mt-1" style={{ color: '#764ba2' }} />
-            <div className="text-start w-100 mt-1">
-              <label className="text-uppercase fw-bold text-muted mb-0 d-block" style={{ fontSize: '0.55rem', letterSpacing: '0.5px', cursor: 'pointer' }}>When</label>
-              <input 
-                ref={dateInputRef}
-                type="date" 
-                className="border-0 bg-transparent p-0 m-0 w-100 fw-medium text-muted date-input-clean"
-                style={{ 
-                  fontSize: '0.8rem', 
-                  outline: 'none',
-                  color: searchData.date ? '#333' : 'transparent',
-                  cursor: 'pointer'
-                }}
-                value={searchData.date}
-                onChange={(e) => setSearchData({...searchData, date: e.target.value})}
-                onFocus={() => setActiveTab('when')}
-              />
-            </div>
-          </div>
-
-          {/* WHO SECTION */}
-          <div 
-            className={`d-flex align-items-center px-4 flex-grow-1 transition-all position-relative h-100`}
-            style={{ 
-              backgroundColor: activeTab === 'who' ? '#fcfcfc' : 'transparent',
-              flexBasis: '30%',
-              cursor: 'pointer'
-            }}
-            onClick={() => setActiveTab('who')}
-          >
-            <FaUser className="me-2 fs-6 mt-1" style={{ color: '#764ba2' }} />
-            <div className="text-start w-100 mt-1">
-              <label className="text-uppercase fw-bold text-muted mb-0 d-block" style={{ fontSize: '0.55rem', letterSpacing: '0.5px', cursor: 'pointer' }}>Who</label>
-              <input 
-                type="number" 
-                min="1" 
-                max="10"
-                className="border-0 bg-transparent p-0 m-0 w-100 fw-medium"
-                style={{ fontSize: '0.85rem', outline: 'none', color: '#333' }}
-                value={searchData.guests}
-                onChange={(e) => setSearchData({...searchData, guests: parseInt(e.target.value) || 1})}
-                onFocus={() => setActiveTab('who')}
-              />
-            </div>
-          </div>
-
-          {/* THE GRADIENT SEARCH BUTTON */}
-          <button 
-            className="btn rounded-circle p-0 d-flex align-items-center justify-content-center shadow-lg ms-2 border-0 flex-shrink-0" 
-            style={{ 
-              width: '40px', 
-              height: '40px', 
-              background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-              transition: 'all 0.3s ease',
-              marginRight: '6px'
-            }}
-            onClick={handleSearch}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <FaSearch className="text-white fs-6" />
-          </button>
-        </div>
-      </div>
-
-      {/* SVG Gradient Definition for Icons (optional) */}
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#667eea" />
-          <stop offset="100%" stopColor="#764ba2" />
-        </linearGradient>
-      </svg>
     </section>
   );
 };

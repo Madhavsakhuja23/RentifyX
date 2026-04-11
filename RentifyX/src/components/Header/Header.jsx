@@ -73,8 +73,12 @@ const Header = () => {
               className={isLoggedIn ? "profile-avatar-btn" : "profile-btn"}
               title={isLoggedIn ? "Profile" : "Login"}
             >
-              {isLoggedIn ? (
-                <span className="nav-avatar">{user?.name?.charAt(0)?.toUpperCase()}</span>
+              {isLoggedIn && user?.photo ? (
+                <img src={user.photo} alt="profile" className="nav-avatar" />
+              ) : isLoggedIn ? (
+                <span className="nav-avatar">
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </span>
               ) : (
                 <User size={18} />
               )}
@@ -115,8 +119,8 @@ const Header = () => {
               </form>
 
               <Link className="mobile-link" to="/dwellings">Dwellings</Link>
-            <Link className="mobile-link" to="/driveables">Driveables</Link>
-            <Link className="mobile-link" to="/messages">Messages</Link>
+              <Link className="mobile-link" to="/driveables">Driveables</Link>
+              <Link className="mobile-link" to="/messages">Messages</Link>
 
               <button onClick={handleProfileClick} className="mobile-link">
                 <User size={16} />

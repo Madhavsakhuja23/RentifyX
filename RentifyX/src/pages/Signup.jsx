@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../firebase";
 import "./Signup.css";
 
 const Signup = () => {
@@ -13,46 +14,104 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleGoogleLogin = async () => {
+    try {
+      setError("");
+      setLoading(true);
 
-  if (name && email && password) {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userData = {
+        uid: user.uid,
+        name: user.displayName || "Google User",
+        email: user.email || "",
+        photo: user.photoURL || "",
+        role: "user",
+        authType: "google",
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+      localStorage.setItem("token", "dummy-token");
+
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      setError(error.message || "Google sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!name || !email || !password) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError(
+        "Password must contain 8+ characters, uppercase, lowercase, number and special character."
+      );
+      return;
+    }
 
     const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
 
-    // check if email already exists
-    const userExists = existingUsers.find((user) => user.email === email);
+    const userExists = existingUsers.find(
+      (user) => user.email.toLowerCase() === email.toLowerCase()
+    );
 
     if (userExists) {
-      alert("User already exists. Please login.");
+      setError("User already exists. Please login.");
       return;
     }
+
+    setLoading(true);
 
     const newUser = {
       name,
       email,
       password,
       role,
+      authType: "local",
     };
 
     const updatedUsers = [...existingUsers, newUser];
-
     localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-    // alert("Signup successful! Please login.");
-
+    setLoading(false);
     navigate("/login");
-  }
-};
+  };
 
   return (
     <div className="container-fluid signup-wrapper">
       <div className="row min-vh-100">
-
-        {/* Left – Branding */}
         <div className="col-lg-6 d-none d-lg-flex signup-brand">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -82,7 +141,6 @@ const Signup = () => {
           </motion.div>
         </div>
 
-        {/* Right – Form */}
         <div className="col-12 col-lg-6 d-flex align-items-center justify-content-center">
           <motion.div
             initial={{ opacity: 0, x: 30 }}
@@ -90,8 +148,6 @@ const Signup = () => {
             transition={{ duration: 0.5 }}
             className="signup-card"
           >
-
-            {/* Back button */}
             <Link to="/" className="back-home-btn">
               <ArrowLeft size={18} />
               Home
@@ -107,8 +163,13 @@ const Signup = () => {
               Enter your details to get started
             </p>
 
+            {error && (
+              <div className="alert alert-danger small">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
-              {/* Name */}
               <div className="mb-3 position-relative">
                 <User className="input-icon" size={18} />
                 <Input
@@ -119,7 +180,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="mb-3 position-relative">
                 <Mail className="input-icon" size={18} />
                 <Input
@@ -131,7 +191,6 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="mb-3 position-relative">
                 <Lock className="input-icon" size={18} />
                 <Input
@@ -150,11 +209,11 @@ const Signup = () => {
                 </button>
               </div>
 
-              {/* Role */}
               <div className="mb-4">
-                <label className="form-label fw-medium" style={{ color: 'var(--text-primary)', fontWeight: '600', marginBottom: '12px', display: 'block' }}>
+                <label className="form-label fw-medium">
                   I want to
                 </label>
+
                 <div className="role-selection">
                   <label className={`role-option ${role === "user" ? "selected" : ""}`}>
                     <input
@@ -165,6 +224,7 @@ const Signup = () => {
                     />
                     <span>Rent</span>
                   </label>
+
                   <label className={`role-option ${role === "owner" ? "selected" : ""}`}>
                     <input
                       type="radio"
@@ -174,6 +234,7 @@ const Signup = () => {
                     />
                     <span>List</span>
                   </label>
+
                   <label className={`role-option ${role === "both" ? "selected" : ""}`}>
                     <input
                       type="radio"
@@ -187,9 +248,18 @@ const Signup = () => {
               </div>
 
               <Button type="submit" className="w-100">
-                Create Account
+                {loading ? "Creating account..." : "Create Account"}
               </Button>
             </form>
+
+            <button
+              type="button"
+              className="google-btn"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              {loading ? "Please wait..." : "Continue with Google"}
+            </button>
 
             <p className="text-center mt-3 small">
               Already have an account?{" "}
@@ -197,7 +267,6 @@ const Signup = () => {
             </p>
           </motion.div>
         </div>
-
       </div>
     </div>
   );

@@ -1,337 +1,705 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaCreditCard, FaPaypal, FaGooglePay, FaArrowLeft, FaShieldAlt, FaCalendarAlt, FaUser, FaPhone, FaEnvelope } from 'react-icons/fa';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
-import './PaymentPage.css';
 
+/* ── helpers ─────────────────────────────────── */
+function fmt(n) {
+  return "₹" + Number(n).toLocaleString("en-IN");
+}
+
+function getQRUrl(upiId, amount, name) {
+  const upiStr = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiStr)}`;
+}
+
+/* ── Success Screen ───────────────────────────── */
+function SuccessScreen({ vehicle, booking, onGoProfile }) {
+  const navigate = useNavigate();
+  return (
+    <div className="dv-success">
+      <div className="dv-success-icon">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="white" strokeWidth="2.5">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <h2>Booking Confirmed! 🎉</h2>
+      <p className="dv-success-sub">
+        Your payment has been verified and your vehicle booking is confirmed.
+      </p>
+      <div className="dv-success-detail">
+        <div className="dv-success-row"><span>Vehicle</span><strong>{vehicle?.name}</strong></div>
+        <div className="dv-success-row"><span>Amount Paid</span><strong>{booking.amount}</strong></div>
+        <div className="dv-success-row"><span>UTR ID</span><strong style={{ fontFamily: "monospace" }}>{booking.utr}</strong></div>
+      </div>
+      <div className="dv-success-actions">
+        <button className="dv-success-profile-btn" onClick={() => navigate("/profile")}>
+          View My Bookings
+        </button>
+        <button className="dv-success-home-btn" onClick={() => navigate("/driveables")}>
+          Browse More
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Success screen styles ─── */
+const dvSuccessStyles = `
+  .dv-root { font-family: 'Inter', -apple-system, sans-serif; background: #f5f5f5; min-height: 100vh; }
+  .dv-root * { box-sizing: border-box; margin: 0; padding: 0; }
+  .dv-page { max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; }
+  .dv-success { max-width: 520px; margin: 60px auto; text-align: center; background: white; border-radius: 20px; padding: 50px 40px; box-shadow: 0 8px 40px rgba(0,0,0,.1); border: 1px solid #eee; }
+  .dv-success-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0)); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 6px 20px rgba(255,102,0,.35); }
+  .dv-success h2 { font-size: 26px; font-weight: 800; color: #222; margin-bottom: 10px; }
+  .dv-success-sub { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 32px; }
+  .dv-success-detail { background: #fafafa; border-radius: 12px; border: 1px solid #eee; padding: 20px; margin-bottom: 28px; text-align: left; }
+  .dv-success-row { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+  .dv-success-row:last-child { border: none; }
+  .dv-success-row span { color: #888; }
+  .dv-success-row strong { color: #222; }
+  .dv-success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .dv-success-profile-btn { padding: 13px 24px; border: none; border-radius: 10px; background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0)); color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 4px 14px rgba(255,102,0,.3); }
+  .dv-success-profile-btn:hover { opacity: .9; }
+  .dv-success-home-btn { padding: 13px 24px; border: 1.5px solid #ddd; border-radius: 10px; background: white; color: #333; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .dv-success-home-btn:hover { background: #f5f5f5; }
+`;
+
+/* ── Main Component ──────────────────────────── */
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { vehicle, bookingDetails } = location.state || {};
-  
-  // Form State
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    mobile: '',
-    paymentMethod: 'credit-card',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
-  });
 
-  const [errors, setErrors] = useState({});
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const UPI_ID = "8295190177@ybl";
+  const HOST_NAME = "RentifyX";
 
-  // Redirect if no vehicle data (prevent direct access)
+  const totalPrice = bookingDetails?.totalPrice || vehicle?.hourlyRate || 0;
+  const grandTotal = Math.round(totalPrice * 1.18 + 50); // taxes + service fee
+
+  const [utr, setUtr] = useState("");
+  const [utrError, setUtrError] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
+
   useEffect(() => {
-    if (!vehicle) {
-      navigate('/driveables');
-    }
+    if (!vehicle) navigate('/driveables');
   }, [vehicle, navigate]);
 
   if (!vehicle) return null;
 
-  // Validation Logic
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Name Validation
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
-    
-    // Email Validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+  function handleConfirm() {
+    const cleaned = utr.trim().replace(/\s/g, "");
+    if (cleaned.length < 12) {
+      setUtrError("Please enter a valid UTR ID (minimum 12 digits).");
+      return;
     }
+    setUtrError("");
+    setConfirming(true);
 
-    // Mobile Validation (10 digits)
-    const mobileRegex = /^[0-9]{10}$/;
-    if (!formData.mobile.trim()) {
-      newErrors.mobile = 'Mobile number is required';
-    } else if (!mobileRegex.test(formData.mobile)) {
-      newErrors.mobile = 'Mobile number must be exactly 10 digits';
-    }
+    setTimeout(() => {
+      const newBooking = {
+        id: Date.now().toString(),
+        listingId: vehicle.id || "",
+        title: vehicle.name,
+        location: vehicle.category || "Driveables",
+        image: vehicle.image || "",
+        checkIn: bookingDetails?.startDate || new Date().toISOString(),
+        checkOut: bookingDetails?.endDate || new Date().toISOString(),
+        guests: { adults: 1, children: 0, infants: 0 },
+        amount: fmt(grandTotal),
+        status: "upcoming",
+        utr: cleaned,
+        bookedAt: new Date().toISOString(),
+        type: "driveable",
+      };
 
-    // Payment Details Validation (Basic)
-    if (formData.paymentMethod === 'credit-card') {
-      if (!formData.cardNumber) newErrors.cardNumber = 'Card number is required';
-      if (!formData.expiryDate) newErrors.expiryDate = 'Expiry date is required';
-      if (!formData.cvv) newErrors.cvv = 'CVV is required';
-    }
+      const existing = JSON.parse(localStorage.getItem("bookings") || "[]");
+      existing.push(newBooking);
+      localStorage.setItem("bookings", JSON.stringify(existing));
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+      setConfirmedBooking(newBooking);
+      setConfirming(false);
+      setConfirmed(true);
+    }, 1800);
+  }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Restrict mobile input to numbers only
-    if (name === 'mobile' && !/^\d*$/.test(value)) return;
-    
-    // Restrict card number to numbers only
-    if ((name === 'cardNumber' || name === 'cvv') && !/^\d*$/.test(value)) return;
-
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error on change
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      setIsProcessing(true);
-      // Simulate API call
-      setTimeout(() => {
-        setIsProcessing(false);
-        setIsSuccess(true);
-        // Here you would typically redirect to a success page or show a modal
-        setTimeout(() => {
-            alert('Booking Confirmed! Redirecting to home...');
-            navigate('/');
-        }, 2000);
-      }, 2000);
-    }
-  };
-
-  const calculateTotal = () => {
-      // If bookingDetails is passed, use it, otherwise default to hourly rate for 1 hour
-      if (bookingDetails?.totalPrice) return bookingDetails.totalPrice;
-      return vehicle.hourlyRate;
-  };
-  
-  const totalPrice = calculateTotal();
+  if (confirmed && confirmedBooking) {
+    return (
+      <div className="dv-root">
+        <div className="dv-page">
+          <SuccessScreen vehicle={vehicle} booking={confirmedBooking} />
+        </div>
+        <style>{dvSuccessStyles}</style>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-light min-vh-100 d-flex flex-column">
-      <Header />
-      
-      <div className="container py-5 flex-grow-1">
-        <button 
-            onClick={() => navigate(-1)} 
-            className="btn btn-link text-decoration-none text-muted mb-4 ps-0 d-flex align-items-center gap-2"
-        >
-            <FaArrowLeft /> Back
-        </button>
+    <div className="dv-root">
+      <div className="dv-page">
 
-        <div className="row g-5">
-            {/* Left Column: Form */}
-            <div className="col-lg-8">
-                <div className="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 fade-in-up">
-                    <div className="card-header bg-white border-bottom p-4">
-                        <h4 className="mb-0 fw-bold text-primary">Secure Checkout</h4>
-                    </div>
-                    <div className="card-body p-4">
-                        <form onSubmit={handleSubmit}>
-                            {/* Personal Details Section */}
-                            <h5 className="fw-bold mb-3 text-secondary">Contact Information</h5>
-                            <div className="row g-3 mb-4">
-                                <div className="col-md-6">
-                                    <div className="form-floating">
-                                        <input 
-                                            type="text" 
-                                            className={`form-control ${errors.fullName ? 'is-invalid' : ''}`} 
-                                            id="fullName" 
-                                            name="fullName"
-                                            placeholder="John Doe"
-                                            value={formData.fullName}
-                                            onChange={handleInputChange}
-                                        />
-                                        <label htmlFor="fullName"><FaUser className="me-2 text-muted"/>Full Name</label>
-                                        {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    <div className="form-floating">
-                                        <input 
-                                            type="tel" 
-                                            className={`form-control ${errors.mobile ? 'is-invalid' : ''}`} 
-                                            id="mobile"
-                                            name="mobile" 
-                                            placeholder="1234567890"
-                                            maxLength="10"
-                                            value={formData.mobile}
-                                            onChange={handleInputChange}
-                                        />
-                                        <label htmlFor="mobile"><FaPhone className="me-2 text-muted"/>Mobile Number</label>
-                                        {errors.mobile && <div className="invalid-feedback">{errors.mobile}</div>}
-                                    </div>
-                                </div>
-                                <div className="col-12">
-                                    <div className="form-floating">
-                                        <input 
-                                            type="email" 
-                                            className={`form-control ${errors.email ? 'is-invalid' : ''}`} 
-                                            id="email" 
-                                            name="email"
-                                            placeholder="name@example.com"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                        />
-                                        <label htmlFor="email"><FaEnvelope className="me-2 text-muted"/>Email Address</label>
-                                        {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                                    </div>
-                                </div>
-                            </div>
+        {/* Topbar */}
+        <div className="dv-topbar">
+          <button className="dv-back-btn" onClick={() => navigate(-1)}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+          </button>
+          <h1>Complete Your Booking</h1>
+        </div>
 
-                            {/* Payment Method Section */}
-                            <h5 className="fw-bold mb-3 text-secondary">Payment Method</h5>
-                            <div className="d-flex gap-3 mb-4 flex-wrap">
-                                <div 
-                                    className={`payment-method-option flex-grow-1 text-center ${formData.paymentMethod === 'credit-card' ? 'selected' : ''}`}
-                                    onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'credit-card' }))}
-                                >
-                                    <FaCreditCard className="mb-2 d-block mx-auto fs-4" />
-                                    <span className="small fw-bold">Card</span>
-                                </div>
-                                <div 
-                                    className={`payment-method-option flex-grow-1 text-center ${formData.paymentMethod === 'upi' ? 'selected' : ''}`}
-                                    onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'upi' }))}
-                                >
-                                    <FaGooglePay className="mb-2 d-block mx-auto fs-4" />
-                                    <span className="small fw-bold">UPI / GPay</span>
-                                </div>
-                                <div 
-                                    className={`payment-method-option flex-grow-1 text-center ${formData.paymentMethod === 'paypal' ? 'selected' : ''}`}
-                                    onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'paypal' }))}
-                                >
-                                    <FaPaypal className="mb-2 d-block mx-auto fs-4" />
-                                    <span className="small fw-bold">PayPal</span>
-                                </div>
-                            </div>
+        <div className="dv-layout">
 
-                            {/* Card Details (Conditional) */}
-                            {formData.paymentMethod === 'credit-card' && (
-                                <div className="bg-light p-3 rounded-3 mb-4 border">
-                                    <div className="row g-3">
-                                        <div className="col-12">
-                                            <label className="form-label small fw-bold text-muted">Card Number</label>
-                                            <input 
-                                                type="text" 
-                                                className={`form-control ${errors.cardNumber ? 'is-invalid' : ''}`} 
-                                                name="cardNumber"
-                                                placeholder="0000 0000 0000 0000"
-                                                maxLength="16"
-                                                value={formData.cardNumber}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.cardNumber && <div className="invalid-feedback">{errors.cardNumber}</div>}
-                                        </div>
-                                        <div className="col-6">
-                                            <label className="form-label small fw-bold text-muted">Expiry Date</label>
-                                            <input 
-                                                type="text" 
-                                                className={`form-control ${errors.expiryDate ? 'is-invalid' : ''}`} 
-                                                name="expiryDate"
-                                                placeholder="MM/YY"
-                                                maxLength="5"
-                                                value={formData.expiryDate}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.expiryDate && <div className="invalid-feedback">{errors.expiryDate}</div>}
-                                        </div>
-                                        <div className="col-6">
-                                            <label className="form-label small fw-bold text-muted">CVV</label>
-                                            <input 
-                                                type="password" 
-                                                className={`form-control ${errors.cvv ? 'is-invalid' : ''}`} 
-                                                name="cvv"
-                                                placeholder="123"
-                                                maxLength="3"
-                                                value={formData.cvv}
-                                                onChange={handleInputChange}
-                                            />
-                                            {errors.cvv && <div className="invalid-feedback">{errors.cvv}</div>}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+          {/* LEFT — vehicle summary */}
+          <div className="dv-left">
+            <div className="dv-summary-card">
 
-                            <button 
-                                type="submit" 
-                                className="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm"
-                                disabled={isProcessing || isSuccess}
-                            >
-                                {isProcessing ? (
-                                    <span>Processing...</span>
-                                ) : isSuccess ? (
-                                    <span>Payment Successful!</span>
-                                ) : (
-                                    <span>Pay ₹{totalPrice}</span>
-                                )}
-                            </button>
-                            
-                            <div className="text-center mt-3">
-                                <span className="secure-badge">
-                                    <FaShieldAlt /> 100% Secure Transaction
-                                </span>
-                            </div>
-                        </form>
-                    </div>
+              {/* Vehicle */}
+              <div className="dv-vehicle-row">
+                <img src={vehicle.image} alt={vehicle.name} className="dv-vehicle-img" />
+                <div className="dv-vehicle-info">
+                  <p className="dv-vehicle-cat">{vehicle.category}</p>
+                  <p className="dv-vehicle-name">{vehicle.name}</p>
+                  {vehicle.brand && <p className="dv-vehicle-brand">{vehicle.brand}</p>}
                 </div>
-            </div>
+              </div>
 
-            {/* Right Column: Order Summary */}
-            <div className="col-lg-4">
-                <div className="card shadow-sm border-0 rounded-4 overflow-hidden sticky-top" style={{ top: '100px', zIndex: 1 }}>
-                    <div className="card-header bg-white border-bottom p-4">
-                        <h5 className="mb-0 fw-bold">Order Summary</h5>
-                    </div>
-                    <div className="card-body p-4">
-                        <div className="d-flex align-items-center mb-4">
-                            <img 
-                                src={vehicle.image} 
-                                alt={vehicle.name} 
-                                className="rounded-3 object-fit-cover"
-                                style={{ width: '80px', height: '80px' }}
-                            />
-                            <div className="ms-3">
-                                <h6 className="fw-bold mb-1">{vehicle.name}</h6>
-                                <p className="mb-0 small text-muted">{vehicle.category}</p>
-                            </div>
-                        </div>
+              <div className="dv-sc-divider" />
 
-                        <div className="summary-row">
-                            <span>Rate</span>
-                            <span className="fw-bold">₹{vehicle.hourlyRate}/hr</span>
-                        </div>
-                        
-                        {bookingDetails?.duration && (
-                             <div className="summary-row">
-                                <span>Duration</span>
-                                <span className="fw-bold">{bookingDetails.duration}</span>
-                            </div>
-                        )}
+              {/* Booking details */}
+              <div className="dv-meta">
+                {bookingDetails?.duration && (
+                  <div className="dv-meta-row">
+                    <span>Duration</span>
+                    <strong>{bookingDetails.duration}</strong>
+                  </div>
+                )}
+                {bookingDetails?.startDate && (
+                  <div className="dv-meta-row">
+                    <span>Pickup</span>
+                    <strong>{new Date(bookingDetails.startDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</strong>
+                  </div>
+                )}
+              </div>
 
-                        <div className="summary-row">
-                            <span>Service Fee</span>
-                            <span className="fw-bold">₹50</span>
-                        </div>
+              <div className="dv-sc-divider" />
 
-                        <div className="summary-row">
-                            <span>Taxes</span>
-                            <span className="fw-bold">₹{Math.round(totalPrice * 0.18)}</span>
-                        </div>
-
-                        <div className="summary-total">
-                            <span>Total Amount</span>
-                            <span className="text-primary">₹{Math.round(totalPrice * 1.18 + 50)}</span>
-                        </div>
-                    </div>
-                    <div className="card-footer bg-light p-3 text-center">
-                        <small className="text-muted"><FaCalendarAlt className="me-1"/> Free cancellation until 24 hours before</small>
-                    </div>
+              {/* Price breakdown */}
+              <div className="dv-pr-section">
+                <h4 style={{ marginBottom: 14, fontWeight: 700, fontSize: 15 }}>Price Breakdown</h4>
+                <div className="dv-pr-row">
+                  <span>Base price</span>
+                  <span>{fmt(totalPrice)}</span>
                 </div>
+                <div className="dv-pr-row">
+                  <span>Service fee</span>
+                  <span>₹50</span>
+                </div>
+                <div className="dv-pr-row">
+                  <span>GST (18%)</span>
+                  <span>{fmt(Math.round(totalPrice * 0.18))}</span>
+                </div>
+                <div className="dv-pr-total">
+                  <span>Total</span>
+                  <strong>{fmt(grandTotal)}</strong>
+                </div>
+              </div>
+
             </div>
+          </div>
+
+          {/* RIGHT — QR Payment */}
+          <div className="dv-right">
+            <div className="dv-qr-card">
+
+              <div className="dv-qr-header">
+                <div className="dv-qr-badge">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" /><rect x="11" y="11" width="3" height="3" />
+                    <rect x="11" y="18" width="3" height="3" /><rect x="18" y="11" width="3" height="3" />
+                    <rect x="15" y="15" width="6" height="6" />
+                  </svg>
+                </div>
+                <div>
+                  <h3>Scan &amp; Pay via UPI</h3>
+                  <p>Use GPay, PhonePe, Paytm or any UPI app</p>
+                </div>
+              </div>
+
+              {/* QR Code */}
+              <div className="dv-qr-wrap">
+                <img
+                  src={getQRUrl(UPI_ID, grandTotal, HOST_NAME)}
+                  alt="UPI QR Code"
+                  className="dv-qr-img"
+                />
+                <p className="dv-qr-amount">Pay {fmt(grandTotal)}</p>
+              </div>
+
+              {/* UPI ID */}
+              <div className="dv-upi-info">
+                <span className="dv-upi-label">UPI ID</span>
+                <div className="dv-upi-id-wrap">
+                  <span className="dv-upi-id">{UPI_ID}</span>
+                  <button
+                    className="dv-copy-btn"
+                    onClick={() => navigator.clipboard.writeText(UPI_ID)}
+                    title="Copy UPI ID"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              <div className="dv-qr-divider" />
+
+              {/* UTR Input */}
+              <div className="dv-utr-section">
+                <label className="dv-utr-label">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Enter UTR / Transaction Reference ID
+                </label>
+                <p className="dv-utr-hint">
+                  After payment, find your UTR ID in your UPI app under transaction details.
+                </p>
+                <input
+                  className={`dv-utr-input${utrError ? " error" : ""}`}
+                  type="text"
+                  placeholder="e.g. 123456789012"
+                  value={utr}
+                  onChange={(e) => {
+                    setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+                    setUtrError("");
+                  }}
+                  maxLength={25}
+                />
+                {utrError && <span className="dv-utr-error">{utrError}</span>}
+              </div>
+
+              <button
+                className="dv-confirm-btn"
+                onClick={handleConfirm}
+                disabled={confirming}
+              >
+                {confirming ? (
+                  <>
+                    <span className="dv-spinner" />
+                    Verifying Payment...
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Confirm &amp; Complete Booking
+                  </>
+                )}
+              </button>
+
+              <p className="dv-secure-note">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Secured by UPI. Your transaction is protected.
+              </p>
+
+            </div>
+          </div>
+
         </div>
       </div>
       <Footer />
+
+      <style>{`
+        .dv-root {
+          font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
+          background: var(--bg-secondary, #f5f5f5);
+          min-height: 100vh;
+          -webkit-font-smoothing: antialiased;
+        }
+        .dv-root * { box-sizing: border-box; }
+
+        .dv-page {
+          max-width: 1060px;
+          margin: 0 auto;
+          padding: 32px 24px 80px;
+        }
+
+        .dv-topbar {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 36px;
+        }
+        .dv-topbar h1 {
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--text-primary, #222);
+        }
+        .dv-back-btn {
+          width: 38px; height: 38px;
+          border-radius: 50%;
+          border: 1.5px solid #ddd;
+          background: white;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          color: #222;
+          transition: background .2s;
+          flex-shrink: 0;
+        }
+        .dv-back-btn:hover { background: #f0f0f0; }
+
+        .dv-layout {
+          display: grid;
+          grid-template-columns: 1fr 420px;
+          gap: 40px;
+          align-items: start;
+        }
+
+        /* Summary Card */
+        .dv-summary-card {
+          background: white;
+          border: 1px solid #e5e5e5;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        }
+        .dv-vehicle-row {
+          display: flex;
+          gap: 16px;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        .dv-vehicle-img {
+          width: 100px; height: 72px;
+          border-radius: 10px;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+        .dv-vehicle-cat {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+          color: #888;
+          margin-bottom: 2px;
+        }
+        .dv-vehicle-name {
+          font-size: 16px;
+          font-weight: 700;
+          color: #222;
+          margin-bottom: 2px;
+        }
+        .dv-vehicle-brand { font-size: 13px; color: #888; }
+
+        .dv-sc-divider { border: none; border-top: 1px solid #f0f0f0; margin: 16px 0; }
+
+        .dv-meta { display: flex; flex-direction: column; gap: 10px; }
+        .dv-meta-row { display: flex; justify-content: space-between; font-size: 14px; }
+        .dv-meta-row span { color: #888; }
+        .dv-meta-row strong { color: #222; }
+
+        .dv-pr-section { margin-top: 4px; }
+        .dv-pr-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          padding: 6px 0;
+          color: #333;
+        }
+        .dv-pr-total {
+          display: flex;
+          justify-content: space-between;
+          font-size: 16px;
+          font-weight: 700;
+          padding: 14px 0 0;
+          border-top: 1.5px solid #e5e5e5;
+          margin-top: 8px;
+          color: #222;
+        }
+
+        /* QR Card */
+        .dv-qr-card {
+          background: white;
+          border: 1px solid #e5e5e5;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 2px 12px rgba(0,0,0,.06);
+          position: sticky;
+          top: 100px;
+        }
+        .dv-qr-header {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-bottom: 24px;
+        }
+        .dv-qr-badge {
+          width: 48px; height: 48px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(255,160,50));
+          display: flex; align-items: center; justify-content: center;
+          color: white;
+          flex-shrink: 0;
+        }
+        .dv-qr-header h3 {
+          font-size: 17px;
+          font-weight: 700;
+          color: #222;
+          margin-bottom: 2px;
+        }
+        .dv-qr-header p { font-size: 12px; color: #888; }
+
+        .dv-qr-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 20px;
+          padding: 20px;
+          background: #fafafa;
+          border-radius: 12px;
+          border: 1px solid #f0f0f0;
+        }
+        .dv-qr-img {
+          width: 200px; height: 200px;
+          border-radius: 8px;
+          border: 4px solid white;
+          box-shadow: 0 4px 14px rgba(0,0,0,.1);
+        }
+        .dv-qr-amount {
+          font-size: 20px;
+          font-weight: 800;
+          color: rgb(255, 102, 0);
+        }
+
+        .dv-upi-info { margin-bottom: 18px; }
+        .dv-upi-label {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+          color: #888;
+          display: block;
+          margin-bottom: 6px;
+        }
+        .dv-upi-id-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f8f8f8;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          padding: 10px 14px;
+        }
+        .dv-upi-id {
+          font-size: 14px;
+          font-weight: 600;
+          color: #222;
+          font-family: monospace;
+        }
+        .dv-copy-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          color: rgb(255, 102, 0);
+          border: 1px solid rgb(255, 102, 0);
+          background: none;
+          border-radius: 6px;
+          padding: 4px 10px;
+          cursor: pointer;
+          transition: background .2s;
+        }
+        .dv-copy-btn:hover { background: rgba(255,102,0,.06); }
+
+        .dv-qr-divider { border: none; border-top: 1px solid #f0f0f0; margin: 18px 0; }
+
+        .dv-utr-section { margin-bottom: 20px; }
+        .dv-utr-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #222;
+          margin-bottom: 6px;
+        }
+        .dv-utr-hint {
+          font-size: 12px;
+          color: #888;
+          margin-bottom: 10px;
+          line-height: 1.5;
+        }
+        .dv-utr-input {
+          width: 100%;
+          padding: 13px 16px;
+          border: 1.5px solid #ddd;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 600;
+          font-family: monospace;
+          color: #222;
+          background: white;
+          letter-spacing: 1px;
+          outline: none;
+          transition: border-color .2s, box-shadow .2s;
+        }
+        .dv-utr-input:focus {
+          border-color: rgb(255, 102, 0);
+          box-shadow: 0 0 0 3px rgba(255,102,0,.1);
+        }
+        .dv-utr-input.error { border-color: #e53e3e; }
+        .dv-utr-error {
+          display: block;
+          margin-top: 6px;
+          font-size: 12px;
+          color: #e53e3e;
+        }
+
+        .dv-confirm-btn {
+          width: 100%;
+          padding: 15px;
+          border: none;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          color: white;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: opacity .2s, transform .15s, box-shadow .2s;
+          box-shadow: 0 4px 14px rgba(255,102,0,.35);
+          margin-bottom: 14px;
+          font-family: inherit;
+        }
+        .dv-confirm-btn:hover:not(:disabled) {
+          opacity: .92;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(255,102,0,.45);
+        }
+        .dv-confirm-btn:disabled { opacity: .65; cursor: not-allowed; }
+
+        .dv-secure-note {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          color: #aaa;
+          justify-content: center;
+        }
+
+        .dv-spinner {
+          width: 18px; height: 18px;
+          border: 2.5px solid rgba(255,255,255,.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: dv-spin .8s linear infinite;
+          display: inline-block;
+        }
+        @keyframes dv-spin { to { transform: rotate(360deg); } }
+
+        /* Success */
+        .dv-success {
+          max-width: 520px;
+          margin: 60px auto;
+          text-align: center;
+          background: white;
+          border-radius: 20px;
+          padding: 50px 40px;
+          box-shadow: 0 8px 40px rgba(0,0,0,.1);
+          border: 1px solid #eee;
+        }
+        .dv-success-icon {
+          width: 80px; height: 80px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px;
+          box-shadow: 0 6px 20px rgba(255,102,0,.35);
+        }
+        .dv-success h2 {
+          font-size: 26px;
+          font-weight: 800;
+          color: #222;
+          margin-bottom: 10px;
+        }
+        .dv-success-sub {
+          font-size: 15px;
+          color: #666;
+          line-height: 1.6;
+          margin-bottom: 32px;
+        }
+        .dv-success-detail {
+          background: #fafafa;
+          border-radius: 12px;
+          border: 1px solid #eee;
+          padding: 20px;
+          margin-bottom: 28px;
+          text-align: left;
+        }
+        .dv-success-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          padding: 8px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .dv-success-row:last-child { border: none; }
+        .dv-success-row span { color: #888; }
+        .dv-success-row strong { color: #222; }
+        .dv-success-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+        }
+        .dv-success-profile-btn {
+          padding: 13px 24px;
+          border: none;
+          border-radius: 10px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          color: white;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          box-shadow: 0 4px 14px rgba(255,102,0,.3);
+        }
+        .dv-success-profile-btn:hover { opacity: .9; }
+        .dv-success-home-btn {
+          padding: 13px 24px;
+          border: 1.5px solid #ddd;
+          border-radius: 10px;
+          background: white;
+          color: #333;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .dv-success-home-btn:hover { background: #f5f5f5; }
+
+        @media (max-width: 900px) {
+          .dv-layout { grid-template-columns: 1fr; gap: 24px; }
+          .dv-qr-card { position: static; }
+        }
+      `}</style>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import DriveableDetail from './DriveableDetail';
 import Pagination from './Pagination';
 import Footer from '../components/Footer/Footer';
 import VehicleComparison from '../components/VehicleComparison/VehicleComparison';
+import DriveablesFilterBar from './DriveablesFilterBar';
 
 // CSS Import
 import './Driveables.css';
@@ -34,6 +35,7 @@ import tataNexomImg from '../assets/tatanexom.jpg';
 import ktmDukeImg from '../assets/ktmduke.avif';
 import KiaSeltosImg from '../assets/KiaSeltos.avif';
 import gravelBikeImg from '../assets/gravelbike.jpg';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const mockData = [
   { id: 1, name: 'Honda City', category: 'cars', image: hondaCityImg, hourlyRate: 200, dayRate: 2000, rating: 4.5, location: 'Downtown', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 5 } },
@@ -67,14 +69,14 @@ const DriveablesMain = () => {
   const [selectedDriveable, setSelectedDriveable] = useState(null);
   const [sortOrder, setSortOrder] = useState('default');
   const [compareList, setCompareList] = useState([]);
-  const [searchFilters, setSearchFilters] = useState({ location: '', guests: 1 });
-  
+  const [searchFilters, setSearchFilters] = useState({ location: '', guests: 1, checkIn: undefined, checkOut: undefined });
+  const navigate = useNavigate();
   const fleetRef = useRef(null);
 
   // useMemo used just like the filtered variable in Dwellings
   const filtered = useMemo(() => {
     let result = [...mockData];
-    
+
     // Category Filter
     if (activeCategory !== 'all') {
       result = result.filter((item) => item.category === activeCategory);
@@ -83,28 +85,28 @@ const DriveablesMain = () => {
     // Search Location Filter
     if (searchFilters.location && searchFilters.location.trim() !== '') {
       const q = searchFilters.location.toLowerCase();
-      result = result.filter((item) => 
-        item.location.toLowerCase().includes(q) || 
+      result = result.filter((item) =>
+        item.location.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q)
       );
     }
 
     // Guests / Seating Capacity Filter
     if (searchFilters.guests && searchFilters.guests > 1) {
-      result = result.filter((item) => 
+      result = result.filter((item) =>
         (item.specifications.seatingCapacity || 1) >= searchFilters.guests
       );
     }
-    
+
     // Sorting Logic
     if (sortOrder === 'low') result.sort((a, b) => a.hourlyRate - b.hourlyRate);
     if (sortOrder === 'high') result.sort((a, b) => b.hourlyRate - a.hourlyRate);
-    
+
     return result;
   }, [activeCategory, sortOrder]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  
+
   // Pagination slice matching Dwellings logic
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -137,7 +139,7 @@ const DriveablesMain = () => {
       }
     });
   };
-  
+
   const scrollToFleet = () => {
     if (fleetRef.current) {
       fleetRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -150,94 +152,131 @@ const DriveablesMain = () => {
     scrollToFleet();
   };
 
+  
+
+  const categories = [
+    { key: 'cars', label: 'Cars', heading: 'Premium cars for every journey', description: 'From compact city cars to luxury SUVs. Find the perfect car rental for your needs.' },
+    { key: 'bikes', label: 'Bikes', heading: 'Two-wheelers ready to ride', description: 'Explore the city on two wheels. Browse our collection of bikes and scooters.' },
+    { key: 'evs', label: 'EVs', heading: 'Go green with electric vehicles', description: 'Eco-friendly electric vehicles for a sustainable ride. Zero emissions, full adventure.' },
+    { key: 'bicycles', label: 'Bicycles', heading: 'Pedal-powered adventures', description: 'Mountain bikes, city cruisers, and more. Rent a bicycle for your next outdoor adventure.' },
+  ];
+
+  const currentCategory = categories.find(c => c.key === activeCategory);
+  
   // Detail View Overlay
   if (selectedDriveable) {
     return (
       <div className="bg-light min-vh-100">
         <Header />
-        <DriveableDetail 
-          driveable={selectedDriveable} 
-          onClose={() => setSelectedDriveable(null)} 
+        <DriveableDetail
+          driveable={selectedDriveable}
+          onClose={() => setSelectedDriveable(null)}
         />
       </div>
     );
   }
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="drv-page-container">
       <Header />
-      
-      {/* Passing onExplore to HeroSection to maintain your original scroll functionality */}
-      <HeroSection 
-        onExplore={scrollToFleet} 
-        activeCategory={activeCategory} 
-        onCategoryChange={handleCategoryChange} 
-        onSearchClick={handleSearch}
+
+      <HeroSection />
+
+      <DriveablesFilterBar
+        filters={searchFilters}
+        onChange={(newFilters) => {
+          setSearchFilters(newFilters);
+          setCurrentPage(1);
+        }}
       />
-      
-     
 
-      {/* Mandatory Notice Box (Mirrors the Aadhar notice from Dwellings) */}
-      <div className="container mt-4">
-        <div className="alert alert-warning d-flex align-items-center mb-0 border-warning py-2 shadow-sm" role="alert">
-          <Shield className="text-success me-2 flex-shrink-0" size={20} />
-          <p className="mb-0 small text-dark">
-            <span className="fw-bold">Driving License verification</span> is mandatory for all vehicle rentals. Please keep your valid ID details handy.
-          </p>
-        </div>
-      </div>
-      
-      {/* Vehicle Comparison Component */}
-      {compareList.length > 0 && (
-        <div className="container mt-4">
-          <VehicleComparison 
-            vehicles={compareList} 
-            onRemove={(id) => setCompareList(prev => prev.filter(v => v.id !== id))} 
-          />
-        </div>
-      )}
-
-      {/* Results Count Text */}
-      <div className="container mt-4 mb-3">
-        <p className="text-muted small mb-0">
-          Showing <span className="fw-bold text-dark">{filtered.length}</span> {activeCategory !== 'all' ? `${activeCategory}` : "vehicles"}
-        </p>
-      </div>
-
-      {/* Main Listing Grid */}
-      <main className="container pb-5" ref={fleetRef}>
-        {paginated.length > 0 ? (
-          <div className="row g-4">
-            {paginated.map((driveable, index) => (
-              <div key={driveable.id} className="col-12 col-md-6 col-lg-4">
-                <DriveableCard 
-                  driveable={driveable}
-                  index={index}
-                  onViewDetails={() => setSelectedDriveable(driveable)}
-                  onToggleCompare={handleToggleCompare}
-                  isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
-                />
-              </div>
+      {/* Category tabs and content layout — Dwellings style */}
+      <div className="drv-section-container drv-tabs-content-wrapper">
+        {/* Left side - Category tabs */}
+        <aside className="drv-category-tabs-sidebar">
+          <div className="drv-category-tabs">
+            {categories.map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => handleCategoryChange(activeCategory === cat.key ? 'all' : cat.key)}
+                className={`drv-category-tab-button ${activeCategory === cat.key ? 'active' : ''}`}
+              >
+                {cat.label}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-5">
-            <p className="fs-5 text-muted">No vehicles found matching your criteria.</p>
-          </div>
-        )}
-      </main>
+        </aside>
 
-      {/* Pagination Component */}
-      {totalPages > 1 && (
-        <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={filtered.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-        />
-      )}
-      
+        {/* Right side - Content */}
+        <div className="drv-category-content">
+          {/* Category heading and description */}
+          {activeCategory !== 'all' && currentCategory && (
+            <div className="drv-category-header">
+              <h2 className="drv-category-title">{currentCategory.heading}</h2>
+              <p className="drv-category-description">{currentCategory.description}</p>
+            </div>
+          )}
+
+          {/* License notice */}
+          <div className="drv-notice-banner">
+            <Shield className="drv-notice-icon" />
+            <p className="drv-notice-text">
+              <span>Driving License verification</span> is mandatory for all vehicle rentals. Please keep your valid ID details handy.
+            </p>
+          </div>
+
+          {/* Results count */}
+          <div className="drv-count-container">
+            <p className="drv-results-count">
+              Showing <span>{filtered.length}</span> {activeCategory !== 'all' ? activeCategory : 'vehicles'}
+            </p>
+          </div>
+
+          {/* Vehicle Comparison */}
+          {compareList.length > 0 && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <VehicleComparison
+                vehicles={compareList}
+                onRemove={(id) => setCompareList(prev => prev.filter(v => v.id !== id))}
+              />
+            </div>
+          )}
+
+          {/* Listing grid */}
+          <main className="drv-main-content" ref={fleetRef}>
+            {paginated.length > 0 ? (
+              <div className="drv-listings-grid">
+                {paginated.map((driveable, index) => (
+                  <DriveableCard
+                    key={driveable.id}
+                    driveable={driveable}
+                    index={index}
+                    onViewDetails={() => setSelectedDriveable(driveable)
+                    }
+                    onToggleCompare={handleToggleCompare}
+                    isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="drv-empty-state">
+                <p>No vehicles found matching your criteria.</p>
+              </div>
+            )}
+          </main>
+
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              totalItems={filtered.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
+          )}
+        </div>
+      </div>
+
       <Footer />
     </div>
   );
