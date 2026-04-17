@@ -6,10 +6,30 @@ import mountainBikeImg from '../assets/mountain-bike.jpg';
 import '../components/dwellings/HeroCarousel.css';
 
 const slides = [
-  { image: toyotaFortunerImg, title: "Find Your Dream Ride", desc: "Premium vehicles for long-term journeys", category: "cars" },
-  { image: bajajPulsarImg, title: "Ride the Legend", desc: "Classic bikes for the ultimate road trip", category: "bikes" },
-  { image: activaImg, title: "Zip Through Traffic", desc: "Efficient scooters for your daily commute", category: "bikes" },
-  { image: mountainBikeImg, title: "Adventure on Two Wheels", desc: "Explore off-road trails with our best cycles", category: "bicycles" },
+  {
+    image: toyotaFortunerImg,
+    title: 'Find Your Dream Ride',
+    desc: 'Premium vehicles for long-term journeys',
+    category: 'cars',
+  },
+  {
+    image: bajajPulsarImg,
+    title: 'Ride the Legend',
+    desc: 'Classic bikes for the ultimate road trip',
+    category: 'bikes',
+  },
+  {
+    image: activaImg,
+    title: 'Zip Through Traffic',
+    desc: 'Efficient scooters for your daily commute',
+    category: 'bikes',
+  },
+  {
+    image: mountainBikeImg,
+    title: 'Adventure on Two Wheels',
+    desc: 'Explore off-road trails with our best cycles',
+    category: 'bicycles',
+  },
 ];
 
 const HeroSection = () => {
@@ -30,27 +50,20 @@ const HeroSection = () => {
         <div
           key={s.category + i}
           className="carousel-slide"
-          style={{
-            opacity: i === current ? 1 : 0,
-            zIndex: i === current ? 1 : 0
-          }}
+          style={{ opacity: i === current ? 1 : 0, zIndex: i === current ? 1 : 0 }}
         >
           <img
             src={s.image}
-            alt={s.title}
+            alt={`${s.title} - ${s.category} available for rent at RentifyX`}
             className="carousel-image"
           />
-          <div className="carousel-overlay" />
+          <div className="carousel-overlay" aria-hidden="true" />
         </div>
       ))}
 
       <div className="carousel-content">
-        <h1 className="carousel-title">
-          {slide.title}
-        </h1>
-        <p className="carousel-desc">
-          {slide.desc}
-        </p>
+        <h1 className="carousel-title">{slide.title}</h1>
+        <p className="carousel-desc">{slide.desc}</p>
       </div>
 
       <div className="carousel-dots">
@@ -58,7 +71,8 @@ const HeroSection = () => {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`dot ${i === current ? "active" : ""}`}
+            className={`dot ${i === current ? 'active' : ''}`}
+            aria-label={`Go to slide ${i + 1}`}
           />
         ))}
       </div>

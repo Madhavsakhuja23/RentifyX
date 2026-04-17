@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, MapPin, Heart } from 'lucide-react';
 import './Driveables.css';
 
-const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, isSelectedForComparison }) => {
+const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, isSelectedForComparison, isCompareDisabled = false }) => {
   const [liked, setLiked] = useState(false);
   const navigate = useNavigate();
 
@@ -82,12 +82,15 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
             <label
               className="drv-compare-label"
               onClick={(e) => e.stopPropagation()}
+              style={{ opacity: isCompareDisabled ? 0.6 : 1, cursor: isCompareDisabled ? 'not-allowed' : 'pointer' }}
             >
               <input
                 type="checkbox"
                 checked={isSelectedForComparison || false}
+                disabled={isCompareDisabled}
                 onChange={() => onToggleCompare && onToggleCompare(driveable)}
                 className="drv-compare-checkbox"
+                title={isCompareDisabled ? 'Compare vehicles of the same category only' : 'Add to comparison'}
               />
               Compare
             </label>

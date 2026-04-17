@@ -1,4 +1,4 @@
-import { FaTimes, FaStar, FaInfoCircle } from 'react-icons/fa';
+import { FaTimes, FaStar } from 'react-icons/fa';
 
 const VehicleComparison = ({ vehicles, onRemove }) => {
   // Use the same purple gradient for the table headers/icons
@@ -26,10 +26,16 @@ const VehicleComparison = ({ vehicles, onRemove }) => {
                     onClick={() => onRemove(v.id)}
                     className="btn btn-sm btn-light rounded-circle position-absolute top-0 end-0 m-2 shadow-sm border"
                     title="Remove from comparison"
+                    aria-label={`Remove ${v.name} from comparison`}
                   >
                     <FaTimes size={12} className="text-danger" />
                   </button>
-                  <img src={v.image} alt={`${v.name} - ${v.category}`} className="img-fluid rounded mb-2 shadow-sm" style={{ maxHeight: '120px', objectFit: 'cover' }} />
+                  <img 
+                    src={v.image} 
+                    alt={`${v.name} - ${v.category}`} 
+                    className="img-fluid rounded mb-2 shadow-sm" 
+                    style={{ maxHeight: '120px', objectFit: 'cover' }} 
+                  />
                   <h6 className="fw-bold mb-0 text-dark">{v.name}</h6>
                   <span className="badge bg-secondary bg-opacity-10 text-secondary mt-1">{v.category}</span>
                 </th>
