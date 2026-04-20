@@ -6,7 +6,9 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
+import { loginApi, googleAuthApi } from "../api";
 import "./Login.css";
+
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,60 +16,63 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+const [googleLoading, setGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleGoogleLogin = async () => {
+ const handleGoogleLogin = async () => {
+  try {
+    setError("");
+    setGoogleLoading(true);
+
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+
+    // Send to backend — get real JWT back
+    const data = await googleAuthApi(
+      firebaseUser.displayName,
+      firebaseUser.email,
+      firebaseUser.photoURL
+    );
+
+    // Store the real backend JWT and user
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+    navigate("/");
+
+  } catch (error) {
+    console.log(error);
+    setError(error.message || "Google login failed");
+  } finally {
+    setGoogleLoading(false);
+  }
+};
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
     try {
-      setError("");
       setLoading(true);
 
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const data = await loginApi(email, password);
 
-      const userData = {
-        uid: user.uid,
-        name: user.displayName || "Google User",
-        email: user.email || "",
-        photo: user.photoURL || "",
-        role: "user",
-        authType: "google",
-      };
-
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("currentUser", JSON.stringify(userData));
-      localStorage.setItem("token", "dummy-token");
+      // Store real backend JWT
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       navigate("/");
-    } catch (error) {
-      console.log(error);
-      setError(error.message || "Google login failed.");
+
+    } catch (err) {
+      setError(err.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-
-    const user = users.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password
-    );
-
-    if (user) {
-      localStorage.setItem("token", "dummy-token");
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate("/");
-    } else {
-      setError("Invalid email or password");
-    }
-  };
 
   return (
     <div className="container-fluid login-wrapper">
@@ -139,9 +144,9 @@ const Login = () => {
               type="button"
               className="google-btn"
               onClick={handleGoogleLogin}
-              disabled={loading}
-            >
-              {loading ? "Please wait..." : "Continue with Google"}
+              disabled={googleLoading}
+              >
+{googleLoading ? "Please wait..." : "Continue with Google"}
             </button>
 
             <p className="text-center mt-3 small">
