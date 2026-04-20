@@ -35,7 +35,6 @@ import tataNexomImg from '../assets/tatanexom.jpg';
 import ktmDukeImg from '../assets/ktmduke.avif';
 import KiaSeltosImg from '../assets/KiaSeltos.avif';
 import gravelBikeImg from '../assets/gravelbike.jpg';
-import { Navigate, useNavigate } from 'react-router-dom';
 
 const mockData = [
   { id: 1, name: 'Honda City', category: 'cars', image: hondaCityImg, hourlyRate: 200, dayRate: 2000, rating: 4.5, location: 'Downtown', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 5 } },
@@ -69,9 +68,10 @@ const DriveablesMain = () => {
   const [selectedDriveable, setSelectedDriveable] = useState(null);
   const [sortOrder, setSortOrder] = useState('default');
   const [compareList, setCompareList] = useState([]);
+  const [showMaxComparePopup, setShowMaxComparePopup] = useState(false);
   const [searchFilters, setSearchFilters] = useState({ location: '', guests: 1, checkIn: undefined, checkOut: undefined });
-  const navigate = useNavigate();
   const fleetRef = useRef(null);
+  const compareCategory = compareList[0]?.category;
 
   // useMemo used just like the filtered variable in Dwellings
   const filtered = useMemo(() => {
@@ -131,8 +131,12 @@ const DriveablesMain = () => {
       if (exists) {
         return prev.filter(v => v.id !== vehicle.id);
       } else {
+        if (prev.length > 0 && prev[0].category !== vehicle.category) {
+          alert(`Please compare only ${prev[0].category} vehicles together.`);
+          return prev;
+        }
         if (prev.length >= 3) {
-          alert("You can compare up to 3 vehicles at a time.");
+          setShowMaxComparePopup(true);
           return prev;
         }
         return [...prev, vehicle];
@@ -230,6 +234,11 @@ const DriveablesMain = () => {
             <p className="drv-results-count">
               Showing <span>{filtered.length}</span> {activeCategory !== 'all' ? activeCategory : 'vehicles'}
             </p>
+            {compareCategory && (
+              <p className="drv-results-count" style={{ marginTop: '0.25rem' }}>
+                Comparing only <span>{compareCategory}</span> vehicles
+              </p>
+            )}
           </div>
 
           {/* Vehicle Comparison */}
@@ -255,6 +264,7 @@ const DriveablesMain = () => {
                     }
                     onToggleCompare={handleToggleCompare}
                     isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
+                    isCompareDisabled={Boolean(compareCategory) && compareCategory !== driveable.category && !compareList.some(v => v.id === driveable.id)}
                   />
                 ))}
               </div>
@@ -278,6 +288,38 @@ const DriveablesMain = () => {
       </div>
 
       <Footer />
+
+      {showMaxComparePopup && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="max-compare-title"
+          className="d-flex align-items-center justify-content-center"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            zIndex: 1200,
+            padding: '1rem',
+          }}
+          onClick={() => setShowMaxComparePopup(false)}
+        >
+          <div
+            className="bg-white rounded-4 shadow-lg p-4"
+            style={{ width: '100%', maxWidth: '420px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h5 id="max-compare-title" className="fw-bold mb-2">Comparison limit reached</h5>
+            <p className="text-muted mb-4">You can compare up to 3 vehicles at a time.</p>
+            <button
+              className="btn btn-primary w-100"
+              onClick={() => setShowMaxComparePopup(false)}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

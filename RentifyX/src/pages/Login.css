@@ -103,7 +103,7 @@
 }
 
 .login-brand {
-  background: var(--accent-gradient);
+  background:  #FF8D21;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,7 +199,34 @@
   color: var(--accent-blue);
   text-decoration: underline;
 }
+.google-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+}
 
+.google-btn:hover {
+  background: #f5f5f5;
+}
+.alert {
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.alert-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.google-btn {
+  margin-top: 12px;
+}
 @media (max-width: 768px) {
   .login-card {
     padding: 32px;

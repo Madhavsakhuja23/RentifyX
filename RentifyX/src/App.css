@@ -24,7 +24,7 @@
   --accent-pink: #ec4899;
 
   /* Gradients */
-  --accent-gradient: linear-gradient(135deg, #FF8D21 0%, #ff7b00eb 50%, #ffa652a0 100%);
+  --accent-gradient: linear-gradient(135deg, #FF8D21 0%, #ff7b00eb 50%, #f9963aba 100%);
   --accent-gradient-btn: #FF7B00;
 
   /* Glow */
