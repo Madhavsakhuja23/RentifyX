@@ -21,25 +21,41 @@ import PaymentPage from "./pages/PaymentPage";
 import "./App.css";
 import Profile from "./pages/Profile";
 import Chatbot from "./components/dwellings/Chatbot";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function App() {
   return (
-    <AuthProvider>
-      <ListingsProvider>
-        <Router>
-          <Routes>
+    <Router>
+      <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
         <Route path="/dwellings" element={<Dwelling />} />
         <Route path="/listing" element={<Dwelling />} />
-        <Route path="/profile" element={<Profile/>} />
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/book/:id" element={<RequestToBook />} />
         <Route path="/payment" element={<PaymentPage />} />
-     
-        <Route path="/seller" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+
+        {/* Protected Routes — require JWT */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/seller"
+          element={
+            <ProtectedRoute>
+              <SellerLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="listings" element={<MyListings />} />
@@ -49,13 +65,12 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<ProfileSettings />} />
         </Route>
-       
+
       </Routes>
       <Chatbot />
     </Router>
-    </ListingsProvider>
-  </AuthProvider>
   )
 }
 
 export default App;
+
