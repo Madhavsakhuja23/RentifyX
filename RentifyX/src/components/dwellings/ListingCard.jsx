@@ -11,7 +11,9 @@ const ListingCard = ({ listing }) => {
     return (
         <div
     className="listing-card"
-    onClick={() => navigate(`/listing/${listing.id}`)}
+    onClick={() => {
+        navigate(`/listing/${listing.id}`);
+    }}
 >
             <div className="listing-image-container">
                 <img
@@ -21,12 +23,12 @@ const ListingCard = ({ listing }) => {
                     loading="lazy"
                 />
                 <button
-    onClick={(e) => {
-        e.stopPropagation();
-        setLiked(!liked);
-    }}
-    className="like-button"
->
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setLiked(!liked);
+                    }}
+                    className="like-button"
+                >
                     <Heart
                         className={`heart-icon ${liked ? "liked" : ""}`}
                         fill={liked ? "currentColor" : "none"}
@@ -37,7 +39,7 @@ const ListingCard = ({ listing }) => {
                         Unavailable
                     </div>
                 )}
-                <div className="badge badge-category">
+                <div className="badge-category">
                     {categoryLabels[listing.type]}
                 </div>
             </div>

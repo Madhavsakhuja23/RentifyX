@@ -1370,6 +1370,88 @@
   color: var(--foreground);
 }
 
+/* Modal Overlay---- msg host */
+
+.ld-modal-overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.45);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+/* Modal */
+
+.ld-message-modal{
+background:#fff;
+padding:30px;
+border-radius:16px;
+width:420px;
+max-width:90%;
+position:relative;
+box-shadow:0 10px 40px rgba(0,0,0,0.2);
+}
+
+.ld-message-modal h2{
+margin-bottom:6px;
+}
+
+.ld-message-modal p{
+color:#666;
+margin-bottom:20px;
+}
+
+/* Close button */
+
+.ld-modal-close{
+position:absolute;
+top:12px;
+right:12px;
+border:none;
+background:none;
+font-size:20px;
+cursor:pointer;
+}
+
+/* Inputs */
+
+.ld-message-modal input,
+.ld-message-modal textarea{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border:1px solid #ddd;
+border-radius:8px;
+font-size:14px;
+}
+
+.ld-message-modal textarea{
+min-height:120px;
+resize:none;
+}
+
+/* Send button */
+
+.ld-send-btn{
+width:100%;
+padding:12px;
+background:rgb(230,80,0);
+color:#fff;
+border:none;
+border-radius:10px;
+font-weight:600;
+cursor:pointer;
+}
+
+.ld-send-btn:hover{
+background:rgb(185, 66, 2);
+}
+
 /* ── RESPONSIVE ──────────────────────────────── */
 @media (max-width: 1040px) {
   .ld-layout {

@@ -68,9 +68,10 @@ const DriveablesMain = () => {
   const [selectedDriveable, setSelectedDriveable] = useState(null);
   const [sortOrder, setSortOrder] = useState('default');
   const [compareList, setCompareList] = useState([]);
+  const [showMaxComparePopup, setShowMaxComparePopup] = useState(false);
   const [searchFilters, setSearchFilters] = useState({ location: '', guests: 1, checkIn: undefined, checkOut: undefined });
-
   const fleetRef = useRef(null);
+  const compareCategory = compareList[0]?.category;
 
   // useMemo used just like the filtered variable in Dwellings
   const filtered = useMemo(() => {
@@ -130,8 +131,12 @@ const DriveablesMain = () => {
       if (exists) {
         return prev.filter(v => v.id !== vehicle.id);
       } else {
+        if (prev.length > 0 && prev[0].category !== vehicle.category) {
+          alert(`Please compare only ${prev[0].category} vehicles together.`);
+          return prev;
+        }
         if (prev.length >= 3) {
-          alert("You can compare up to 3 vehicles at a time.");
+          setShowMaxComparePopup(true);
           return prev;
         }
         return [...prev, vehicle];
@@ -151,6 +156,8 @@ const DriveablesMain = () => {
     scrollToFleet();
   };
 
+  
+
   const categories = [
     { key: 'cars', label: 'Cars', heading: 'Premium cars for every journey', description: 'From compact city cars to luxury SUVs. Find the perfect car rental for your needs.' },
     { key: 'bikes', label: 'Bikes', heading: 'Two-wheelers ready to ride', description: 'Explore the city on two wheels. Browse our collection of bikes and scooters.' },
@@ -159,7 +166,7 @@ const DriveablesMain = () => {
   ];
 
   const currentCategory = categories.find(c => c.key === activeCategory);
-
+  
   // Detail View Overlay
   if (selectedDriveable) {
     return (
@@ -227,6 +234,11 @@ const DriveablesMain = () => {
             <p className="drv-results-count">
               Showing <span>{filtered.length}</span> {activeCategory !== 'all' ? activeCategory : 'vehicles'}
             </p>
+            {compareCategory && (
+              <p className="drv-results-count" style={{ marginTop: '0.25rem' }}>
+                Comparing only <span>{compareCategory}</span> vehicles
+              </p>
+            )}
           </div>
 
           {/* Vehicle Comparison */}
@@ -248,9 +260,11 @@ const DriveablesMain = () => {
                     key={driveable.id}
                     driveable={driveable}
                     index={index}
-                    onViewDetails={() => setSelectedDriveable(driveable)}
+                    onViewDetails={() => setSelectedDriveable(driveable)
+                    }
                     onToggleCompare={handleToggleCompare}
                     isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
+                    isCompareDisabled={Boolean(compareCategory) && compareCategory !== driveable.category && !compareList.some(v => v.id === driveable.id)}
                   />
                 ))}
               </div>
@@ -274,6 +288,38 @@ const DriveablesMain = () => {
       </div>
 
       <Footer />
+
+      {showMaxComparePopup && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="max-compare-title"
+          className="d-flex align-items-center justify-content-center"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            zIndex: 1200,
+            padding: '1rem',
+          }}
+          onClick={() => setShowMaxComparePopup(false)}
+        >
+          <div
+            className="bg-white rounded-4 shadow-lg p-4"
+            style={{ width: '100%', maxWidth: '420px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h5 id="max-compare-title" className="fw-bold mb-2">Comparison limit reached</h5>
+            <p className="text-muted mb-4">You can compare up to 3 vehicles at a time.</p>
+            <button
+              className="btn btn-primary w-100"
+              onClick={() => setShowMaxComparePopup(false)}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

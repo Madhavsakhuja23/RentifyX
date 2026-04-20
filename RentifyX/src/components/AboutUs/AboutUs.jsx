@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Play } from "lucide-react";
+import { Pause, Play} from "lucide-react";
 import "./AboutUs.css";
+import { useState } from "react";
 
 const stats = [
   { value: "20+", label: "Years Experience" },
@@ -9,7 +10,13 @@ const stats = [
   { value: "10+", label: "Cities Covered" },
 ];
 
+
 const AboutUs = () => {
+  const [play, Setpause] = useState(true);
+
+const toggle =()=>{
+  Setpause(!(play));
+}
   return (
     <section className="about-section">
       <div className="container">
@@ -28,8 +35,8 @@ const AboutUs = () => {
                 src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
                 alt="About RentifyX"
               />
-              <button className="play-btn">
-                <Play size={22} />
+              <button className="play-btn" onClick={toggle}>
+                {play?<Play size={22}/> : <Pause size={22}/>}
               </button>
             </div>
           </motion.div>
