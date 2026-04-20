@@ -16,23 +16,41 @@ import PaymentPage from "./pages/PaymentPage";
 import "./App.css";
 import Profile from "./pages/Profile";
 import Chatbot from "./components/dwellings/Chatbot";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/driveables" element={<DriveablesMain />} />
         <Route path="/dwellings" element={<Dwelling />} />
         <Route path="/listing" element={<Dwelling />} />
-        <Route path="/profile" element={<Profile/>} />
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/book/:id" element={<RequestToBook />} />
         <Route path="/payment" element={<PaymentPage />} />
-     
-        <Route path="/seller" element={<SellerLayout />}>
+
+        {/* Protected Routes — require JWT */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/seller"
+          element={
+            <ProtectedRoute>
+              <SellerLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="analytics" element={<Analytics />} />
@@ -40,7 +58,7 @@ function App() {
           <Route path="add-dwellings" element={<AddDwellings />} />
           <Route path="add-vehicles" element={<AddVehicles />} />
         </Route>
-       
+
       </Routes>
       <Chatbot />
     </Router>
@@ -48,3 +66,4 @@ function App() {
 }
 
 export default App;
+

@@ -6,7 +6,9 @@ import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
+import { signupApi, googleAuthApi } from "../api";
 import "./Signup.css";
+
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,22 +27,22 @@ const Signup = () => {
       setLoading(true);
 
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const firebaseUser = result.user;
 
-      const userData = {
-        uid: user.uid,
-        name: user.displayName || "Google User",
-        email: user.email || "",
-        photo: user.photoURL || "",
-        role: "user",
-        authType: "google",
-      };
+      // Send to backend — get a real JWT back
+      const data = await googleAuthApi(
+        firebaseUser.displayName || "Google User",
+        firebaseUser.email,
+        firebaseUser.photoURL
+      );
 
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("currentUser", JSON.stringify(userData));
-      localStorage.setItem("token", "dummy-token");
+      // Store real backend JWT and user
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       navigate("/");
+
     } catch (error) {
       console.log(error);
       setError(error.message || "Google sign-in failed.");
@@ -48,6 +50,7 @@ const Signup = () => {
       setLoading(false);
     }
   };
+
 
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -81,33 +84,21 @@ const Signup = () => {
       return;
     }
 
-    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+    try {
+      setLoading(true);
 
-    const userExists = existingUsers.find(
-      (user) => user.email.toLowerCase() === email.toLowerCase()
-    );
+      await signupApi(name, email, password, role);
 
-    if (userExists) {
-      setError("User already exists. Please login.");
-      return;
+      navigate("/login");
+
+    } catch (err) {
+      console.log(err);
+      setError(err.message || "Signup failed");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-
-    const newUser = {
-      name,
-      email,
-      password,
-      role,
-      authType: "local",
-    };
-
-    const updatedUsers = [...existingUsers, newUser];
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-    setLoading(false);
-    navigate("/login");
   };
+
 
   return (
     <div className="container-fluid signup-wrapper">

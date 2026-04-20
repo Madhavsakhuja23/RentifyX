@@ -42,10 +42,6 @@ const Profile = () => {
     navigate("/");
   };
 
-  useEffect(() => {
-    if (!user) navigate("/login");
-  }, [user, navigate]);
-
   const activeRentals = bookings.filter((b) => b.status === "upcoming").length;
 
   function handleShowBookings() {
