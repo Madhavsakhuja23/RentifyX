@@ -7,10 +7,12 @@ import Input from "../components/common/Input";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import { signupApi, loginApi, googleAuthApi } from "../api";
+import { useAuth } from "../seller/context/AuthContext";
 import "./Signup.css";
 
 
 const Signup = () => {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,9 +39,8 @@ const Signup = () => {
       );
 
       // Store real backend JWT and user
-      localStorage.setItem("token", data.token);
+      login(data.user, data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       // Redirect based on role
       if (data.user.role === "owner" || data.user.role === "both") {
@@ -96,9 +97,8 @@ const Signup = () => {
 
       // Auto-login after successful signup
       const data = await loginApi(email, password);
-      localStorage.setItem("token", data.token);
+      login(data.user, data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       // Redirect based on role
       if (data.user.role === "owner" || data.user.role === "both") {

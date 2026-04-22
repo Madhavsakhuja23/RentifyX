@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useListings } from '../context/ListingsContext';
 import { Upload, Home, Car, X, ImagePlus, CheckCircle, AlertCircle } from 'lucide-react';
 import './AddListing.css';
 
@@ -7,6 +8,7 @@ const API_URL = 'http://localhost:5000/api/listings';
 
 export default function AddListing() {
   const navigate = useNavigate();
+  const { addListing } = useListings();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -129,7 +131,10 @@ export default function AddListing() {
       // Cleanup previews
       images.forEach((img) => URL.revokeObjectURL(img.preview));
 
-      navigate('/dashboard/listings');
+      // Add to local context to show in My Listings immediately
+      addListing(data.listing);
+
+      navigate('/seller/listings');
     } catch (err) {
       setError(err.message);
     } finally {

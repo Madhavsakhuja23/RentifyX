@@ -33,8 +33,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = (userData) => {
-    localStorage.setItem("token", "dummy-token"); // Set token if needed globally
+  const login = (userData, token) => {
+    if (token) {
+      localStorage.setItem("token", token);
+    }
     localStorage.setItem("currentUser", JSON.stringify(userData));
     setUser(userData);
   };

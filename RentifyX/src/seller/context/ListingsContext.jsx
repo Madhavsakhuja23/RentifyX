@@ -45,10 +45,10 @@ export function ListingsProvider({ children }) {
   const addListing = (listing) => {
     const newListing = {
       ...listing,
-      id: Date.now().toString(),
-      image: listing.image || getRandomImage(),
-      available: true,
-      createdAt: new Date().toISOString(),
+      id: listing.id || listing._id || Date.now().toString(),
+      image: listing.image || (listing.images && listing.images.length > 0 ? listing.images[0].url : getRandomImage()),
+      available: listing.available !== undefined ? listing.available : true,
+      createdAt: listing.createdAt || new Date().toISOString(),
     };
     persist([newListing, ...listings]);
     return newListing;
