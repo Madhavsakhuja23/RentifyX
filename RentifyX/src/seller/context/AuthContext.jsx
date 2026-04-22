@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -7,47 +7,56 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('currentUser');
-    if (stored) {
-      setUser(JSON.parse(stored));
+    const storedUser = localStorage.getItem("currentUser");
+
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
+
     setLoading(false);
   }, []);
 
+  const login = (userData, token) => {
+    localStorage.setItem("currentUser", JSON.stringify(userData));
+
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+
+    setUser(userData);
+  };
+
   const logOut = () => {
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('token');
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
     setUser(null);
   };
 
   const updateProfile = (updates) => {
     const updated = { ...user, ...updates };
-    setUser(updated);
-    localStorage.setItem('currentUser', JSON.stringify(updated));
-    // Also update in users list
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const idx = users.findIndex((u) => u.email === updated.email);
-    if (idx !== -1) {
-      users[idx] = { ...users[idx], ...updates };
-      localStorage.setItem('users', JSON.stringify(users));
-    }
-  };
 
-  const login = (userData) => {
-    localStorage.setItem("token", "dummy-token"); // Set token if needed globally
-    localStorage.setItem("currentUser", JSON.stringify(userData));
-    setUser(userData);
+    setUser(updated);
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(updated)
+    );
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logOut, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logOut,
+        updateProfile
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+  return useContext(AuthContext);
 }

@@ -1,10 +1,16 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) {
+  const storedUser = JSON.parse(
+    localStorage.getItem("currentUser") || "null"
+  );
+
+  const finalUser = user || storedUser;
+
+  if (loading && !finalUser) {
     return (
       <div className="loading-screen">
         <div className="spinner" />
@@ -13,11 +19,13 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  if (!user) {
+  if (!finalUser) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== 'owner' && user.role !== 'both') {
+  const role = finalUser.role?.trim().toLowerCase();
+
+  if (role !== "owner" && role !== "both") {
     return <Navigate to="/" replace />;
   }
 

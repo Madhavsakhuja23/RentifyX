@@ -41,7 +41,7 @@ const [googleLoading, setGoogleLoading] = useState(false);
     localStorage.setItem("currentUser", JSON.stringify(data.user));
 
     // Redirect based on role
-    if (data.user.role === "owner" || data.user.role === "both") {
+    if (data.user.role == "owner" || data.user.role == "both") {
       navigate("/seller/dashboard");
     } else {
       navigate("/");

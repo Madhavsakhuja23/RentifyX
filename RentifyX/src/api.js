@@ -57,8 +57,13 @@ export const signupApi = (name, email, password, role) =>
     body: JSON.stringify({ name, email, password, role }),
   });
 
-export const googleAuthApi = (name, email, photo) =>
+export const googleAuthApi = async (name, email, photo, role) =>
   apiRequest("/auth/google", {
     method: "POST",
-    body: JSON.stringify({ name, email, photo }),
+    body: JSON.stringify({
+      name,
+      email,
+      photo,
+      role
+    }),
   });
