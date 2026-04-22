@@ -41,7 +41,7 @@ const CTA = () => {
             <ArrowRight size={18} />
           </Link>
 
-          <Link to="/listings" className="cta-btn secondary">
+          <Link to="/dwellings" className="cta-btn secondary">
             Browse Listings
             <ArrowRight size={18} />
           </Link>

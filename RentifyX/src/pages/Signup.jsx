@@ -6,7 +6,7 @@ import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
-import { signupApi, googleAuthApi } from "../api";
+import { signupApi, loginApi, googleAuthApi } from "../api";
 import "./Signup.css";
 
 
@@ -41,7 +41,12 @@ const Signup = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("currentUser", JSON.stringify(data.user));
 
-      navigate("/");
+      // Redirect based on role
+      if (data.user.role === "owner" || data.user.role === "both") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (error) {
       console.log(error);
@@ -89,7 +94,18 @@ const Signup = () => {
 
       await signupApi(name, email, password, role);
 
-      navigate("/login");
+      // Auto-login after successful signup
+      const data = await loginApi(email, password);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+      // Redirect based on role
+      if (data.user.role === "owner" || data.user.role === "both") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
       console.log(err);
