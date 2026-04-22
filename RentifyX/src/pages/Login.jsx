@@ -40,7 +40,12 @@ const [googleLoading, setGoogleLoading] = useState(false);
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("currentUser", JSON.stringify(data.user));
 
-    navigate("/");
+    // Redirect based on role
+    if (data.user.role === "owner" || data.user.role === "both") {
+      navigate("/seller/dashboard");
+    } else {
+      navigate("/");
+    }
 
   } catch (error) {
     console.log(error);
@@ -64,7 +69,12 @@ const [googleLoading, setGoogleLoading] = useState(false);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("currentUser", JSON.stringify(data.user));
 
-      navigate("/");
+      // Redirect based on role
+      if (data.user.role === "owner" || data.user.role === "both") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
       setError(err.message || "Invalid credentials");

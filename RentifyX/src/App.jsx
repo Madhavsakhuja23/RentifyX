@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { AuthProvider } from './seller/context/AuthContext';
 import { ListingsProvider } from './seller/context/ListingsContext';
-import ProtectedRoute from './seller/components/ProtectedRoute';
+import SellerProtectedRoute from './seller/components/ProtectedRoute';
 import DashboardLayout from './seller/components/DashboardLayout';
 import DashboardHome from './seller/pages/DashboardHome';
 import MyListings from './seller/pages/MyListings';
@@ -25,50 +25,55 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/driveables" element={<DriveablesMain />} />
-        <Route path="/dwellings" element={<Dwelling />} />
-        <Route path="/listing" element={<Dwelling />} />
-        <Route path="/listing/:id" element={<ListingDetails />} />
-        <Route path="/book/:id" element={<RequestToBook />} />
-        <Route path="/payment" element={<PaymentPage />} />
+    <AuthProvider>
+      <ListingsProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/driveables" element={<DriveablesMain />} />
+            <Route path="/dwellings" element={<Dwelling />} />
+            <Route path="/listing" element={<Dwelling />} />
+            <Route path="/listing/:id" element={<ListingDetails />} />
+            <Route path="/book/:id" element={<RequestToBook />} />
+            <Route path="/payment" element={<PaymentPage />} />
 
-        {/* Protected Routes — require JWT */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+            {/* Protected Routes — require localStorage token */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/seller"
-          element={
-            <ProtectedRoute>
-              <SellerLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardHome />} />
-          <Route path="listings" element={<MyListings />} />
-          <Route path="add-listing" element={<AddListing />} />
-          <Route path="history" element={<RentalHistory />} />
-          <Route path="analytics" element={<RevenueAnalytics />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="profile" element={<ProfileSettings />} />
-        </Route>
+            {/* Seller Routes — require seller AuthContext */}
+            <Route
+              path="/seller"
+              element={
+                <SellerProtectedRoute>
+                  <DashboardLayout />
+                </SellerProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardHome />} />
+              <Route path="listings" element={<MyListings />} />
+              <Route path="add-listing" element={<AddListing />} />
+              <Route path="history" element={<RentalHistory />} />
+              <Route path="analytics" element={<RevenueAnalytics />} />
+              <Route path="notifications" element={<Notifications />} />
+              <Route path="profile" element={<ProfileSettings />} />
+            </Route>
 
-      </Routes>
-      <Chatbot />
-    </Router>
+          </Routes>
+          <Chatbot />
+        </Router>
+      </ListingsProvider>
+    </AuthProvider>
   )
 }
 
