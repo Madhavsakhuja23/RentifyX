@@ -1,6 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, User, Search } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  User,
+  Search,
+  LogOut
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Header.css";
 
@@ -10,20 +16,20 @@ const Header = () => {
   const currentUserStr = localStorage.getItem("currentUser");
   const user = currentUserStr && currentUserStr !== "undefined" && currentUserStr !== "null" ? JSON.parse(currentUserStr) : null;
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname + location.search;
+
+  const getActiveClass = (path) =>
+    location.pathname === path ||
+      (path.includes("?") && location.pathname + location.search === path)
+      ? "mobile-link active-item"
+      : "mobile-link";
 
   const token = localStorage.getItem("token");
   const isLoggedIn = Boolean(token && token !== "undefined" && token !== "null");
 
   const handleProfileClick = () => {
     navigate(isLoggedIn ? "/profile" : "/login");
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/listings?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
   };
 
   return (
@@ -43,22 +49,10 @@ const Header = () => {
             </Link>
           </motion.div>
 
-          {/* Search (Desktop) */}
-          <form onSubmit={handleSearch} className="search-bar d-none d-lg-flex">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-            <button type="submit" className="search-btn">
-              <Search size={18} />
-            </button>
-          </form>
+
 
           {/* Desktop Nav */}
-          <nav className="d-none d-md-flex gap-4 nav-section">
+          <nav className="d-flex gap-4 nav-section ms-auto">
             <Link className="nav-link-custom" to="/dwellings">Dwellings</Link>
             <Link className="nav-link-custom" to="/driveables">Driveables</Link>
             <Link className="nav-link-custom" to="/messages">Messages</Link>
@@ -67,11 +61,9 @@ const Header = () => {
           {/* Right Section */}
           <div className="header-right">
 
-            {/* Profile Button */}
             <button
               onClick={handleProfileClick}
               className={isLoggedIn ? "profile-avatar-btn" : "profile-btn"}
-              title={isLoggedIn ? "Profile" : "Login"}
             >
               {isLoggedIn && user?.photo ? (
                 <img src={user.photo} alt="profile" className="nav-avatar" />
@@ -84,9 +76,8 @@ const Header = () => {
               )}
             </button>
 
-            {/* Mobile Toggle */}
             <button
-              className="btn d-md-none mobile-toggle"
+              className="btn mobile-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X /> : <Menu />}
@@ -105,27 +96,52 @@ const Header = () => {
               transition={{ duration: 0.25 }}
               className="mobile-menu"
             >
-              <form onSubmit={handleSearch} className="mobile-search">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input w-100"
-                />
-                <button type="submit" className="search-btn">
-                  <Search size={16} />
-                </button>
-              </form>
+              <Link
+                className={`mobile-link ${currentPath === "/profile" ? "active-item" : ""
+                  }`}
+                to="/profile"
+              >
+                <User size={18} />
+                Profile
+              </Link>
 
-              <Link className="mobile-link" to="/dwellings">Dwellings</Link>
-              <Link className="mobile-link" to="/driveables">Driveables</Link>
-              <Link className="mobile-link" to="/messages">Messages</Link>
+              <Link
+                className={`mobile-link ${currentPath.includes("bookings") ? "active-item" : ""
+                  }`}
+                to="/profile?tab=bookings"
+              >
+                🏠 Bookings
+              </Link>
 
-              <button onClick={handleProfileClick} className="mobile-link">
-                <User size={16} />
-                {isLoggedIn ? "My Profile" : "Login / Sign up"}
+              <Link
+                className={`mobile-link ${currentPath.includes("wishlist") ? "active-item" : ""
+                  }`}
+                to="/profile?tab=wishlist"
+              >
+                ❤️ Wishlist
+              </Link>
+
+              <Link
+                className={`mobile-link ${currentPath.includes("settings") ? "active-item" : ""
+                  }`}
+                to="/profile?tab=settings"
+              >
+                ⚙️ Settings
+              </Link>
+
+              <button
+                className="mobile-link logout-item"
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("currentUser");
+                  localStorage.removeItem("user");
+                  navigate("/");
+                }}
+              >
+                <LogOut size={18} />
+                Logout
               </button>
+
             </motion.nav>
           )}
         </AnimatePresence>

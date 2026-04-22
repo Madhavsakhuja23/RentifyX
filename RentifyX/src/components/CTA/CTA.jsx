@@ -4,6 +4,9 @@ import { ArrowRight } from "lucide-react";
 import "./CTA.css";
 
 const CTA = () => {
+  const token = localStorage.getItem("token");
+  const isLoggedIn = Boolean(token && token !== "undefined" && token !== "null");
+
   return (
     <section className="cta-section">
       <div className="cta-overlay" />
@@ -36,8 +39,8 @@ const CTA = () => {
           viewport={{ once: true }}
           className="cta-actions"
         >
-          <Link to="/signup" className="cta-btn primary">
-            Create Account
+          <Link to={isLoggedIn ? "/profile" : "/signup"} className="cta-btn primary">
+            {isLoggedIn ? "My Profile" : "Create Account"}
             <ArrowRight size={18} />
           </Link>
 
