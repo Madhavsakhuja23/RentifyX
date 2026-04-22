@@ -1,202 +1,294 @@
-.header {
-  background: #FFF4DF;
-  z-index: 1000;
-  border-bottom: 0px solid transparent;
-  box-shadow: none;
-}
+/* =====================================
+   FULL PREMIUM GLASS HEADER CSS
+===================================== */
 
-.header-inner {
-  height: 56px;
+/* HEADER */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  height: 76px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-/* Left */
-.logo-link {
+/* IMPORTANT */
+.header .container {
+  background: transparent !important;
+}
+
+/* ================= HEADER ROW ================= */
+
+.header-inner {
+  min-height: 42px;
   display: flex;
-  margin-left: -40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  background: transparent;
+}
+
+/* ================= LOGO ================= */
+
+.logo-link {
   text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .logo-text {
-  font-weight: 1000;
-  font-size: 29px;
+  font-size: 22px;
+  font-weight: 900;
   color: rgb(255, 102, 0);
   letter-spacing: -0.5px;
-  font-family: Arial, sans-serif;
+  transition: 0.2s ease;
 }
 
-
-/* Center search */
-.search-bar {
-  flex: 1;
-  max-width: 420px;
-  display: flex;
-  margin: 0 auto;
+.logo-text:hover {
+  transform: scale(1.02);
 }
 
-.search-input {
-  flex: 1;
-  height: 44px;
-  border-radius: 12px 0 0 12px;
-  border: 1px solid var(--border-color);
-  padding: 0 14px;
-  outline: none;
-  font-size: 14px;
-  background: var(--bg-input);
-  color: var(--text-primary);
-  transition: all var(--transition);
-}
+/* ================= NAV ================= */
 
-.search-input:focus {
-  border-color: var(--accent-purple);
-  background: var(--bg-card);
-}
-
-.search-btn {
-  width: 56px;
-  height: 44px;
-  border-radius: 0 12px 12px 0;
-  border: none;
-  background: rgb(255, 102, 0);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-
-.search-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-btn);
-}
-
-/* Right */
-.header-right {
+.nav-section {
+  margin-left: 0;
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-/* Nav */
-.nav-section {
-  display: flex;
-  gap: 16px;
-}
-
 .nav-link-custom {
-  color: var(--text-secondary);
   text-decoration: none;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  transition: all var(--transition);
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 10px;
+  position: relative;
+  transition: 0.22s ease;
 }
 
 .nav-link-custom:hover {
-  background: var(--glow-purple);
-  color: var(--accent-purple);
+  color: rgb(255, 102, 0);
+  background: rgba(255, 102, 0, 0.08);
 }
 
-/* Profile */
-.profile-btn {
-  min-height: 36px;
-  padding: 6px 14px;
-  border-radius: 999px;
-
-  border: 1.5px solid rgb(255, 102, 0);
+.nav-link-custom::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 20px;
   background: rgb(255, 102, 0);
+  transform: scaleX(0);
+  transition: 0.25s ease;
+}
 
+.nav-link-custom:hover::after {
+  transform: scaleX(1);
+}
+
+/* ================= RIGHT SIDE ================= */
+
+.header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-
-  color: white;
-  font-weight: 500;
-  font-size: 14px;
-
-  transition: all var(--transition);
+  gap: 10px;
 }
 
-.profile-btn span {
-  white-space: nowrap;
-  font-size: 14px;
+/* ================= LOGIN BUTTON ================= */
+
+.profile-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ff6a00, #ff914d);
   color: white;
   font-weight: 600;
-}
-
-.profile-btn:hover {
-  background: rgb(255, 102, 0);
-  color: white;
-  border-color: rgb(255, 102, 0);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2);
-}
-
-.profile-btn svg {
-  flex-shrink: 0;
-}
-
-/* Avatar button (logged in) */
-.profile-avatar-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgb(255, 102, 0);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition);
-  padding: 0;
+  transition: 0.22s ease;
+}
+
+.profile-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(255, 106, 0, 0.22);
+}
+
+/* ================= AVATAR ================= */
+
+.profile-avatar-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #ff6a00, #ff914d);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.22s ease;
 }
 
 .profile-avatar-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(255, 106, 0, 0.25);
 }
 
 .nav-avatar {
   color: white;
   font-weight: 700;
   font-size: 16px;
-  line-height: 1;
-  border-radius: 20px;
 }
 
-/* Mobile menu styles */
-.mobile-menu {
-  margin-top: 12px;
-  background: white;
-  border-radius: 10px;
-  padding: 14px;
-  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.06);
-}
+/* ================= MENU BUTTON ================= */
 
-.mobile-link {
+.mobile-toggle {
+  width: 38px;
+  height: 38px;
+
+  padding: 0;
+  margin: 0;
+
+  border: none;
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 8px;
-  border-radius: 8px;
-  color: #333;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mobile-toggle svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.mobile-toggle:hover {
+  background: rgba(255,102,0,0.08);
+  border-color: rgba(255,102,0,0.3);
+  color: rgb(255, 102, 0);
+  box-shadow: 0 4px 14px rgba(255,102,0,0.1);
+  transform: scale(1.05);
+}
+
+.mobile-toggle:active {
+  transform: scale(0.95);
+}
+
+/* ================= DROPDOWN ================= */
+
+.mobile-menu {
+  position: absolute;
+  right: 0;
+  top: 64px;
+  width: 260px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.20);
+  z-index: 999;
+}
+
+/* ================= DROPDOWN ITEMS ================= */
+
+.mobile-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+
   text-decoration: none;
+  color: #1f2937;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: 0.18s ease;
 }
 
 .mobile-link:hover {
-  background: rgba(15, 23, 42, 0.04);
+  background: rgba(0,0,0,0.04);
 }
 
-.mobile-search {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+/* ACTIVE ITEM */
+
+.active-item {
+  background: rgba(255, 102, 0, 0.10);
+  color: rgb(255, 102, 0);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255,102,0,0.08);
 }
 
-@media (max-width: 767px) {
-  .search-bar {
+/* LOGOUT */
+
+.logout-item {
+  color: #dc2626;
+}
+
+.logout-item:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 991px) {
+  .nav-section {
     display: none !important;
+  }
+
+  .header-inner {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 576px) {
+  .logo-text {
+    font-size: 24px;
+  }
+
+  .header-inner {
+    gap: 12px;
+  }
+
+  .mobile-menu {
+    width: 220px;
+    right: 5px;
+    top: 60px;
+  }
+
+  .profile-avatar-btn,
+  .mobile-toggle {
+    width: 34px;
+    height: 34px;
   }
 }

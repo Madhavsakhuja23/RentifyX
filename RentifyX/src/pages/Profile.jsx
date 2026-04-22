@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Edit, Home, Car, Search, Heart as HeartFilled } from "lucide-react";
-import { motion } from "framer-motion";
+import { User, Briefcase, Heart, Settings, Edit, ChevronRight, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header/Header";
 import EditProfile from "../components/Profile/EditProfile";
 import BookingHistory from "../components/Profile/BookingHistory";
@@ -10,9 +10,7 @@ import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [editMode, setEditMode] = useState(false);
-  const [showBookings, setShowBookings] = useState(false);
-  const [showFavourites, setShowFavourites] = useState(false);
+  const [activeTab, setActiveTab] = useState("about"); // 'about', 'bookings', 'favourites', 'settings'
 
   // Reactive localStorage data
   const [bookings, setBookings] = useState([]);
@@ -42,152 +40,192 @@ const Profile = () => {
     navigate("/");
   };
 
-  const activeRentals = bookings.filter((b) => b.status === "upcoming").length;
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  function handleShowBookings() {
-    setShowBookings(true);
-    setShowFavourites(false);
-    setEditMode(false);
-    setTimeout(() => bookingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-  }
-
-  function handleShowFavourites() {
-    setShowFavourites(true);
-    setShowBookings(false);
-    setEditMode(false);
-    setTimeout(() => favouritesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-  }
-
-  return (
-    <div className="profile-wrapper">
-      <Header />
-
-      <div className="container profile-page">
-
-        {/* Profile Header */}
-        <motion.div
-          className="profile-hero-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="profile-hero-info">
-            <h2 className="profile-name">Hi, {user?.name}</h2>
-            <p className="profile-email">{user?.email}</p>
-          </div>
-
-          <div className="profile-hero-actions">
-            <button className="edit-profile-btn" onClick={() => { setEditMode((v) => !v); setShowBookings(false); setShowFavourites(false); }}>
-              <Edit size={22} />
-              {editMode ? "Close" : "Edit Profile"}
-            </button>
-            <button className="logout-profile-btn" onClick={handleLogout}>
-              <LogOut size={22} />
-              Logout
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Edit Profile — inline below header */}
-        {editMode && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <EditProfile user={user} setEditMode={setEditMode} />
-          </motion.div>
-        )}
-
-        {/* Stats Row */}
-        <motion.div
-          className="profile-stats"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          <div className="stat-card" onClick={handleShowFavourites} style={{ cursor: "pointer" }}>
-            <p className="stat-label">FAVOURITES</p>
-            <h3>{favourites.length}</h3>
-            <p className="stat-desc">Saved listings</p>
-          </div>
-          <div className="stat-card" onClick={handleShowBookings} style={{ cursor: "pointer" }}>
-            <p className="stat-label">BOOKINGS</p>
-            <h3>{bookings.length}</h3>
-            <p className="stat-desc">All time bookings</p>
-          </div>
-          <div className="stat-card" onClick={handleShowBookings} style={{ cursor: "pointer" }}>
-            <p className="stat-label">ACTIVE RENTALS</p>
-            <h3>{activeRentals}</h3>
-            <p className="stat-desc">Currently active</p>
-          </div>
-        </motion.div>
-
-        {/* Quick Actions (always visible) */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <h3 className="section-label">Quick Actions</h3>
-          <div className="quick-actions-grid">
-            <div className="quick-action-card" onClick={() => navigate("/dwellings")}>
-              <Home size={42} color="rgb(255, 102, 0)" />
-              <span>Browse Dwellings</span>
-            </div>
-            <div className="quick-action-card" onClick={() => navigate("/driveables")}>
-              <Car size={42} color="rgb(255, 102, 0)" />
-              <span>Browse Driveables</span>
-            </div>
-            <div className="quick-action-card" onClick={handleShowBookings}>
-              <Search size={42} color="rgb(255, 102, 0)" />
-              <span>My Bookings</span>
-            </div>
-            <div className="quick-action-card" onClick={handleShowFavourites}>
-              <HeartFilled size={42} color="rgb(255, 102, 0)" />
-              <span>My Favourites</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* My Bookings — shown inline below grid */}
-        {showBookings && (
-          <motion.div
-            ref={bookingsRef}
-            initial={{ opacity: 0, y: 10 }}
+  const renderContent = () => {
+    switch(activeTab) {
+      case "about":
+        return (
+          <motion.div 
+            key="about"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ marginTop: 40 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h3 className="section-label" style={{ margin: 0 }}>My Bookings</h3>
+            <div className="top-row">
+              <h1>About me</h1>
               <button
-                onClick={() => setShowBookings(false)}
-                style={{ background: "none", border: "1.5px solid var(--border-color)", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, color: "var(--text-secondary)" }}
+                className="edit-btn-premium"
+                onClick={() => setActiveTab("settings")}
               >
-                Hide ✕
+                <Edit size={16} /> Edit Profile
               </button>
             </div>
+
+            <div className="about-grid-premium">
+              <div className="user-card-premium">
+                <div className="avatar-premium-wrap">
+                  <div className="avatar-premium">
+                    {user?.name?.charAt(0)?.toUpperCase() || "G"}
+                  </div>
+                  <div className="avatar-ring"></div>
+                </div>
+                <h2>{user?.name || "Guest User"}</h2>
+                <p className="guest-badge">Premium Guest</p>
+                <div className="user-stats">
+                  <div className="stat">
+                    <span>{bookings.length}</span>
+                    <label>Bookings</label>
+                  </div>
+                  <div className="stat-divider"></div>
+                  <div className="stat">
+                    <span>{favourites.length}</span>
+                    <label>Wishlist</label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="complete-card-premium">
+                <div className="complete-card-content">
+                  <h3>Unlock Your Journey</h3>
+                  <p>
+                    Complete your profile to build trust with hosts and gain access to exclusive premium stays all around the world.
+                  </p>
+                  <button className="start-btn-premium" onClick={() => setActiveTab("settings")}>
+                    Complete Profile
+                  </button>
+                </div>
+                <div className="complete-card-bg"></div>
+              </div>
+            </div>
+          </motion.div>
+        );
+      case "bookings":
+        return (
+          <motion.div
+            key="bookings"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            ref={bookingsRef}
+          >
             <BookingHistory bookings={bookings} />
           </motion.div>
-        )}
-
-        {/* My Favourites — shown inline below grid */}
-        {showFavourites && (
+        );
+      case "favourites":
+        return (
           <motion.div
-            ref={favouritesRef}
-            initial={{ opacity: 0, y: 10 }}
+            key="favourites"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ marginTop: 40 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            ref={favouritesRef}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h3 className="section-label" style={{ margin: 0 }}>My Favourites</h3>
-              <button
-                onClick={() => setShowFavourites(false)}
-                style={{ background: "none", border: "1.5px solid var(--border-color)", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, color: "var(--text-secondary)" }}
-              >
-                Hide ✕
-              </button>
-            </div>
             <Favourites favourites={favourites} />
           </motion.div>
-        )}
+        );
+      case "settings":
+        return (
+          <motion.div
+            key="settings"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <EditProfile
+              user={user}
+              setEditMode={(mode) => !mode && setActiveTab("about")}
+            />
+          </motion.div>
+        );
+      default:
+        return null;
+    }
+  };
 
+  return (
+    <div className="profile-wrapper-premium">
+      <Header />
+
+      <div className="profile-container-premium">
+        {/* LEFT PANEL */}
+        <motion.div 
+          className="sidebar-premium"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <div className="sidebar-header">
+            <div className="sidebar-avatar-small">
+              {user?.name?.charAt(0)?.toUpperCase()}
+            </div>
+            <div className="sidebar-user-info">
+              <h4>{user?.name || "Guest"}</h4>
+              <p>Manage Account</p>
+            </div>
+          </div>
+
+          <div className="sidebar-nav">
+            <button
+              className={`nav-item-premium ${activeTab === "about" ? "active" : ""}`}
+              onClick={() => handleTabChange("about")}
+            >
+              <div className="nav-item-icon"><User size={20} /></div>
+              <span>About me</span>
+              <ChevronRight className="chevron" size={16} />
+            </button>
+
+            <button
+              className={`nav-item-premium ${activeTab === "bookings" ? "active" : ""}`}
+              onClick={() => handleTabChange("bookings")}
+            >
+              <div className="nav-item-icon"><Briefcase size={20} /></div>
+              <span>Bookings</span>
+              {bookings.length > 0 && <span className="badge">{bookings.length}</span>}
+              <ChevronRight className="chevron" size={16} />
+            </button>
+
+            <button
+              className={`nav-item-premium ${activeTab === "favourites" ? "active" : ""}`}
+              onClick={() => handleTabChange("favourites")}
+            >
+              <div className="nav-item-icon"><Heart size={20} /></div>
+              <span>Wishlist</span>
+              {favourites.length > 0 && <span className="badge">{favourites.length}</span>}
+              <ChevronRight className="chevron" size={16} />
+            </button>
+
+            <button
+              className={`nav-item-premium ${activeTab === "settings" ? "active" : ""}`}
+              onClick={() => handleTabChange("settings")}
+            >
+              <div className="nav-item-icon"><Settings size={20} /></div>
+              <span>Settings</span>
+              <ChevronRight className="chevron" size={16} />
+            </button>
+          </div>
+          
+          <div className="sidebar-footer">
+            <button className="logout-btn-premium" onClick={handleLogout}>
+              <LogOut size={18} />
+              <span>Log out</span>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* RIGHT SIDE */}
+        <div className="main-content-premium">
+          <AnimatePresence mode="wait">
+            {renderContent()}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
