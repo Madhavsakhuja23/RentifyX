@@ -6,11 +6,13 @@ import Header from "../components/Header/Header";
 import EditProfile from "../components/Profile/EditProfile";
 import BookingHistory from "../components/Profile/BookingHistory";
 import Favourites from "../components/Profile/Favourites";
+import { useAuth } from "../seller/context/AuthContext";
 import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("about"); // 'about', 'bookings', 'favourites', 'settings'
+  const { user, logOut } = useAuth();
+  const [activeTab, setActiveTab] = useState("about");
 
   // Reactive localStorage data
   const [bookings, setBookings] = useState([]);
@@ -18,10 +20,6 @@ const Profile = () => {
 
   const bookingsRef = useRef(null);
   const favouritesRef = useRef(null);
-
-  const currentUserStr = localStorage.getItem("currentUser");
-  const user = currentUserStr && currentUserStr !== "undefined" && currentUserStr !== "null"
-    ? JSON.parse(currentUserStr) : null;
 
   // Load from localStorage on mount and when storage changes
   useEffect(() => {
@@ -35,8 +33,7 @@ const Profile = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("currentUser");
+    logOut();
     navigate("/");
   };
 

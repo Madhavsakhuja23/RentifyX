@@ -31,7 +31,7 @@ const Signup = () => {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
 
-      // Send to backend — get a real JWT back
+      // Send to backend for authentication
       const data = await googleAuthApi(
   firebaseUser.displayName || "Google User",
   firebaseUser.email,

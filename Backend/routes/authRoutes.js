@@ -1,5 +1,5 @@
 import express from "express";
-import { signupUser, loginUser, googleAuth, getMe } from "../controllers/authController.js";
+import { signupUser, loginUser, googleAuth, getMe, updateProfile } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -11,5 +11,6 @@ router.post("/google", googleAuth);
 
 // Protected routes
 router.get("/me", authMiddleware, getMe);
+router.put("/profile", authMiddleware, updateProfile);
 
 export default router;

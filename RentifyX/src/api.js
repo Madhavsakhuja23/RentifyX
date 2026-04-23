@@ -65,3 +65,9 @@ export const googleAuthApi = async (name, email, photo, role) =>
       role
     }),
   });
+
+export const updateProfileApi = (updates) =>
+  apiRequest("/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(updates),
+  });

@@ -1,12 +1,24 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
+// Helper: build a safe user object to return to the client
+const safeUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  photo: user.photo || "",
+  phone: user.phone || "",
+  location: user.location || "",
+  dob: user.dob || "",
+});
+
 // GET CURRENT USER (protected)
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ msg: "User not found" });
-    res.json(user);
+    res.json(safeUser(user));
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }
@@ -34,15 +46,10 @@ export const signupUser = async (req, res) => {
 
     await user.save();
 
-    // Auto-login: return user data immediately (no JWT)
+    // Auto-login: return user data immediately
     res.status(201).json({
       msg: "User registered successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user: safeUser(user),
     });
 
   } catch (err) {
@@ -67,14 +74,7 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    res.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.json({ user: safeUser(user) });
 
   } catch (err) {
     console.log(err);
@@ -82,6 +82,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// GOOGLE AUTH
 export const googleAuth = async (req, res) => {
   try {
     const { name, email, photo, role } = req.body;
@@ -89,42 +90,56 @@ export const googleAuth = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
+      // Update photo if provided and changed
+      if (photo && user.photo !== photo) {
+        user.photo = photo;
+      }
       if (role && user.role !== role) {
         user.role = role;
-        await user.save();
-
-        // fetch latest updated user
-        user = await User.findOne({ email });
       }
+      await user.save();
     } else {
+      // Hash the placeholder password for consistency
+      const hashedPlaceholder = await bcrypt.hash("google-auth-placeholder", 10);
+
       user = await User.create({
         name,
         email,
-        photo,
-        password: "google-auth",
+        photo: photo || "",
+        password: hashedPlaceholder,
         role: role || "user",
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        photo: user.photo
-      }
-    });
+    res.json({ user: safeUser(user) });
 
   } catch (error) {
-    res.status(500).json({
-      msg: "Google auth failed"
-    });
+    console.log("Google auth error:", error);
+    res.status(500).json({ msg: "Google auth failed" });
+  }
+};
+
+// UPDATE PROFILE (protected)
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone, location, dob } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // Update fields if provided
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (phone !== undefined) user.phone = phone;
+    if (location !== undefined) user.location = location;
+    if (dob !== undefined) user.dob = dob;
+
+    await user.save();
+
+    res.json({ user: safeUser(user) });
+
+  } catch (err) {
+    console.log("Update profile error:", err);
+    res.status(500).json({ msg: "Failed to update profile" });
   }
 };
