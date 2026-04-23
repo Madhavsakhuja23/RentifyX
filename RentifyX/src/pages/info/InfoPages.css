@@ -397,6 +397,114 @@
   box-shadow: 0 8px 24px rgba(255, 102, 0, 0.3);
 }
 
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-btn--sending {
+  background: #b76e2e;
+  pointer-events: none;
+}
+
+.submit-btn--success {
+  background: #16a34a;
+  pointer-events: none;
+}
+
+.submit-btn--success:hover {
+  background: #16a34a;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3);
+}
+
+/* ── Spinner Animation ── */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Form Validation Error State ── */
+.form-group--error input,
+.form-group--error textarea {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-group--error input:focus,
+.form-group--error textarea:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.form-group--error label {
+  color: #ef4444;
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #ef4444;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* ── Character Count ── */
+.form-char-count {
+  text-align: right;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.form-char-count--warn {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* ── Disabled Fields ── */
+.form-group input:disabled,
+.form-group textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f9fafb;
+}
+
+/* ── Status Banners ── */
+.contact-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.contact-status--success {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  color: #16a34a;
+}
+
+.contact-status--error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.contact-status svg {
+  flex-shrink: 0;
+}
+
 .contact-info-cards {
   display: flex;
   flex-direction: column;

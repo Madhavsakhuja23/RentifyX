@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Pause, Play} from "lucide-react";
 import "./AboutUs.css";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const stats = [
@@ -35,9 +36,6 @@ const toggle =()=>{
                 src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
                 alt="About RentifyX"
               />
-              <button className="play-btn" onClick={toggle}>
-                {play?<Play size={22}/> : <Pause size={22}/>}
-              </button>
             </div>
           </motion.div>
 
@@ -73,7 +71,7 @@ const toggle =()=>{
             </div>
 
             <button className="about-btn mt-4">
-              Know More About Us
+              <Link className="about-link" to="/about">Know More About Us</Link>
             </button>
           </motion.div>
 
