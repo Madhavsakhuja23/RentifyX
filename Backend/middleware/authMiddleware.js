@@ -1,23 +1,25 @@
-import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-const authMiddleware = (req, res, next) => {
+// Simple auth middleware — reads userId from Authorization header
+// Frontend sends: Authorization: <userId>
+const authMiddleware = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const userId = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ msg: "No token, access denied" });
+    if (!userId) {
+      return res.status(401).json({ msg: "No auth, access denied" });
     }
 
-    // Extract token after "Bearer "
-    const token = authHeader.split(" ")[1];
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ msg: "User not found" });
+    }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, iat, exp }
-
+    req.user = { id: user._id.toString(), name: user.name, role: user.role };
     next();
 
   } catch (err) {
-    return res.status(401).json({ msg: "Invalid or expired token" });
+    return res.status(401).json({ msg: "Invalid auth" });
   }
 };
 

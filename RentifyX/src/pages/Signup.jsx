@@ -6,11 +6,13 @@ import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
-import { signupApi, loginApi, googleAuthApi } from "../api";
+import { signupApi, googleAuthApi } from "../api";
+import { useAuth } from "../seller/context/AuthContext";
 import "./Signup.css";
 
 
 const Signup = () => {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,10 +39,8 @@ const Signup = () => {
   role
 );
 
-      // Store real backend JWT and user
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      // Store user in context
+      login(data.user);
 
       // Redirect based on role
       console.log(data.user.role);
@@ -94,13 +94,10 @@ const Signup = () => {
     try {
       setLoading(true);
 
-      await signupApi(name, email, password, role);
+      const data = await signupApi(name, email, password, role);
 
-      // Auto-login after successful signup
-      const data = await loginApi(email, password);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      // signupApi now returns user data directly
+      login(data.user);
 
       // Redirect based on role
       console.log(data.user.role);

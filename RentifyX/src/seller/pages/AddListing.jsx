@@ -1,12 +1,19 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Home, Car, X, ImagePlus, CheckCircle, AlertCircle } from 'lucide-react';
+import { useListings } from '../context/ListingsContext';
+import { Upload, Home, Car, X, ImagePlus, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react';
 import './AddListing.css';
+
+const SUBCATEGORY_OPTIONS = {
+  Dwelling: ['Villa', 'Flat', 'PG', 'Travel Stay'],
+  Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
+};
 
 const API_URL = 'http://localhost:5000/api/listings';
 
 export default function AddListing() {
   const navigate = useNavigate();
+  const { addListing } = useListings();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -15,15 +22,24 @@ export default function AddListing() {
 
   const [formData, setFormData] = useState({
     title: '',
+    tagline: '',
     description: '',
     category: 'Dwelling',
+    subcategory: '',
     price: '',
     location: '',
     availableDates: '',
   });
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      // Reset subcategory when category changes
+      if (name === 'category') {
+        return { ...prev, category: value, subcategory: '' };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   // ---- Image handling ----
@@ -100,8 +116,10 @@ export default function AddListing() {
     try {
       const body = new FormData();
       body.append('title', formData.title);
+      body.append('tagline', formData.tagline);
       body.append('description', formData.description);
       body.append('category', formData.category);
+      body.append('subcategory', formData.subcategory);
       body.append('price', formData.price);
       body.append('location', formData.location);
       body.append('availableDates', formData.availableDates);
@@ -110,12 +128,12 @@ export default function AddListing() {
         body.append('images', img.file);
       });
 
-      const token = localStorage.getItem('token');
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: currentUser?.id || '',
         },
         body,
       });
@@ -129,7 +147,10 @@ export default function AddListing() {
       // Cleanup previews
       images.forEach((img) => URL.revokeObjectURL(img.preview));
 
-      navigate('/dashboard/listings');
+      // Add to local context to show in My Listings immediately
+      addListing(data.listing);
+
+      navigate('/seller/listings');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -177,6 +198,27 @@ export default function AddListing() {
             </div>
           </div>
 
+          {/* Subcategory Dropdown */}
+          <div className="form-section">
+            <label className="section-label">Subcategory <span className="req">*</span></label>
+            <div className="select-wrapper">
+              <select
+                id="subcategory"
+                name="subcategory"
+                value={formData.subcategory}
+                onChange={handleChange}
+                required
+                className="styled-select"
+              >
+                <option value="" disabled>Select a subcategory</option>
+                {SUBCATEGORY_OPTIONS[formData.category]?.map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+              <ChevronDown size={18} className="select-icon" />
+            </div>
+          </div>
+
           <div className="form-grid">
             <div className="input-group full-width">
               <label htmlFor="title">Listing Title <span className="req">*</span></label>
@@ -188,6 +230,18 @@ export default function AddListing() {
                 value={formData.title}
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            <div className="input-group full-width">
+              <label htmlFor="tagline">Tagline</label>
+              <input
+                id="tagline"
+                name="tagline"
+                type="text"
+                placeholder="e.g., Your dream getaway awaits!"
+                value={formData.tagline}
+                onChange={handleChange}
               />
             </div>
 

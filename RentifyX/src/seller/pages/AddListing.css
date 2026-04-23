@@ -66,6 +66,48 @@
 
 .cat-option.selected svg { color: #f97316; }
 
+/* ── Subcategory Dropdown ── */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.styled-select {
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 10px;
+  color: #0f172a;
+  font-family: inherit;
+  font-size: 0.95rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.styled-select:focus {
+  outline: none;
+  border-color: #ea580c;
+  background: rgba(234, 88, 12, 0.05);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.styled-select:hover:not(:focus) {
+  border-color: rgba(15, 23, 42, 0.2);
+}
+
+.select-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(15, 23, 42, 0.4);
+  pointer-events: none;
+}
+
 /* Form Grid */
 .form-grid {
   display: grid;

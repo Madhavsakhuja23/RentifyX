@@ -7,10 +7,12 @@ import { auth, provider } from "../firebase";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import { loginApi, googleAuthApi } from "../api";
+import { useAuth } from "../seller/context/AuthContext";
 import "./Login.css";
 
 
 const Login = () => {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,10 +37,8 @@ const [googleLoading, setGoogleLoading] = useState(false);
       firebaseUser.photoURL
     );
 
-    // Store the real backend JWT and user
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("currentUser", JSON.stringify(data.user));
+    // Store user in context
+    login(data.user);
 
     // Redirect based on role
     if (data.user.role == "owner" || data.user.role == "both") {
@@ -64,10 +64,8 @@ const [googleLoading, setGoogleLoading] = useState(false);
 
       const data = await loginApi(email, password);
 
-      // Store real backend JWT
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      // Store user in context
+      login(data.user);
 
       // Redirect based on role
       if (data.user.role === "owner" || data.user.role === "both") {
