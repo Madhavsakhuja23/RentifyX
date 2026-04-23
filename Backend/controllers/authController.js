@@ -1,6 +1,5 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
 // GET CURRENT USER (protected)
 export const getMe = async (req, res) => {
@@ -19,25 +18,32 @@ export const signupUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-   
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
       name,
       email,
       password: hashedPassword,
-      role
+      role: role || "user",
     });
 
     await user.save();
 
-    res.status(201).json({ msg: "User registered successfully" });
+    // Auto-login: return user data immediately (no JWT)
+    res.status(201).json({
+      msg: "User registered successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
 
   } catch (err) {
     console.log(err);
@@ -61,20 +67,13 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
     res.json({
-      token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
 
   } catch (err) {
@@ -101,21 +100,13 @@ export const googleAuth = async (req, res) => {
       await user.save();
     }
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
     res.json({
-      token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-      }
+      },
     });
 
   } catch (err) {

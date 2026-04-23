@@ -9,11 +9,7 @@ router.post("/signup", signupUser);
 router.post("/login", loginUser);
 router.post("/google", googleAuth);
 
-// Protected routes (require valid JWT)
+// Protected routes
 router.get("/me", authMiddleware, getMe);
 
 export default router;
-
-
-
-
