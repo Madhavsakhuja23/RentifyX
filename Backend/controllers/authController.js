@@ -84,21 +84,33 @@ export const loginUser = async (req, res) => {
 
 export const googleAuth = async (req, res) => {
   try {
-    const { name, email, photo } = req.body;
+    const { name, email, photo, role } = req.body;
 
     let user = await User.findOne({ email });
 
-    // If user doesn't exist → create
-    if (!user) {
-      user = new User({
+    if (user) {
+      if (role && user.role !== role) {
+        user.role = role;
+        await user.save();
+
+        // fetch latest updated user
+        user = await User.findOne({ email });
+      }
+    } else {
+      user = await User.create({
         name,
         email,
-        password: "google-auth", // dummy password
-        role: "user",
+        photo,
+        password: "google-auth",
+        role: role || "user",
       });
-
-      await user.save();
     }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.json({
       user: {
@@ -106,11 +118,13 @@ export const googleAuth = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-      },
+        photo: user.photo
+      }
     });
 
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ msg: "Google auth failed" });
+  } catch (error) {
+    res.status(500).json({
+      msg: "Google auth failed"
+    });
   }
 };

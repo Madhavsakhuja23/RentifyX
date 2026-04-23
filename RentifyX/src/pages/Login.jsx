@@ -41,7 +41,7 @@ const [googleLoading, setGoogleLoading] = useState(false);
     login(data.user);
 
     // Redirect based on role
-    if (data.user.role === "owner" || data.user.role === "both") {
+    if (data.user.role == "owner" || data.user.role == "both") {
       navigate("/seller/dashboard");
     } else {
       navigate("/");

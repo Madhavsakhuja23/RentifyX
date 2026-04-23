@@ -33,16 +33,18 @@ const Signup = () => {
 
       // Send to backend — get a real JWT back
       const data = await googleAuthApi(
-        firebaseUser.displayName || "Google User",
-        firebaseUser.email,
-        firebaseUser.photoURL
-      );
+  firebaseUser.displayName || "Google User",
+  firebaseUser.email,
+  firebaseUser.photoURL,
+  role
+);
 
       // Store user in context
       login(data.user);
 
       // Redirect based on role
-      if (data.user.role === "owner" || data.user.role === "both") {
+      console.log(data.user.role);
+      if (data.user.role == "owner" || data.user.role == "both") {
         navigate("/seller/dashboard");
       } else {
         navigate("/");
@@ -98,7 +100,8 @@ const Signup = () => {
       login(data.user);
 
       // Redirect based on role
-      if (data.user.role === "owner" || data.user.role === "both") {
+      console.log(data.user.role);
+      if (data.user.role == "owner" || data.user.role == "both") {
         navigate("/seller/dashboard");
       } else {
         navigate("/");
