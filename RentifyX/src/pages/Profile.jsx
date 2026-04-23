@@ -91,13 +91,27 @@ const Profile = () => {
 
               <div className="complete-card-premium">
                 <div className="complete-card-content">
-                  <h3>Unlock Your Journey</h3>
-                  <p>
-                    Complete your profile to build trust with hosts and gain access to exclusive premium stays all around the world.
-                  </p>
-                  <button className="start-btn-premium" onClick={() => setActiveTab("settings")}>
-                    Complete Profile
-                  </button>
+                  {(user?.phone && user?.location && user?.dob) ? (
+                    <>
+                      <h3>You're All Set!</h3>
+                      <p>
+                        Your profile is complete. You now have full access to exclusive premium stays and seamless booking experiences all around the world.
+                      </p>
+                      <button className="start-btn-premium" onClick={() => setActiveTab("bookings")}>
+                        View Bookings
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <h3>Unlock Your Journey</h3>
+                      <p>
+                        Complete your profile to build trust with hosts and gain access to exclusive premium stays all around the world.
+                      </p>
+                      <button className="start-btn-premium" onClick={() => setActiveTab("settings")}>
+                        Complete Profile
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div className="complete-card-bg"></div>
               </div>
