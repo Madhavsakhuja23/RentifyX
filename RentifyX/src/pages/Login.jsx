@@ -37,9 +37,8 @@ const [googleLoading, setGoogleLoading] = useState(false);
       firebaseUser.photoURL
     );
 
-    // Store the real backend JWT and user
-    login(data.user, data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    // Store user in context
+    login(data.user);
 
     // Redirect based on role
     if (data.user.role === "owner" || data.user.role === "both") {
@@ -65,9 +64,8 @@ const [googleLoading, setGoogleLoading] = useState(false);
 
       const data = await loginApi(email, password);
 
-      // Store real backend JWT
-      login(data.user, data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store user in context
+      login(data.user);
 
       // Redirect based on role
       if (data.user.role === "owner" || data.user.role === "both") {

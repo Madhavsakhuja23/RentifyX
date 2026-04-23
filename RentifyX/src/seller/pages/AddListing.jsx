@@ -112,12 +112,12 @@ export default function AddListing() {
         body.append('images', img.file);
       });
 
-      const token = localStorage.getItem('token');
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: currentUser?.id || '',
         },
         body,
       });
