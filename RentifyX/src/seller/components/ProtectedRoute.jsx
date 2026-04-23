@@ -2,9 +2,6 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-<<<<<<< HEAD
-  const { user } = useAuth();
-=======
   const { user, loading } = useAuth();
 
   const storedUser = JSON.parse(
@@ -21,7 +18,6 @@ export default function ProtectedRoute({ children }) {
       </div>
     );
   }
->>>>>>> main
 
   if (!finalUser) {
     return <Navigate to="/login" replace />;

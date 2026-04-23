@@ -24,6 +24,15 @@ const listingSchema = new mongoose.Schema(
       enum: ["Dwelling", "Vehicle"],
       required: true,
     },
+    subcategory: {
+      type: String,
+      enum: ["Villa", "Flat", "PG", "Travel Stay", "Cars", "EV", "Bike", "Bicycle"],
+      required: true,
+    },
+    tagline: {
+      type: String,
+      default: "",
+    },
     price: {
       type: String,
       required: true,

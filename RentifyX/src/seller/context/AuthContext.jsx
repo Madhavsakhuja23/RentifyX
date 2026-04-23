@@ -3,14 +3,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-<<<<<<< HEAD
-  const [user, setUser] = useState(() => {
-    // Initialize synchronously from localStorage to avoid flash/race
-    const stored = localStorage.getItem('currentUser');
-    return stored ? JSON.parse(stored) : null;
-  });
-  const [loading, setLoading] = useState(false);
-=======
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +15,6 @@ export function AuthProvider({ children }) {
 
     setLoading(false);
   }, []);
->>>>>>> main
 
   const login = (userData, token) => {
     localStorage.setItem("currentUser", JSON.stringify(userData));
@@ -36,33 +27,19 @@ export function AuthProvider({ children }) {
   };
 
   const logOut = () => {
-<<<<<<< HEAD
-    localStorage.removeItem('currentUser');
-=======
     localStorage.removeItem("currentUser");
     localStorage.removeItem("token");
->>>>>>> main
     setUser(null);
   };
 
   const updateProfile = (updates) => {
     const updated = { ...user, ...updates };
-<<<<<<< HEAD
-    setUser(updated);
-    localStorage.setItem('currentUser', JSON.stringify(updated));
-  };
-
-  const login = (userData) => {
-    localStorage.setItem("currentUser", JSON.stringify(userData));
-    setUser(userData);
-=======
 
     setUser(updated);
     localStorage.setItem(
       "currentUser",
       JSON.stringify(updated)
     );
->>>>>>> main
   };
 
   return (

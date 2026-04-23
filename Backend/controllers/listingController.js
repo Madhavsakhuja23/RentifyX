@@ -4,6 +4,19 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import mongoose from "mongoose";
 
 // POST /api/listings — Create a new listing with exactly 5 images
+// GET /api/listings/my — Get all listings for the authenticated seller
+export const getMyListings = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const listings = await Listing.find({ seller: sellerId }).sort({ createdAt: -1 });
+    res.json({ listings });
+  } catch (err) {
+    console.error("Get my listings error:", err);
+    res.status(500).json({ msg: "Server error while fetching listings" });
+  }
+};
+
+// POST /api/listings — Create a new listing with exactly 5 images
 export const createListing = async (req, res) => {
   try {
     const files = req.files;
@@ -15,11 +28,11 @@ export const createListing = async (req, res) => {
       });
     }
 
-    const { title, description, category, price, location, availableDates } =
+    const { title, description, category, subcategory, tagline, price, location, availableDates } =
       req.body;
 
     // Validate required fields
-    if (!title || !description || !category || !price || !location) {
+    if (!title || !description || !category || !subcategory || !price || !location) {
       return res.status(400).json({ msg: "All required fields must be filled." });
     }
 
@@ -68,6 +81,8 @@ export const createListing = async (req, res) => {
       title,
       description,
       category,
+      subcategory,
+      tagline: tagline || "",
       price,
       location,
       availableDates: availableDates || "",

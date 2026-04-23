@@ -2,43 +2,45 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const ListingsContext = createContext(null);
-
-const PLACEHOLDER_IMAGES = [
-  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1549317661-bd32c8ce0afa?w=400&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&h=300&fit=crop',
-];
-
-function getRandomImage() {
-  return PLACEHOLDER_IMAGES[Math.floor(Math.random() * PLACEHOLDER_IMAGES.length)];
-}
+const API_URL = 'http://localhost:5000/api/listings';
 
 export function ListingsProvider({ children }) {
   const { user } = useAuth();
   const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  // Fetch listings from MongoDB whenever user changes
   useEffect(() => {
     if (user) {
-      const stored = localStorage.getItem(`seller_listings_${user.id}`);
-      if (stored) {
-        setListings(JSON.parse(stored));
-      } else {
-        setListings([]);
-      }
+      fetchListings();
     } else {
       setListings([]);
     }
   }, [user]);
 
-  const persist = (updated) => {
-    setListings(updated);
-    if (user) {
-      localStorage.setItem(`seller_listings_${user.id}`, JSON.stringify(updated));
+  const fetchListings = async () => {
+    setLoading(true);
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      const res = await fetch(`${API_URL}/my`, {
+        headers: {
+          Authorization: currentUser?.id || '',
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const mapped = data.listings.map((l) => ({
+          ...l,
+          id: l._id || l.id,
+          image: l.images && l.images.length > 0 ? l.images[0].url : '',
+          available: l.available !== undefined ? l.available : true,
+        }));
+        setListings(mapped);
+      }
+    } catch (err) {
+      console.error('Failed to fetch listings:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,33 +48,31 @@ export function ListingsProvider({ children }) {
     const newListing = {
       ...listing,
       id: listing.id || listing._id || Date.now().toString(),
-      image: listing.image || (listing.images && listing.images.length > 0 ? listing.images[0].url : getRandomImage()),
+      image: listing.image || (listing.images && listing.images.length > 0 ? listing.images[0].url : ''),
       available: listing.available !== undefined ? listing.available : true,
       createdAt: listing.createdAt || new Date().toISOString(),
     };
-    persist([newListing, ...listings]);
+    setListings((prev) => [newListing, ...prev]);
     return newListing;
   };
 
   const updateListing = (id, updates) => {
-    const updated = listings.map((l) => (l.id === id ? { ...l, ...updates } : l));
-    persist(updated);
+    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
   };
 
   const deleteListing = (id) => {
-    persist(listings.filter((l) => l.id !== id));
+    setListings((prev) => prev.filter((l) => l.id !== id));
   };
 
   const toggleAvailability = (id) => {
-    const updated = listings.map((l) =>
-      l.id === id ? { ...l, available: !l.available } : l
+    setListings((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, available: !l.available } : l))
     );
-    persist(updated);
   };
 
   return (
     <ListingsContext.Provider
-      value={{ listings, addListing, updateListing, deleteListing, toggleAvailability }}
+      value={{ listings, loading, addListing, updateListing, deleteListing, toggleAvailability }}
     >
       {children}
     </ListingsContext.Provider>
