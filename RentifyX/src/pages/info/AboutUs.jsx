@@ -84,23 +84,23 @@ const AboutUs = () => {
           <div className="team-grid">
             <div className="team-card">
               <div className="team-avatar">A</div>
-              <h4>Aarav Mehta</h4>
-              <p className="role">CEO & Co-Founder</p>
+              <h4>Madhav Sakhuja</h4>
+              
             </div>
             <div className="team-card">
               <div className="team-avatar">P</div>
-              <h4>Priya Sharma</h4>
-              <p className="role">CTO</p>
+              <h4>Mohak Taneja</h4>
+         
             </div>
             <div className="team-card">
               <div className="team-avatar">R</div>
-              <h4>Rohan Gupta</h4>
-              <p className="role">Head of Design</p>
+              <h4>Saksham Jain</h4>
+              
             </div>
             <div className="team-card">
               <div className="team-avatar">S</div>
-              <h4>Sara Patel</h4>
-              <p className="role">VP of Operations</p>
+              <h4>Mansha Verma</h4>
+              
             </div>
           </div>
         </div>
