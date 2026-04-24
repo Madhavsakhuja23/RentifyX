@@ -4,12 +4,16 @@ import { useListings } from '../context/ListingsContext';
 import { Upload, Home, Car, X, ImagePlus, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react';
 import './AddListing.css';
 
+<<<<<<< HEAD
+const API_URL = 'http://localhost:5001/api/listings';
+=======
 const SUBCATEGORY_OPTIONS = {
   Dwelling: ['Villa', 'Flat', 'PG', 'Travel Stay'],
   Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
 };
 
 const API_URL = 'http://localhost:5000/api/listings';
+>>>>>>> a1be17b5076063be7bfbd4ee94705e288faca968
 
 export default function AddListing() {
   const navigate = useNavigate();
@@ -26,6 +30,10 @@ export default function AddListing() {
     description: '',
     category: 'Dwelling',
     subcategory: '',
+<<<<<<< HEAD
+    tagline: '',
+=======
+>>>>>>> a1be17b5076063be7bfbd4ee94705e288faca968
     price: '',
     location: '',
     availableDates: '',
@@ -120,6 +128,10 @@ export default function AddListing() {
       body.append('description', formData.description);
       body.append('category', formData.category);
       body.append('subcategory', formData.subcategory);
+<<<<<<< HEAD
+      body.append('tagline', formData.tagline);
+=======
+>>>>>>> a1be17b5076063be7bfbd4ee94705e288faca968
       body.append('price', formData.price);
       body.append('location', formData.location);
       body.append('availableDates', formData.availableDates);
@@ -230,6 +242,38 @@ export default function AddListing() {
                 value={formData.title}
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            {/* Subcategory — only for Dwellings */}
+            {formData.category === 'Dwelling' && (
+              <div className="input-group full-width">
+                <label htmlFor="subcategory">Dwelling Type</label>
+                <select
+                  id="subcategory"
+                  name="subcategory"
+                  value={formData.subcategory}
+                  onChange={handleChange}
+                  style={{ padding: '0.6rem 0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.95rem', background: 'var(--bg-card, #fff)' }}
+                >
+                  <option value="">Select a type (optional)</option>
+                  <option value="villa">Villa</option>
+                  <option value="flats">Flat / Apartment</option>
+                  <option value="pgs">PG / Hostel</option>
+                  <option value="travel">Travel Stay</option>
+                </select>
+              </div>
+            )}
+
+            <div className="input-group full-width">
+              <label htmlFor="tagline">Tagline</label>
+              <input
+                id="tagline"
+                name="tagline"
+                type="text"
+                placeholder="e.g., Stunning pool villa with mountain views"
+                value={formData.tagline}
+                onChange={handleChange}
               />
             </div>
 

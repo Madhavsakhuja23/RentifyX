@@ -21,23 +21,79 @@ export const apiRequest = async (endpoint, options = {}) => {
     ...(options.headers || {}),
   };
 
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let res;
 
-  const data = await res.json();
+  try {
+    res = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    throw new Error("Unable to connect to the backend API.");
+  }
+
+  const data = await parseJsonSafely(res);
 
   if (!res.ok) {
     if (res.status === 401) {
       localStorage.removeItem("currentUser");
       window.location.href = "/login";
     }
-    throw new Error(data.msg || "Request failed");
+    throw new Error(data?.msg || data?.message || "Request failed");
   }
 
   return data;
 };
+
+export const publicApiRequest = async (endpoint, options = {}) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  let res;
+
+  try {
+    res = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    throw new Error("Unable to connect to the backend API.");
+  }
+
+  const data = await parseJsonSafely(res);
+
+  if (!res.ok) {
+    throw new Error(data?.msg || data?.message || "Request failed");
+  }
+
+  return data;
+};
+
+const buildQueryString = (params = {}) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === "string" && !value.trim()) return;
+    if (typeof value === "boolean") {
+      query.set(key, String(value));
+      return;
+    }
+
+    query.set(key, String(value));
+  });
+
+  const queryString = query.toString();
+  return queryString ? `?${queryString}` : "";
+};
+
+export const getDwellings = (params = {}) =>
+  publicApiRequest(`/listings${buildQueryString({ category: "Dwelling", ...params })}`);
+
+export const getListingById = (id) =>
+  publicApiRequest(`/listings/${id}`);
 
 // ── Convenience methods ──────────────────────────────────────
 

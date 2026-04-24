@@ -1,7 +1,12 @@
 import express from "express";
 import multer from "multer";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { createListing, getMyListings } from "../controllers/listingController.js";
+
+import {
+  createListing,
+  getListings,
+  getListingById,
+} from "../controllers/listingController.js";
 
 const router = express.Router();
 
@@ -23,5 +28,20 @@ router.get("/my", authMiddleware, getMyListings);
 
 // POST /api/listings — expects exactly 5 image files under field name "images"
 router.post("/", authMiddleware, upload.array("images", 5), createListing);
+
+// ✅ GET /api/listings — Fetch all listings
+router.get("/", getListings);
+
+// ✅ GET /api/listings/:id — Fetch single listing
+router.get("/:id", getListingById);
+
+
+// ✅ POST /api/listings — Create listing
+router.post(
+  "/",
+  authMiddleware,
+  upload.array("images", 5),
+  createListing
+);
 
 export default router;
