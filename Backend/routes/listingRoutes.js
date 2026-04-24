@@ -23,6 +23,11 @@ const upload = multer({
   },
 });
 
+// GET /api/listings/my — get all listings for the authenticated seller
+router.get("/my", authMiddleware, getMyListings);
+
+// POST /api/listings — expects exactly 5 image files under field name "images"
+router.post("/", authMiddleware, upload.array("images", 5), createListing);
 
 // ✅ GET /api/listings — Fetch all listings
 router.get("/", getListings);

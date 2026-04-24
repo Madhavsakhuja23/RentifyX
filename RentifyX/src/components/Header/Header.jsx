@@ -8,13 +8,13 @@ import {
   LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../seller/context/AuthContext";
 import "./Header.css";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const currentUserStr = localStorage.getItem("currentUser");
-  const user = currentUserStr && currentUserStr !== "undefined" && currentUserStr !== "null" ? JSON.parse(currentUserStr) : null;
+  const { user, logOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname + location.search;
@@ -25,8 +25,7 @@ const Header = () => {
       ? "mobile-link active-item"
       : "mobile-link";
 
-  const token = localStorage.getItem("token");
-  const isLoggedIn = Boolean(token && token !== "undefined" && token !== "null");
+  const isLoggedIn = Boolean(user);
 
   const handleProfileClick = () => {
     navigate(isLoggedIn ? "/profile" : "/login");
@@ -132,14 +131,18 @@ const Header = () => {
               <button
                 className="mobile-link logout-item"
                 onClick={() => {
-                  localStorage.removeItem("token");
-                  localStorage.removeItem("currentUser");
-                  localStorage.removeItem("user");
-                  navigate("/");
+                  if (isLoggedIn) {
+                    logOut();
+                    navigate("/");
+                  } else {
+                    navigate("/login");
+                  }
+
+                  setMobileMenuOpen(false);
                 }}
               >
-                <LogOut size={18} />
-                Logout
+                {isLoggedIn ? <LogOut size={18} /> : <User size={18} />}
+                {isLoggedIn ? "Logout" : "Login"}
               </button>
 
             </motion.nav>

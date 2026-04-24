@@ -56,16 +56,7 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/faq" element={<FAQ />} />
 
-        {/* Protected Routes — require JWT */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-            {/* Protected Routes — require localStorage token */}
+            {/* Protected Routes — require login */}
             <Route
               path="/profile"
               element={

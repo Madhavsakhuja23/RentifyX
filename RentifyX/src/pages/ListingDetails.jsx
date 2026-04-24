@@ -200,8 +200,8 @@ function MessageHostModal({ host, listing, onClose }) {
 
     emailjs
       .sendForm(
-       "service_z6wavoa",
-       "template_jhv1w9k",
+        "service_z6wavoa",
+        "template_jhv1w9k",
         formRef.current,
         "Utoi2SbtmtWx2iJjf"
       )
@@ -419,11 +419,19 @@ function BookingCard({ listing }) {
   /* ── Reserve handler ───────────────────────── */
   function handleReserve() {
 
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    navigate("/login");
-    return;
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    if (!checkIn || !checkOut) return;
+    if (isBelowMinStay) return;
+
+    navigate(`/book/${listing.id}`, {
+      state: { listing, checkIn, checkOut, nights, guests, sub, total },
+    });
   }
 
   if (!checkIn || !checkOut) return;
@@ -596,7 +604,7 @@ function BookingCard({ listing }) {
       )}
     </div>
   );
-}
+
 
 /* ── TTK Row helpers ─────────────────────────── */
 function InfoIcon() {
@@ -1046,7 +1054,7 @@ export default function ListingDetails() {
                       <span> · Response rate: {listing.host.responseRate}</span>
                     </div>
                   </div>
-                 <button className="ld-contact-btn" onClick={() => setShowMessageModal(true)}> Message {listing.host.name}
+                  <button className="ld-contact-btn" onClick={() => setShowMessageModal(true)}> Message {listing.host.name}
                   </button>
                 </div>
               </div>
@@ -1105,12 +1113,12 @@ export default function ListingDetails() {
         </div>
       </div>
       {showMessageModal && (
-  <MessageHostModal
-    host={listing.host.name}
-    listing={listing.name}
-    onClose={() => setShowMessageModal(false)}
-  />
-)}
+        <MessageHostModal
+          host={listing.host.name}
+          listing={listing.name}
+          onClose={() => setShowMessageModal(false)}
+        />
+      )}
       <Footer />
     </div>
   );

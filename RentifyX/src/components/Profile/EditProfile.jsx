@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { User, Mail, Phone, MapPin, Calendar, Check, X } from "lucide-react";
+import { useAuth } from "../../seller/context/AuthContext";
+import { updateProfileApi } from "../../api";
 
 const EditProfile = ({ user, setEditMode }) => {
+  const { updateProfile } = useAuth();
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -9,6 +12,8 @@ const EditProfile = ({ user, setEditMode }) => {
     location: user?.location || "",
     dob: user?.dob || ""
   });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setForm({
@@ -17,21 +22,24 @@ const EditProfile = ({ user, setEditMode }) => {
     });
   };
 
-  const handleSave = () => {
-    const updatedUser = {
-      ...user,
-      ...form
-    };
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError("");
 
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(updatedUser)
-    );
+      // Save to backend (MongoDB)
+      const data = await updateProfileApi(form);
 
-    // Trigger storage event so Profile.jsx can pick up the changes if needed
-    window.dispatchEvent(new Event('storage'));
+      // Update AuthContext + localStorage with fresh data from server
+      updateProfile(data.user);
 
-    setEditMode(false);
+      setEditMode(false);
+    } catch (err) {
+      console.log("Profile update error:", err);
+      setError(err.message || "Failed to save changes");
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Get today's date in YYYY-MM-DD format to restrict future dates
@@ -43,6 +51,12 @@ const EditProfile = ({ user, setEditMode }) => {
         <h2>Account Settings</h2>
         <p>Update your personal details to enhance your RentifyX experience.</p>
       </div>
+
+      {error && (
+        <p style={{ color: "#ff4d4f", fontSize: "14px", marginBottom: "16px" }}>
+          {error}
+        </p>
+      )}
 
       <div className="settings-form-grid">
         <div className="form-group-premium">
@@ -120,9 +134,9 @@ const EditProfile = ({ user, setEditMode }) => {
       </div>
 
       <div className="settings-actions">
-        <button className="save-btn-premium" onClick={handleSave}>
+        <button className="save-btn-premium" onClick={handleSave} disabled={saving}>
           <Check size={16} style={{ display: 'inline', marginRight: '8px' }} />
-          Save Changes
+          {saving ? "Saving..." : "Save Changes"}
         </button>
         <button className="cancel-btn-premium" onClick={() => setEditMode(false)}>
           <X size={16} style={{ display: 'inline', marginRight: '8px' }} />

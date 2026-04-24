@@ -7,16 +7,18 @@ import { auth, provider } from "../firebase";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import { loginApi, googleAuthApi } from "../api";
+import { useAuth } from "../seller/context/AuthContext";
 import "./Login.css";
 
 
 const Login = () => {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,20 +30,18 @@ const [googleLoading, setGoogleLoading] = useState(false);
     const result = await signInWithPopup(auth, provider);
     const firebaseUser = result.user;
 
-    // Send to backend — get real JWT back
+    // Send to backend — no role passed, backend uses existing account role
     const data = await googleAuthApi(
       firebaseUser.displayName,
       firebaseUser.email,
       firebaseUser.photoURL
     );
 
-    // Store the real backend JWT and user
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("currentUser", JSON.stringify(data.user));
+    // Store user in context
+    login(data.user);
 
     // Redirect based on role
-    if (data.user.role == "owner" || data.user.role == "both") {
+    if (data.user.role === "owner" || data.user.role === "both") {
       navigate("/seller/dashboard");
     } else {
       navigate("/");
@@ -64,10 +64,8 @@ const [googleLoading, setGoogleLoading] = useState(false);
 
       const data = await loginApi(email, password);
 
-      // Store real backend JWT
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      // Store user in context
+      login(data.user);
 
       // Redirect based on role
       if (data.user.role === "owner" || data.user.role === "both") {

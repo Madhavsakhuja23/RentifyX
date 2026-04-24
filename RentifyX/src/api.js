@@ -1,36 +1,23 @@
 /**
  * api.js — Centralized fetch wrapper for RentifyX
- * Automatically attaches Authorization: Bearer <token> header.
+ * Sends userId in Authorization header for authenticated requests.
  */
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
-
-const parseJsonSafely = async (response) => {
-  const contentType = response.headers.get("content-type") || "";
-
-  if (!contentType.includes("application/json")) {
-    return null;
-  }
-
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-};
+const BASE_URL = "https://rentifyx-ff33.onrender.com/api";
 
 /**
- * Make an authenticated API request.
+ * Make an API request.
  * @param {string} endpoint  - e.g. "/auth/me"
  * @param {object} options   - fetch options (method, body, etc.)
  * @returns {Promise<any>}   - parsed JSON response
  */
 export const apiRequest = async (endpoint, options = {}) => {
-  const token = localStorage.getItem("token");
+  const currentUser = localStorage.getItem("currentUser");
+  const userId = currentUser ? JSON.parse(currentUser).id : null;
 
   const headers = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(userId ? { Authorization: userId } : {}),
     ...(options.headers || {}),
   };
 
@@ -48,10 +35,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   const data = await parseJsonSafely(res);
 
   if (!res.ok) {
-    // If token is expired/invalid, auto-logout
     if (res.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
       localStorage.removeItem("currentUser");
       window.location.href = "/login";
     }
@@ -136,4 +120,10 @@ export const googleAuthApi = async (name, email, photo, role) =>
       photo,
       role
     }),
+  });
+
+export const updateProfileApi = (updates) =>
+  apiRequest("/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(updates),
   });

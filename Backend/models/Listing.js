@@ -26,7 +26,8 @@ const listingSchema = new mongoose.Schema(
     },
     subcategory: {
       type: String,
-      default: "",
+      enum: ["Villa", "Flat", "PG", "Travel Stay", "Cars", "EV", "Bike", "Bicycle"],
+      required: true,
     },
     tagline: {
       type: String,
