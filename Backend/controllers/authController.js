@@ -101,7 +101,10 @@ export const loginUser = async (req, res) => {
 export const googleAuth = async (req, res) => {
   try {
     const { name, email, photo, role } = req.body;
-
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ msg: "User already exists" });
+    }
     let user = await User.findOne({ email });
 
     if (user) {
