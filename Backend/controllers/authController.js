@@ -101,41 +101,55 @@ export const loginUser = async (req, res) => {
 export const googleAuth = async (req, res) => {
   try {
     const { name, email, photo, role } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ msg: "User already exists" });
-    }
+
     let user = await User.findOne({ email });
 
     if (user) {
-      // Update photo if provided and changed
+      // Existing user login
+
       if (photo && user.photo !== photo) {
         user.photo = photo;
       }
-      // Only update role if explicitly provided and valid
+
       const validRoles = ["user", "owner", "both"];
-      if (role && validRoles.includes(role) && user.role !== role) {
+
+      if (
+        role &&
+        validRoles.includes(role) &&
+        user.role !== role
+      ) {
         user.role = role;
       }
+
       await user.save();
+
     } else {
-      // Hash the placeholder password for consistency
-      const hashedPlaceholder = await bcrypt.hash("google-auth-placeholder", 10);
+      // New Google account create
+
+      const hashedPassword = await bcrypt.hash(
+        "google-auth-placeholder",
+        10
+      );
 
       user = await User.create({
         name,
         email,
         photo: photo || "",
-        password: hashedPlaceholder,
-        role: role || "user",
+        password: hashedPassword,
+        role: role || "user"
       });
     }
 
-    res.json({ user: safeUser(user) });
+    res.json({
+      user: safeUser(user)
+    });
 
   } catch (error) {
     console.log("Google auth error:", error);
-    res.status(500).json({ msg: "Google auth failed" });
+
+    res.status(500).json({
+      msg: "Google auth failed"
+    });
   }
 };
 
