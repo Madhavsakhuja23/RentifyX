@@ -8,7 +8,9 @@ const router = express.Router();
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 router.post("/google", googleAuth);
-
+router.get("/", (req, res) => {
+  res.json({ message: "Auth API Working" });
+});
 // Protected routes
 router.get("/me", authMiddleware, getMe);
 router.put("/profile", authMiddleware, updateProfile);
