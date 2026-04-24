@@ -3,7 +3,7 @@
  * Sends userId in Authorization header for authenticated requests.
  */
 
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://rentifyx-ff33.onrender.com/api";
 
 /**
  * Make an API request.
