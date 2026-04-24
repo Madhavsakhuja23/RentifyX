@@ -131,12 +131,18 @@ const Header = () => {
               <button
                 className="mobile-link logout-item"
                 onClick={() => {
-                  logOut();
-                  navigate("/");
+                  if (isLoggedIn) {
+                    logOut();
+                    navigate("/");
+                  } else {
+                    navigate("/login");
+                  }
+
+                  setMobileMenuOpen(false);
                 }}
               >
-                <LogOut size={18} />
-                Logout
+                {isLoggedIn ? <LogOut size={18} /> : <User size={18} />}
+                {isLoggedIn ? "Logout" : "Login"}
               </button>
 
             </motion.nav>
