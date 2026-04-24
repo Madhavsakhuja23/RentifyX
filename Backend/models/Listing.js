@@ -24,6 +24,14 @@ const listingSchema = new mongoose.Schema(
       enum: ["Dwelling", "Vehicle"],
       required: true,
     },
+    subcategory: {
+      type: String,
+      default: "",
+    },
+    tagline: {
+      type: String,
+      default: "",
+    },
     price: {
       type: String,
       required: true,

@@ -15,7 +15,7 @@ export const createListing = async (req, res) => {
       });
     }
 
-    const { title, description, category, price, location, availableDates } =
+    const { title, description, category, subcategory, tagline, price, location, availableDates } =
       req.body;
 
     // Validate required fields
@@ -68,6 +68,8 @@ export const createListing = async (req, res) => {
       title,
       description,
       category,
+      subcategory: subcategory || "",
+      tagline: tagline || "",
       price,
       location,
       availableDates: availableDates || "",
@@ -83,5 +85,64 @@ export const createListing = async (req, res) => {
   } catch (err) {
     console.error("Create listing error:", err);
     res.status(500).json({ msg: "Server error while creating listing" });
+  }
+};
+
+// GET /api/listings — Fetch all listings
+export const getListings = async (req, res) => {
+  try {
+    const { location, category } = req.query;
+
+    let query = {};
+
+    // Optional filters
+    if (location) {
+      query.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+
+    if (category) {
+      query.category = category;
+    }
+
+    const listings = await Listing.find(query)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: listings.length,
+      listings,
+    });
+
+  } catch (error) {
+    console.error("Fetch listings error:", error);
+
+    res.status(500).json({
+      msg: "Server error while fetching listings",
+    });
+  }
+};
+
+// GET /api/listings/:id — Fetch a single listing by ID
+export const getListingById = async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      listing,
+    });
+  } catch (error) {
+    console.error("Fetch listing by ID error:", error);
+
+    res.status(500).json({
+      msg: "Server error while fetching listing",
+    });
   }
 };

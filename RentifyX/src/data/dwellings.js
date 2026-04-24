@@ -61,17 +61,6 @@ export const pricingRules = {
   travel: "Per night",
 };
 
-export const locations = [
-  "Mumbai",
-  "Delhi",
-  "Bangalore",
-  "Hyderabad",
-  "Pune",
-  "Chennai",
-  "Goa",
-  "Jaipur",
-];
-
 export const listings = [
 {
 id: "1",
@@ -221,8 +210,8 @@ available:true
 
 {
 id:"4",
-name:"Flat in Banglaore",
-location:"Banglaore",
+name:"Flat in Bangalore",
+location:"Bangalore",
 rating:4.9,
 reviews:210,
 type:"flats",
@@ -246,7 +235,7 @@ responseRate:"100%",
 responseTime:"within 30 minutes"
 },
 
-description:"Enjoy a premium stay in this modern 2BHK apartment in Banglore, thoughtfully designed for comfort and relaxation. The apartment features swimming pool access, high-speed Wi-Fi, Smart TV, stylish interiors, and a peaceful private balcony. Located just off Candolim’s main road, the property is close to Candolim Beach, top restaurants, shopping areas, and vibrant nightlife. Perfect for families, friends, and long-stay guests",
+description:"Enjoy a premium stay in this modern 2BHK apartment in Bangalore, thoughtfully designed for comfort and relaxation. The apartment features swimming pool access, high-speed Wi-Fi, Smart TV, stylish interiors, and a peaceful private balcony. Located just off Candolim’s main road, the property is close to Candolim Beach, top restaurants, shopping areas, and vibrant nightlife. Perfect for families, friends, and long-stay guests",
 
 amenities:[
 "Free parking",
@@ -506,3 +495,57 @@ available:true
 }
 
 ];
+
+const locationAliases = {
+  banglaore: "Bangalore",
+  banglore: "Bangalore",
+};
+
+export const normalizeLocation = (value = "") => {
+  const normalizedValue = value.trim().toLowerCase();
+  return locationAliases[normalizedValue] || normalizedValue;
+};
+
+export const getNormalizedLocationName = (value = "") => {
+  const normalizedValue = normalizeLocation(value);
+
+  if (!normalizedValue) return "";
+
+  return normalizedValue
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
+
+const uniqueLocationMap = listings.reduce((accumulator, listing) => {
+  const normalizedLocation = normalizeLocation(listing.location);
+  const displayLocation = getNormalizedLocationName(listing.location);
+
+  if (!normalizedLocation || accumulator.has(normalizedLocation)) {
+    return accumulator;
+  }
+
+  accumulator.set(normalizedLocation, displayLocation);
+  return accumulator;
+}, new Map());
+
+export const locations = Array.from(uniqueLocationMap.values());
+
+export const topSearchLocations = Array.from(
+  listings.reduce((accumulator, listing) => {
+    const displayLocation = getNormalizedLocationName(listing.location);
+    const currentCount = accumulator.get(displayLocation) || 0;
+    accumulator.set(displayLocation, currentCount + 1);
+    return accumulator;
+  }, new Map())
+)
+  .sort((left, right) => {
+    if (right[1] !== left[1]) {
+      return right[1] - left[1];
+    }
+
+    return left[0].localeCompare(right[0]);
+  })
+  .map(([location]) => location)
+  .slice(0, 6);

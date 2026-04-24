@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listings } from "../data/dwellings";
+import { getListingById } from "../api";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
@@ -96,6 +97,22 @@ function fmt(n) {
   return "₹" + Number(n).toLocaleString("en-IN");
 }
 
+const STATIC_BOOKED_DATE_RANGES = {
+  "1": [
+    { start: "2026-05-10", end: "2026-05-18" },
+    { start: "2026-06-02", end: "2026-06-09" },
+  ],
+  "2": [
+    { start: "2026-05-04", end: "2026-05-07" },
+  ],
+  "4": [
+    { start: "2026-05-20", end: "2026-06-25" },
+  ],
+  "8": [
+    { start: "2026-05-15", end: "2026-05-22" },
+  ],
+};
+
 /**
  * Canonical rental-type detection.
  * Priority: pricingType field → priceUnit string fallback.
@@ -124,6 +141,26 @@ function getMonthDiff(start, end) {
 
   return Math.max(1, months);
 }
+
+function formatBookingDate(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getOverlappingBookedRange(bookedRanges, start, end) {
+  if (!start || !end) return null;
+
+  return (
+    bookedRanges.find(
+      (range) => start < range.end && end > range.start
+    ) || null
+  );
+}
+
 function StarIcon({ size = 14 }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="#FF385C">
@@ -222,6 +259,30 @@ function MessageHostModal({ host, listing, onClose }) {
     </div>
   );
 }
+
+function UnavailableDatesModal({ range, onClose }) {
+  return (
+    <div className="ld-modal-overlay" onClick={onClose}>
+      <div className="ld-message-modal ld-alert-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="ld-modal-close" onClick={onClose}>
+          ✕
+        </button>
+
+        <h2>These dates are already full</h2>
+        <p>
+          This listing is not available from{" "}
+          <strong>{formatBookingDate(range?.start)}</strong> to{" "}
+          <strong>{formatBookingDate(range?.end)}</strong>.
+        </p>
+        <p>Please select some other dates to continue.</p>
+
+        <button type="button" className="ld-send-btn" onClick={onClose}>
+          Choose other dates
+        </button>
+      </div>
+    </div>
+  );
+}
 /* ── Map ─────────────────────────────────────── */
 function MapEmbed({ location }) {
   const info = LOCATION_COORDS[location] || LOCATION_COORDS.Mumbai;
@@ -308,6 +369,9 @@ function BookingCard({ listing }) {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState({ adults: 1, children: 0, infants: 0 });
+  const [blockedRange, setBlockedRange] = useState(null);
+
+  const bookedRanges = STATIC_BOOKED_DATE_RANGES[listing.id] || [];
 
   const today = new Date().toISOString().split("T")[0];
   const rentalType = getRentalType(listing);           // "monthly" | "perNight"
@@ -324,6 +388,7 @@ function BookingCard({ listing }) {
   const isBelowMinStay = isMonthly && nights > 0 && nights < 30;
   // Price is calculable only when dates are chosen AND validation passes
   const canCalculate = nights > 0 && !isBelowMinStay;
+  const overlappingBookedRange = getOverlappingBookedRange(bookedRanges, checkIn, checkOut);
 
   /* ── Step 3: price calculation ─────────────── */
   const months = isMonthly && canCalculate ? getMonthDiff(checkIn, checkOut) : 0;
@@ -363,6 +428,10 @@ function BookingCard({ listing }) {
 
   if (!checkIn || !checkOut) return;
   if (isBelowMinStay) return;
+  if (overlappingBookedRange) {
+    setBlockedRange(overlappingBookedRange);
+    return;
+  }
 
   navigate(`/book/${listing.id}`, {
     state: { listing, checkIn, checkOut, nights, guests, sub, total },
@@ -402,41 +471,83 @@ function BookingCard({ listing }) {
         <div className="ld-rare-badge">⚡ Instant booking available</div>
       )}
 
-      {/* Date inputs */}
-      <div className="ld-date-grid">
-        <div className="ld-date-cell ld-date-checkin">
-          <label htmlFor="checkin">CHECK-IN</label>
-          <input
+      <div className="ld-book-fields">
+        <div className="ld-book-fields-head">
+          <div>
+            <p className="ld-book-fields-label">Availability</p>
+            <h3 className="ld-book-fields-title">Choose your stay dates</h3>
+          </div>
+          <p className="ld-book-fields-note">
+            {isMonthly ? "Minimum 30 days" : "Select check-in and checkout"}
+          </p>
+        </div>
+
+        {/* Date inputs */}
+        <div className="ld-date-grid">
+          <div className="ld-date-cell ld-date-checkin">
+            <label htmlFor="checkin">CHECK-IN</label>
+            <input
             id="checkin"
             type="date"
             value={checkIn}
             min={today}
             onChange={(e) => {
-              setCheckIn(e.target.value);
+              const nextCheckIn = e.target.value;
+              setCheckIn(nextCheckIn);
               // Reset checkout if it's now before the new minimum
               if (checkOut) {
-                const newMin = new Date(e.target.value);
+                const newMin = new Date(nextCheckIn);
                 newMin.setDate(newMin.getDate() + (isMonthly ? 30 : 1));
-                if (new Date(checkOut) < newMin) setCheckOut("");
+                if (new Date(checkOut) < newMin) {
+                  setCheckOut("");
+                  return;
+                }
+
+                const overlappingRange = getOverlappingBookedRange(
+                  bookedRanges,
+                  nextCheckIn,
+                  checkOut
+                );
+
+                if (overlappingRange) {
+                  setCheckOut("");
+                  setBlockedRange(overlappingRange);
+                }
               }
             }}
           />
-        </div>
-        <div className="ld-date-cell">
-          <label htmlFor="checkout">CHECKOUT</label>
-          <input
+          </div>
+          <div className="ld-date-cell">
+            <label htmlFor="checkout">CHECKOUT</label>
+            <input
             id="checkout"
             type="date"
             value={checkOut}
             min={getMinCheckout()}
-            onChange={(e) => setCheckOut(e.target.value)}
+            onChange={(e) => {
+              const nextCheckOut = e.target.value;
+              const overlappingRange = getOverlappingBookedRange(
+                bookedRanges,
+                checkIn,
+                nextCheckOut
+              );
+
+              if (overlappingRange) {
+                setCheckOut("");
+                setBlockedRange(overlappingRange);
+                return;
+              }
+
+              setCheckOut(nextCheckOut);
+            }}
             disabled={!checkIn}
           />
         </div>
-      </div>
+        </div>
 
-      {/* Guest selector */}
-      <GuestSelector guests={guests} onChange={setGuests} max={listing.guests} />
+        {/* Guest selector */}
+        <GuestSelector guests={guests} onChange={setGuests} max={listing.guests} />
+      </div>
 
       {/* ── Validation error (only reachable if user bypasses min on desktop) ── */}
       {isBelowMinStay && (
@@ -476,6 +587,13 @@ function BookingCard({ listing }) {
       </div>
 
       <p className="ld-no-charge">You won't be charged yet</p>
+
+      {blockedRange && (
+        <UnavailableDatesModal
+          range={blockedRange}
+          onClose={() => setBlockedRange(null)}
+        />
+      )}
     </div>
   );
 }
@@ -499,13 +617,91 @@ export default function ListingDetails() {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
-  const listing = listings.find((l) => l.id === id);
+
+  const [dynamicListing, setDynamicListing] = useState(null);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
   const [lbIndex, setLbIndex] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("Photos");
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showAllAm, setShowAllAm] = useState(false);
+
+  // Fetch from API
+  useEffect(() => {
+
+    let ignore = false;
+    const fetchListing = async () => {
+      setFetchLoading(true);
+      setFetchError("");
+      try {
+        const response = await getListingById(id);
+        if (ignore) return;
+
+        const raw = response?.listing || response;
+        if (!raw) {
+          setFetchError("Listing not found");
+          return;
+        }
+
+        // Normalize the MongoDB listing with sensible defaults
+        const imgList = Array.isArray(raw.images)
+          ? raw.images.map((img) => (typeof img === "object" && img.url ? img.url : img)).filter(Boolean)
+          : [];
+
+        setDynamicListing({
+          ...raw,
+          id: raw._id || raw.id,
+          name: raw.title || raw.name || "Untitled",
+          type: (raw.subcategory || raw.category || "villa").toLowerCase(),
+          location: raw.location || "India",
+          rating: Number(raw.rating || 4.5),
+          reviews: Number(raw.reviews || 0),
+          guests: Number(raw.guests || 2),
+          bedrooms: Number(raw.bedrooms || 1),
+          beds: Number(raw.beds || 1),
+          bathrooms: Number(raw.bathrooms || 1),
+          price: Number(raw.price || 0),
+          pricingType: raw.pricingType || "monthly",
+          priceUnit: raw.priceUnit || "/mo",
+          image: imgList[0] || "",
+          images: imgList,
+          available: raw.available ?? true,
+          description: raw.description || "",
+          tagline: raw.tagline || "",
+          sellerName: raw.sellerName || "",
+          host: {
+            name: raw.sellerName || "Host",
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(raw.sellerName || "Host")}&background=FF385C&color=fff&size=128`,
+            rating: 4.8,
+            reviews: 50,
+            experience: "2 years hosting",
+            languages: ["English", "Hindi"],
+            responseRate: "95%",
+            responseTime: "within a few hours",
+          },
+          amenities: raw.amenities || ["Wifi", "Kitchen", "Air conditioning"],
+          highlights: raw.highlights || [
+            { title: "Self check-in", desc: "Easy access using a smart lock." },
+            { title: "Great location", desc: "Guests loved the location." },
+            { title: "Fast WiFi", desc: "Perfect for remote work." },
+          ],
+        });
+      } catch (err) {
+        if (ignore) return;
+        console.error("Failed to fetch listing:", err);
+        setFetchError("Could not load listing details.");
+      } finally {
+        if (!ignore) setFetchLoading(false);
+      }
+    };
+
+    fetchListing();
+    return () => { ignore = true; };
+  }, [id]);
+
+  const listing = dynamicListing;
 
   // Favourites — persist to localStorage
   const [saved, setSaved] = useState(() => {
@@ -514,6 +710,7 @@ export default function ListingDetails() {
   });
 
   function toggleSaved() {
+    if (!listing) return;
     const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
     if (saved) {
       const updated = favs.filter((f) => f.id !== listing.id);
@@ -566,9 +763,36 @@ export default function ListingDetails() {
       observers.push(obs);
     });
     return () => observers.forEach((o) => o.disconnect());
-  }, []);
+  }, [listing]);
 
-  if (!listing) return <div className="ld-page"><p>Listing not found.</p></div>;
+  // Loading state
+  if (fetchLoading) {
+    return (
+      <div className="ld-root">
+        <Header />
+        <div className="ld-page" style={{ textAlign: "center", padding: "6rem 2rem" }}>
+          <p style={{ fontSize: "1.1rem", color: "#717171" }}>Loading listing details...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error / not found state
+  if (!listing) {
+    return (
+      <div className="ld-root">
+        <Header />
+        <div className="ld-page" style={{ textAlign: "center", padding: "6rem 2rem" }}>
+          <p style={{ fontSize: "1.1rem", color: "#717171" }}>{fetchError || "Listing not found."}</p>
+          <button className="ld-back-btn" onClick={() => navigate('/dwellings')} style={{ marginTop: "1rem" }}>
+            ← Back to Listings
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const allImages = listing.images?.length ? listing.images : [listing.image];
   const lbNav = (d) => setLbIndex((i) => (i + d + allImages.length) % allImages.length);

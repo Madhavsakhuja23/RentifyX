@@ -1073,19 +1073,63 @@
   opacity: 0.9;
 }
 
+.ld-book-fields {
+  margin: 18px 0 14px;
+}
+
+.ld-book-fields-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.ld-book-fields-label {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.ld-book-fields-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+.ld-book-fields-note {
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ── Date grid ── */
 .ld-date-grid {
   border: 1px solid var(--input);
   border-radius: var(--radius) var(--radius) 0 0;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--card);
 }
 
 .ld-date-cell {
-  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 72px;
+  padding: 12px 14px;
   cursor: pointer;
-  transition: background .15s;
+  transition: background .15s, border-color .15s;
 }
 
 .ld-date-checkin {
@@ -1111,7 +1155,10 @@
   width: 100%;
   border: none;
   outline: none;
-  font-size: 14px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
   background: transparent;
   cursor: pointer;
   color: var(--foreground);
@@ -1120,7 +1167,7 @@
 .ld-date-cell input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--muted);
+  background: transparent;
 }
 
 /* ── Guest selector ── */
@@ -1406,6 +1453,10 @@ color:#666;
 margin-bottom:20px;
 }
 
+.ld-alert-modal strong{
+color:#1f2937;
+}
+
 /* Close button */
 
 .ld-modal-close{
@@ -1511,6 +1562,29 @@ background:rgb(185, 66, 2);
 
   .ld-scroll-bar {
     display: none;
+  }
+
+  .ld-book-card {
+    padding: 20px;
+  }
+
+  .ld-book-fields-head {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ld-book-fields-note {
+    white-space: normal;
+  }
+
+  .ld-date-grid {
+    grid-template-columns: 1fr;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .ld-date-checkin {
+    border-right: none;
+    border-bottom: 1px solid var(--input);
   }
 
   .ld-header-row {
