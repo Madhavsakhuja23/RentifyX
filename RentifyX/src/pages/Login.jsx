@@ -18,7 +18,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ const [googleLoading, setGoogleLoading] = useState(false);
     const result = await signInWithPopup(auth, provider);
     const firebaseUser = result.user;
 
-    // Send to backend for authentication
+    // Send to backend — no role passed, backend uses existing account role
     const data = await googleAuthApi(
       firebaseUser.displayName,
       firebaseUser.email,
@@ -41,7 +41,7 @@ const [googleLoading, setGoogleLoading] = useState(false);
     login(data.user);
 
     // Redirect based on role
-    if (data.user.role == "owner" || data.user.role == "both") {
+    if (data.user.role === "owner" || data.user.role === "both") {
       navigate("/seller/dashboard");
     } else {
       navigate("/");
