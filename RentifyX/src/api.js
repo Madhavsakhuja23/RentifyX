@@ -3,7 +3,7 @@
  * Sends userId in Authorization header for authenticated requests.
  */
 
-const BASE_URL = "http://localhost:5001/api";
+const BASE_URL = "https://rentifyx-ff33.onrender.com/api";
 
 const parseJsonSafely = async (response) => {
   const contentType = response.headers.get("content-type") || "";
