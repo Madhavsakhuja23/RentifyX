@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const ListingsContext = createContext(null);
-const API_URL = 'http://localhost:5000/api/listings';
+const API_URL = 'http://localhost:5001/api/listings';
 
 export function ListingsProvider({ children }) {
   const { user } = useAuth();

@@ -418,33 +418,23 @@ function BookingCard({ listing }) {
 
   /* ── Reserve handler ───────────────────────── */
   function handleReserve() {
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser) {
       navigate("/login");
       return;
     }
 
     if (!checkIn || !checkOut) return;
     if (isBelowMinStay) return;
+    if (overlappingBookedRange) {
+      setBlockedRange(overlappingBookedRange);
+      return;
+    }
 
     navigate(`/book/${listing.id}`, {
       state: { listing, checkIn, checkOut, nights, guests, sub, total },
     });
   }
-
-  if (!checkIn || !checkOut) return;
-  if (isBelowMinStay) return;
-  if (overlappingBookedRange) {
-    setBlockedRange(overlappingBookedRange);
-    return;
-  }
-
-  navigate(`/book/${listing.id}`, {
-    state: { listing, checkIn, checkOut, nights, guests, sub, total },
-  });
-}
 
   /* ── Button label ──────────────────────────── */
   const btnLabel = () => {
@@ -604,7 +594,7 @@ function BookingCard({ listing }) {
       )}
     </div>
   );
-
+}
 
 /* ── TTK Row helpers ─────────────────────────── */
 function InfoIcon() {
@@ -1121,5 +1111,5 @@ export default function ListingDetails() {
       )}
       <Footer />
     </div>
-  );
+  )
 }

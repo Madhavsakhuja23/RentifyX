@@ -199,6 +199,7 @@
     width: calc(100% - 1rem);
     margin: 0 auto;
     text-align: left;
+    position: relative;
 
     padding: 0.85rem 1rem;
 
@@ -207,19 +208,28 @@
     background: transparent;
 
     border: none;
-    border-bottom: 1px solid #ebebeb;
 
     cursor: pointer;
 
     transition: background 0.2s, color 0.2s;
 }
 
-.dropdown-item:last-child {
-    border-bottom: none;
+.dropdown-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1rem;
+    right: 1rem;
+    height: 1px;
+    background-color: #ebebeb;
 }
 
 .dropdown-item:hover {
     background: #f7f7f7;
+}
+
+.dropdown-item:hover::after {
+    background-color: transparent;
 }
 
 .dropdown-item.active {
