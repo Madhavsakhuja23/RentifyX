@@ -6,6 +6,7 @@ import {
   createListing,
   getListings,
   getListingById,
+  getMyListings,
 } from "../controllers/listingController.js";
 
 const router = express.Router();
