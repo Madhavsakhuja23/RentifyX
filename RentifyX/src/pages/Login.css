@@ -102,6 +102,46 @@
   background: var(--glow-purple);
 }
 
+.role-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  transition: all var(--transition);
+  margin-bottom: 0;
+  justify-content: center;
+  text-align: center;
+}
+
+.role-option:hover {
+  border-color: var(--accent-purple);
+  background: var(--glow-purple);
+}
+
+.role-option.selected {
+  border-color: var(--accent-purple);
+  background: var(--glow-purple);
+  color: var(--accent-purple);
+}
+
+.role-option input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-purple);
+}
+
 .login-brand {
   background:  #FF8D21;
   display: flex;

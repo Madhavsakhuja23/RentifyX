@@ -94,7 +94,9 @@ export const googleAuth = async (req, res) => {
       if (photo && user.photo !== photo) {
         user.photo = photo;
       }
-      if (role && user.role !== role) {
+      // Only update role if explicitly provided and valid
+      const validRoles = ["user", "owner", "both"];
+      if (role && validRoles.includes(role) && user.role !== role) {
         user.role = role;
       }
       await user.save();
