@@ -112,29 +112,15 @@ export const googleAuth = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      // Existing user login
+      if (photo) user.photo = photo;
 
-      if (photo && user.photo !== photo) {
-        user.photo = photo;
-      }
-
-      const validRoles = ["user", "owner", "both"];
-
-      if (
-        role &&
-        validRoles.includes(role) &&
-        user.role !== role
-      ) {
-        user.role = role;
-      }
+      if (role) user.role = role;
 
       await user.save();
 
     } else {
-      // New Google account create
-
       const hashedPassword = await bcrypt.hash(
-        "google-auth-placeholder",
+        "google-temp-password",
         10
       );
 
@@ -148,10 +134,23 @@ export const googleAuth = async (req, res) => {
     }
 
     const token = jwt.sign(
-  { id: user._id },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-);
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      user: safeUser(user)
+    });
+
+  } catch (error) {
+    console.log("GOOGLE LOGIN ERROR:", error);
+    res.status(500).json({
+      msg: "Google auth failed"
+    });
+  }
+};
 
 res.json({
   token,
