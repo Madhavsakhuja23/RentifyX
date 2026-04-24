@@ -26,8 +26,14 @@ const parseJsonSafely = async (response) => {
  * @returns {Promise<any>}   - parsed JSON response
  */
 export const apiRequest = async (endpoint, options = {}) => {
-  const currentUser = localStorage.getItem("currentUser");
-  const userId = currentUser ? JSON.parse(currentUser).id : null;
+  let userId = null;
+
+  try {
+    const currentUser = localStorage.getItem("currentUser");
+    userId = currentUser ? JSON.parse(currentUser).id : null;
+  } catch {
+    userId = null;
+  }
 
   const headers = {
     "Content-Type": "application/json",
@@ -114,19 +120,19 @@ export const getListingById = (id) =>
 export const getMe = () => apiRequest("/auth/me");
 
 export const loginApi = (email, password) =>
-  apiRequest("/auth/login", {
+  publicApiRequest("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
 
 export const signupApi = (name, email, password, role) =>
-  apiRequest("/auth/signup", {
+  publicApiRequest("/auth/signup", {
     method: "POST",
     body: JSON.stringify({ name, email, password, role }),
   });
 
-export const googleAuthApi = async (name, email, photo, role) =>
-  apiRequest("/auth/google", {
+export const googleAuthApi = (name, email, photo, role) =>
+  publicApiRequest("/auth/google", {
     method: "POST",
     body: JSON.stringify({
       name,

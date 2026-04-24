@@ -38,8 +38,7 @@ const Login = () => {
     );
 
     // Store user in context
-    login(data.user);
-
+   login(data.user, data.token);
     // Redirect based on role
     if (data.user.role === "owner" || data.user.role === "both") {
       navigate("/seller/dashboard");
@@ -62,10 +61,12 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const data = await loginApi(email, password);
-
+      
       // Store user in context
-      login(data.user);
+   const data = await loginApi(email, password);
+
+// Store user + token
+login(data.user, data.token);
 
       // Redirect based on role
       if (data.user.role === "owner" || data.user.role === "both") {
@@ -143,9 +144,9 @@ const Login = () => {
                 </p>
               )}
 
-              <Button type="submit" className="w-100">
-                Sign In
-              </Button>
+              <Button type="submit" className="w-100" disabled={loading}>
+  {loading ? "Signing In..." : "Sign In"}
+</Button>
             </form>
 
             <button

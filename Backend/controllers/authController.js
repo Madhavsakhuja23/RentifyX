@@ -85,9 +85,16 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    res.json({
-      user: safeUser(user)
-    });
+    const token = jwt.sign(
+  { id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
+
+res.json({
+  token,
+  user: safeUser(user)
+});
 
   } catch (err) {
     console.log("LOGIN ERROR:", err);
@@ -140,9 +147,16 @@ export const googleAuth = async (req, res) => {
       });
     }
 
-    res.json({
-      user: safeUser(user)
-    });
+    const token = jwt.sign(
+  { id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
+
+res.json({
+  token,
+  user: safeUser(user)
+});
 
   } catch (error) {
     console.log("Google auth error:", error);
