@@ -65,20 +65,35 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    if (!user.password) {
+      return res.status(400).json({
+        msg: "Use Google login for this account"
+      });
+    }
+
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
     if (!isMatch) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    res.json({ user: safeUser(user) });
+    res.json({
+      user: safeUser(user)
+    });
 
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ msg: "Server error" });
+    console.log("LOGIN ERROR:", err);
+    res.status(500).json({
+      msg: err.message
+    });
   }
 };
 
