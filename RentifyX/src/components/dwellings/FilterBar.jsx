@@ -1,10 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Calendar, Users, ChevronDown, Search, PawPrint, Plus, Minus } from "lucide-react";
-import { locations } from "../../data/dwellings";
+import { getNormalizedLocationName } from "../../data/dwellings";
 import "./FilterBar.css";
 
-const FilterBar = ({ filters, onChange }) => {
+const FilterBar = ({
+    filters,
+    onChange,
+    locations = [],
+    topSearchLocations = [],
+}) => {
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [locationInput, setLocationInput] = useState(filters.location || "");
     const barRef = useRef(null);
 
     const update = (partial) => onChange({ ...filters, ...partial });
@@ -23,42 +29,91 @@ const FilterBar = ({ filters, onChange }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        setLocationInput(filters.location || "");
+    }, [filters.location]);
+
+    const normalizedLocationInput = locationInput.trim().toLowerCase();
+    const suggestedLocations = normalizedLocationInput
+        ? locations.filter((loc) => loc.toLowerCase().includes(normalizedLocationInput))
+        : topSearchLocations;
+
+    const handleLocationInputChange = (event) => {
+        const nextValue = event.target.value;
+        setLocationInput(nextValue);
+        update({ location: nextValue });
+    };
+
+    const handleLocationSelect = (location) => {
+        const normalizedLocation = getNormalizedLocationName(location);
+        setLocationInput(normalizedLocation);
+        update({ location: normalizedLocation });
+        setOpenDropdown(null);
+    };
+
     return (
         <div className="filter-bar-wrapper">
             <div className="filter-bar-container" ref={barRef}>
 
                 {/* Location Dropdown */}
                 <div className="filter-dropdown-container">
-                    <button
-                        className="filter-trigger location-trigger"
-                        onClick={() => toggleDropdown('location')}
+                    <div
+                        className={`filter-trigger location-trigger ${openDropdown === 'location' ? 'active-trigger' : ''}`}
+                        onClick={() => {
+                            if (openDropdown !== 'location') toggleDropdown('location');
+                        }}
+                        role="button"
+                        tabIndex={0}
                     >
                         <MapPin className="filter-icon" />
                         <div className="filter-text-content">
                             <p className="filter-label">Where</p>
-                            <p className="filter-value">{filters.location || "Anywhere"}</p>
+                            {openDropdown === 'location' ? (
+                                <input
+                                    type="text"
+                                    value={locationInput}
+                                    onChange={handleLocationInputChange}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter") {
+                                            setOpenDropdown(null);
+                                        }
+                                    }}
+                                    className="where-inline-input"
+                                    placeholder="Search destinations"
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <p className="filter-value">{filters.location || "Anywhere"}</p>
+                            )}
                         </div>
-                        <ChevronDown className="filter-chevron" />
-                    </button>
+                        {openDropdown !== 'location' && <ChevronDown className="filter-chevron" />}
+                    </div>
 
                     {openDropdown === 'location' && (
                         <div className="filter-popover location-popover">
                             <div className="popover-content">
-                                <button
-                                    onClick={() => { update({ location: "" }); setOpenDropdown(null); }}
-                                    className={`dropdown-item ${!filters.location ? 'active' : ''}`}
-                                >
-                                    Anywhere
-                                </button>
-                                {locations.map((loc) => (
+                                <p className="popover-title">
+                                    {normalizedLocationInput ? "Matching locations" : "Top searches"}
+                                </p>
+                                
+                                {suggestedLocations.map((loc) => (
                                     <button
                                         key={loc}
-                                        onClick={() => { update({ location: loc }); setOpenDropdown(null); }}
-                                        className={`dropdown-item ${filters.location === loc ? 'active' : ''}`}
+                                        onClick={() => handleLocationSelect(loc)}
+                                        className={`dropdown-item ${getNormalizedLocationName(filters.location) === loc ? 'active' : ''}`}
                                     >
-                                        {loc}
+                                        <span className="location-item-text">{loc}</span>
                                     </button>
                                 ))}
+                                {normalizedLocationInput && suggestedLocations.length === 0 && (
+                                    <button
+                                        onClick={() => handleLocationSelect(locationInput.trim())}
+                                        className="dropdown-item"
+                                    >
+                                        <span className="location-item-text">Search for "{locationInput.trim()}"</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -172,7 +227,7 @@ const FilterBar = ({ filters, onChange }) => {
                 </div>
 
                 {/* Search */}
-                <button className="search-button">
+                <button className="search-button" onClick={() => setOpenDropdown(null)}>
                     <Search className="search-icon" />
                 </button>
 

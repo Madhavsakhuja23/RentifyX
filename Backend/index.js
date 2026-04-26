@@ -9,11 +9,16 @@ dotenv.config();
 
 const app=express();
 
-app.use(cors());
+app.use(cors({
+ origin: "*"
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/listings", listingRoutes);
+app.get("/", (req, res) => {
+  res.send("RentifyX Backend is Running 🚀");
+});
 
 mongoose.connect(process.env.MONGO_URI)
     .then(()=> console.log("MongoDB Connected"))

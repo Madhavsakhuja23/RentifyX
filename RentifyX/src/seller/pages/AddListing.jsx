@@ -9,7 +9,7 @@ const SUBCATEGORY_OPTIONS = {
   Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
 };
 
-const API_URL = 'http://localhost:5000/api/listings';
+const API_URL = 'http://localhost:5001/api/listings';
 
 export default function AddListing() {
   const navigate = useNavigate();
@@ -235,13 +235,15 @@ export default function AddListing() {
               />
             </div>
 
+
+
             <div className="input-group full-width">
               <label htmlFor="tagline">Tagline</label>
               <input
                 id="tagline"
                 name="tagline"
                 type="text"
-                placeholder="e.g., Your dream getaway awaits!"
+                placeholder="e.g., Stunning pool villa with mountain views"
                 value={formData.tagline}
                 onChange={handleChange}
               />

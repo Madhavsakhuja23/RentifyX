@@ -54,7 +54,7 @@
 }
 
 .info-hero h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-airbnb);
   font-size: 48px;
   font-weight: 800;
   margin: 0 0 16px;
@@ -92,7 +92,7 @@
 }
 
 .info-section h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-airbnb);
   font-size: 28px;
   font-weight: 700;
   color: var(--foreground, #111);
