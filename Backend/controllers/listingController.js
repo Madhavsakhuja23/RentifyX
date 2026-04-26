@@ -28,11 +28,11 @@ export const createListing = async (req, res) => {
       });
     }
 
-    const { title, description, category, subcategory, tagline, price, location, availableDates } =
+    const { title, description, category, subcategory, tagline, price, timespan, location, availableDates } =
       req.body;
 
     // Validate required fields
-    if (!title || !description || !category || !subcategory || !price || !location) {
+    if (!title || !description || !category || !subcategory || !price || !timespan || !location) {
       return res.status(400).json({ msg: "All required fields must be filled." });
     }
 
@@ -83,7 +83,8 @@ export const createListing = async (req, res) => {
       category,
       subcategory,
       tagline: tagline || "",
-      price,
+      price: Number(price),
+      timespan,
       location,
       availableDates: availableDates || "",
       images,

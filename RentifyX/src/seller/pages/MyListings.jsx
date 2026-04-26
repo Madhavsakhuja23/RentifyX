@@ -127,7 +127,7 @@ export default function MyListings() {
                   <h3>{listing.title}</h3>
                   <p className="listing-desc">{listing.description}</p>
                   <div className="listing-meta">
-                    <span className="listing-price">{listing.price}</span>
+                    <span className="listing-price">₹{listing.price}/{listing.timespan}</span>
                     {listing.location && (
                       <span className="listing-location">📍 {listing.location}</span>
                     )}
