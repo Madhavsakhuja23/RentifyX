@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 
+const BASE_URL = 'https://rentifyx-ff33.onrender.com/api';
+
 /* ── helpers ─────────────────────────────────── */
 function fmt(n) {
   return "₹" + Number(n).toLocaleString("en-IN");
@@ -89,40 +91,103 @@ const PaymentPage = () => {
 
   if (!vehicle) return null;
 
-  function handleConfirm() {
-    const cleaned = utr.trim().replace(/\s/g, "");
+  async function handleConfirm() {
+    const cleaned = utr.trim().replace(/\s/g, '');
     if (cleaned.length < 12) {
-      setUtrError("Please enter a valid UTR ID (minimum 12 digits).");
+      setUtrError('Please enter a valid UTR ID (minimum 12 digits).');
       return;
     }
-    setUtrError("");
+    setUtrError('');
     setConfirming(true);
 
-    setTimeout(() => {
+    try {
+      // ── 1. Register booking on backend (conflict-safe) ──────────────
+      if (bookingDetails?.startDate && bookingDetails?.endDate) {
+        let userId = 'guest';
+        try {
+          const cu = localStorage.getItem('currentUser');
+          if (cu) userId = JSON.parse(cu).id || JSON.parse(cu).email || 'guest';
+        } catch { /* ignore */ }
+
+        const bookRes = await fetch(`${BASE_URL}/listings/book/${vehicle.id || vehicle._id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            startDate: bookingDetails.startDate,
+            endDate:   bookingDetails.endDate,
+          }),
+        });
+
+        if (bookRes.status === 409) {
+          // Another user booked it between the availability check and payment
+          setUtrError('Sorry, this vehicle was just booked by someone else for your dates. Please go back and choose different dates.');
+          setConfirming(false);
+          return;
+        }
+
+        if (!bookRes.ok) {
+          // Non-fatal: continue, booking saved locally anyway
+          console.warn('Backend booking registration failed — saving locally only.');
+        }
+      }
+
+      // ── 2. Save booking to localStorage (shown in Profile) ──────────
       const newBooking = {
         id: Date.now().toString(),
-        listingId: vehicle.id || "",
-        title: vehicle.name,
-        location: vehicle.category || "Driveables",
-        image: vehicle.image || "",
-        checkIn: bookingDetails?.startDate || new Date().toISOString(),
-        checkOut: bookingDetails?.endDate || new Date().toISOString(),
-        guests: { adults: 1, children: 0, infants: 0 },
-        amount: fmt(grandTotal),
-        status: "upcoming",
-        utr: cleaned,
-        bookedAt: new Date().toISOString(),
-        type: "driveable",
+        listingId: vehicle.id || vehicle._id || '',
+        title:     vehicle.name,
+        location:  vehicle.location || vehicle.category || 'Driveables',
+        image:     vehicle.image || '',
+        checkIn:   bookingDetails?.startDate  || new Date().toISOString(),
+        checkOut:  bookingDetails?.endDate    || new Date().toISOString(),
+        guests:    { adults: 1, children: 0, infants: 0 },
+        amount:    fmt(grandTotal),
+        status:    'upcoming',
+        utr:       cleaned,
+        bookedAt:  new Date().toISOString(),
+        type:      'driveable',
+        duration:  bookingDetails?.duration || '',
+        category:  vehicle.category || '',
       };
 
-      const existing = JSON.parse(localStorage.getItem("bookings") || "[]");
+      const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
       existing.push(newBooking);
-      localStorage.setItem("bookings", JSON.stringify(existing));
+      localStorage.setItem('bookings', JSON.stringify(existing));
+      // Notify Profile page open in the same tab
+      window.dispatchEvent(new Event('storage'));
 
       setConfirmedBooking(newBooking);
       setConfirming(false);
       setConfirmed(true);
-    }, 1800);
+    } catch (err) {
+      console.error('Booking error:', err);
+      // Fallback: still save locally so the user doesn't lose the booking
+      const newBooking = {
+        id: Date.now().toString(),
+        listingId: vehicle.id || vehicle._id || '',
+        title:     vehicle.name,
+        location:  vehicle.location || vehicle.category || 'Driveables',
+        image:     vehicle.image || '',
+        checkIn:   bookingDetails?.startDate  || new Date().toISOString(),
+        checkOut:  bookingDetails?.endDate    || new Date().toISOString(),
+        guests:    { adults: 1, children: 0, infants: 0 },
+        amount:    fmt(grandTotal),
+        status:    'upcoming',
+        utr:       cleaned,
+        bookedAt:  new Date().toISOString(),
+        type:      'driveable',
+        duration:  bookingDetails?.duration || '',
+        category:  vehicle.category || '',
+      };
+      const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
+      existing.push(newBooking);
+      localStorage.setItem('bookings', JSON.stringify(existing));
+      window.dispatchEvent(new Event('storage'));
+      setConfirmedBooking(newBooking);
+      setConfirming(false);
+      setConfirmed(true);
+    }
   }
 
   if (confirmed && confirmedBooking) {

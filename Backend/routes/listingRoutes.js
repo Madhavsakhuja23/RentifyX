@@ -7,6 +7,7 @@ import {
   getListings,
   getListingById,
   getMyListings,
+  bookListing,
   updateListing,
   deleteListing,
 } from "../controllers/listingController.js";
@@ -38,6 +39,8 @@ router.get("/", getListings);
 // ✅ GET /api/listings/:id — Fetch single listing
 router.get("/:id", getListingById);
 
+// ✅ POST /api/listings/book/:id — Book a listing
+router.post("/book/:id", bookListing);
 // PUT /api/listings/:id — Update listing
 router.put("/:id", authMiddleware, updateListing);
 

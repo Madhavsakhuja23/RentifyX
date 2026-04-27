@@ -70,14 +70,17 @@ const DriveablesFilterBar = ({ filters, onChange }) => {
                                     <Search size={16} className="search-icon-inline" />
                                     <input
                                         type="text"
-                                        placeholder="Search or enter location..."
+                                        placeholder="Type city or vehicle name..."
                                         className="location-search-input"
                                         value={locationSearch}
-                                        onChange={(e) => setLocationSearch(e.target.value)}
+                                        onChange={(e) => {
+                                            setLocationSearch(e.target.value);
+                                            // Real-time update for better UX
+                                            update({ location: e.target.value });
+                                        }}
                                         autoFocus
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && locationSearch.trim()) {
-                                                update({ location: locationSearch.trim() });
+                                            if (e.key === 'Enter') {
                                                 setOpenDropdown(null);
                                             }
                                         }}
@@ -85,10 +88,14 @@ const DriveablesFilterBar = ({ filters, onChange }) => {
                                 </div>
                                 
                                 <button
-                                    onClick={() => { update({ location: "" }); setOpenDropdown(null); }}
+                                    onClick={() => { 
+                                        update({ location: "" }); 
+                                        setLocationSearch("");
+                                        setOpenDropdown(null); 
+                                    }}
                                     className={`dropdown-item ${!filters.location ? 'active' : ''}`}
                                 >
-                                    Anywhere
+                                    Clear Filter / Show All
                                 </button>
 
                                 {locationSearch && !matchFound && (

@@ -161,6 +161,43 @@ export const getListingById = async (req, res) => {
   }
 };
 
+// POST /api/listings/book/:id — Book a listing with conflict resolution
+export const bookListing = async (req, res) => {
+  const { userId, startDate, endDate } = req.body;
+  const { id } = req.params;
+
+  try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      const listing = await Listing.findOneAndUpdate(
+          { 
+              _id: id, 
+              // Ensure no booking overlaps
+              bookings: {
+                  $not: {
+                      $elemMatch: {
+                          startDate: { $lt: end },
+                          endDate: { $gt: start }
+                      }
+                  }
+              }
+          },
+          { 
+              $push: { bookings: { userId: userId || 'testUser', startDate: start, endDate: end } }
+          },
+          { new: true }
+      );
+
+      if (!listing) {
+          return res.status(409).json({ 
+              message: "Conflict: This listing is already booked during this time period!" 
+          });
+      }
+
+      res.json({ message: "Booking successful", listing });
+  } catch (error) {
+      res.status(500).json({ message: error.message });
 // PUT /api/listings/:id — Update a listing
 export const updateListing = async (req, res) => {
   try {

@@ -111,6 +111,23 @@ const buildQueryString = (params = {}) => {
 export const getDwellings = (params = {}) =>
   publicApiRequest(`/listings${buildQueryString({ category: "Dwelling", ...params })}`);
 
+// Fetch vehicle listings from the Listing model (category = "Vehicle")
+// Same endpoint used by Dwellings — data includes title, tagline, description,
+// subcategory (Cars|EV|Bike|Bicycle), price, location, and Cloudinary images.
+export const getVehicleListings = (params = {}) =>
+  publicApiRequest(`/listings${buildQueryString({ category: 'Vehicle', ...params })}`);
+
+// Legacy vehicles route (kept for backward compat / seeded data)
+export const getVehicles = (params = {}) =>
+  publicApiRequest(`/vehicles${buildQueryString(params)}`);
+
+// Book a vehicle — backend enforces conflict resolution atomically
+export const bookVehicle = (vehicleId, userId, startDate, endDate) =>
+  publicApiRequest(`/listings/book/${vehicleId}`, {
+    method: 'POST',
+    body: JSON.stringify({ userId, startDate, endDate }),
+  });
+
 export const getListingById = (id) =>
   publicApiRequest(`/listings/${id}`);
 
