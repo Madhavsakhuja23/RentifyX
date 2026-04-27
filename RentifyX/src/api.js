@@ -26,18 +26,17 @@ const parseJsonSafely = async (response) => {
  * @returns {Promise<any>}   - parsed JSON response
  */
 export const apiRequest = async (endpoint, options = {}) => {
-  let userId = null;
+  let token = null;
 
   try {
-    const currentUser = localStorage.getItem("currentUser");
-    userId = currentUser ? JSON.parse(currentUser).id : null;
+    token = localStorage.getItem("token");
   } catch {
-    userId = null;
+    token = null;
   }
 
   const headers = {
     "Content-Type": "application/json",
-    ...(userId ? { Authorization: userId } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 

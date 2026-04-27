@@ -662,7 +662,7 @@ export default function ListingDetails() {
           bathrooms: Number(raw.bathrooms || 1),
           price: Number(raw.price || 0),
           pricingType: raw.pricingType || "monthly",
-          priceUnit: raw.priceUnit || "/mo",
+          priceUnit: raw.timespan ? `/${raw.timespan}` : (raw.priceUnit || "/mo"),
           image: imgList[0] || "",
           images: imgList,
           available: raw.available ?? true,

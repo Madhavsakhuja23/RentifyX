@@ -9,6 +9,7 @@ import {
   ArrowDownRight,
 } from 'lucide-react';
 import { useListings } from '../context/ListingsContext';
+import { Link } from 'react-router-dom';
 import './DashboardHome.css';
 
 const dummyStats = [
@@ -172,22 +173,22 @@ export default function DashboardHome() {
         <div className="section-card quick-actions">
           <h3>Quick Actions</h3>
           <div className="actions-list">
-            <a href="/dashboard/add-listing" className="action-btn">
+            <Link to="/seller/add-listing" className="action-btn">
               <Home size={18} />
               Add Dwelling
-            </a>
-            <a href="/dashboard/add-listing" className="action-btn">
+            </Link>
+            <Link to="/seller/add-listing" className="action-btn">
               <Car size={18} />
               Add Vehicle
-            </a>
-            <a href="/dashboard/listings" className="action-btn">
+            </Link>
+            <Link to="/seller/listings" className="action-btn">
               <TrendingUp size={18} />
               View Listings
-            </a>
-            <a href="/dashboard/revenue" className="action-btn">
+            </Link>
+            <Link to="/seller/analytics" className="action-btn">
               <IndianRupee size={18} />
               View Revenue
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ const SUBCATEGORY_OPTIONS = {
   Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
 };
 
-const API_URL = 'http://localhost:5001/api/listings';
+const API_URL = 'https://rentifyx-ff33.onrender.com/api/listings';
 
 export default function AddListing() {
   const navigate = useNavigate();
@@ -130,12 +130,12 @@ export default function AddListing() {
         body.append('images', img.file);
       });
 
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      const token = localStorage.getItem('token');
 
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          Authorization: currentUser?.id || '',
+          Authorization: token ? `Bearer ${token}` : '',
         },
         body,
       });
