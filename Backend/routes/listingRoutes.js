@@ -7,6 +7,8 @@ import {
   getListings,
   getListingById,
   getMyListings,
+  updateListing,
+  deleteListing,
 } from "../controllers/listingController.js";
 
 const router = express.Router();
@@ -36,13 +38,10 @@ router.get("/", getListings);
 // ✅ GET /api/listings/:id — Fetch single listing
 router.get("/:id", getListingById);
 
+// PUT /api/listings/:id — Update listing
+router.put("/:id", authMiddleware, updateListing);
 
-// ✅ POST /api/listings — Create listing
-router.post(
-  "/",
-  authMiddleware,
-  upload.array("images", 5),
-  createListing
-);
+// DELETE /api/listings/:id — Delete listing
+router.delete("/:id", authMiddleware, deleteListing);
 
 export default router;

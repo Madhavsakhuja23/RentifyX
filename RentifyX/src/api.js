@@ -3,7 +3,7 @@
  * Sends userId in Authorization header for authenticated requests.
  */
 
-const BASE_URL = "https://rentifyx-ff33.onrender.com/api";
+const BASE_URL = "http://localhost:5000/api";
 
 const parseJsonSafely = async (response) => {
   const contentType = response.headers.get("content-type") || "";
@@ -145,4 +145,45 @@ export const updateProfileApi = (updates) =>
   apiRequest("/auth/profile", {
     method: "PUT",
     body: JSON.stringify(updates),
+  });
+
+export const createListingApi = async (formData) => {
+  let token = null;
+  try {
+    token = localStorage.getItem("token");
+  } catch {
+    token = null;
+  }
+
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}/listings`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch (error) {
+    throw new Error("Unable to connect to the backend API.");
+  }
+
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    throw new Error(data?.msg || data?.message || "Request failed");
+  }
+  return data;
+};
+
+export const updateListingApi = (id, updates) =>
+  apiRequest(`/listings/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(updates),
+  });
+
+export const deleteListingApi = (id) =>
+  apiRequest(`/listings/${id}`, {
+    method: "DELETE",
   });

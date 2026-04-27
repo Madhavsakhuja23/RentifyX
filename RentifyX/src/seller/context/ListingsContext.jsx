@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const ListingsContext = createContext(null);
-const API_URL = 'https://rentifyx-ff33.onrender.com/api/listings';
+const API_URL = 'http://localhost:5000/api/listings';
 
 export function ListingsProvider({ children }) {
   const { user } = useAuth();
@@ -56,18 +56,64 @@ export function ListingsProvider({ children }) {
     return newListing;
   };
 
-  const updateListing = (id, updates) => {
-    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
+  const updateListing = async (id, updates) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
+      }
+    } catch (err) {
+      console.error('Failed to update listing:', err);
+    }
   };
 
-  const deleteListing = (id) => {
-    setListings((prev) => prev.filter((l) => l.id !== id));
+  const deleteListing = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+      });
+      if (res.ok) {
+        setListings((prev) => prev.filter((l) => l.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete listing:', err);
+    }
   };
 
-  const toggleAvailability = (id) => {
-    setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, available: !l.available } : l))
-    );
+  const toggleAvailability = async (id) => {
+    const listing = listings.find((l) => l.id === id);
+    if (!listing) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ available: !listing.available }),
+      });
+      if (res.ok) {
+        setListings((prev) =>
+          prev.map((l) => (l.id === id ? { ...l, available: !l.available } : l))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to toggle availability:', err);
+    }
   };
 
   return (

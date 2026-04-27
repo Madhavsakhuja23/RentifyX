@@ -11,7 +11,7 @@ dotenv.config();
 const app=express();
 
 app.use(cors({
- origin: "*"
+  origin: ["http://localhost:5173", "http://localhost:3000", "https://rentifyx-ff33.onrender.com", "https://rentifyx.vercel.app"]
 }));
 app.use(express.json());
 

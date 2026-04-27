@@ -6,7 +6,17 @@ import { useAuth } from "../../seller/context/AuthContext";
  * Checks the AuthContext for a logged-in user.
  */
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
