@@ -7,8 +7,41 @@ import mongoose from "mongoose";
 // GET /api/listings/my — Get all listings for the authenticated seller
 export const getMyListings = async (req, res) => {
   try {
-    const sellerId = req.user.id;
-    const listings = await Listing.find({ seller: sellerId }).sort({ createdAt: -1 });
+    const sellerId = new mongoose.Types.ObjectId(req.user.id);
+    
+    const listings = await Listing.aggregate([
+      { $match: { seller: sellerId, deleted: false } },
+      {
+        $lookup: {
+          from: "bookings",
+          let: { listingId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$listingId", "$$listingId"] },
+                    { $eq: ["$status", "ongoing"] }
+                  ]
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "renterId",
+                foreignField: "_id",
+                as: "renter"
+              }
+            },
+            { $unwind: { path: "$renter", preserveNullAndEmptyArrays: true } }
+          ],
+          as: "ongoingBookings"
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+
     res.json({ listings });
   } catch (err) {
     console.error("Get my listings error:", err);
@@ -158,5 +191,47 @@ export const getListingById = async (req, res) => {
     res.status(500).json({
       msg: "Server error while fetching listing",
     });
+  }
+};
+
+// PATCH /api/listings/:id/availability
+export const toggleListingAvailability = async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const sellerId = req.user.id;
+
+    const listing = await Listing.findOne({ _id: listingId, seller: sellerId });
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found or unauthorized" });
+    }
+
+    listing.isAvailable = !listing.isAvailable;
+    await listing.save();
+
+    res.json({ listing });
+  } catch (err) {
+    console.error("Error toggling availability:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// DELETE /api/listings/:id
+export const deleteListing = async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const sellerId = req.user.id;
+
+    const listing = await Listing.findOne({ _id: listingId, seller: sellerId });
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found or unauthorized" });
+    }
+
+    listing.deleted = true;
+    await listing.save();
+
+    res.json({ msg: "Listing deleted successfully", id: listingId });
+  } catch (err) {
+    console.error("Error deleting listing:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 };

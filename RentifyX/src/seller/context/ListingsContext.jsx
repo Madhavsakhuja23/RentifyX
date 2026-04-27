@@ -33,7 +33,8 @@ export function ListingsProvider({ children }) {
           ...l,
           id: l._id || l.id,
           image: l.images && l.images.length > 0 ? l.images[0].url : '',
-          available: l.available !== undefined ? l.available : true,
+          available: l.isAvailable !== undefined ? l.isAvailable : true,
+          ongoingBookings: l.ongoingBookings || [],
         }));
         setListings(mapped);
       }
@@ -49,8 +50,9 @@ export function ListingsProvider({ children }) {
       ...listing,
       id: listing.id || listing._id || Date.now().toString(),
       image: listing.image || (listing.images && listing.images.length > 0 ? listing.images[0].url : ''),
-      available: listing.available !== undefined ? listing.available : true,
+      available: listing.isAvailable !== undefined ? listing.isAvailable : true,
       createdAt: listing.createdAt || new Date().toISOString(),
+      ongoingBookings: [],
     };
     setListings((prev) => [newListing, ...prev]);
     return newListing;
@@ -60,14 +62,40 @@ export function ListingsProvider({ children }) {
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
   };
 
-  const deleteListing = (id) => {
+  const deleteListing = async (id) => {
+    const previous = [...listings];
     setListings((prev) => prev.filter((l) => l.id !== id));
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
+      });
+      if (!res.ok) throw new Error('Delete failed');
+    } catch (err) {
+      console.error('Delete error:', err);
+      setListings(previous); // rollback
+    }
   };
 
-  const toggleAvailability = (id) => {
+  const toggleAvailability = async (id) => {
+    const previous = [...listings];
     setListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, available: !l.available } : l))
     );
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/${id}/availability`, {
+        method: 'PATCH',
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
+      });
+      if (!res.ok) throw new Error('Toggle failed');
+    } catch (err) {
+      console.error('Toggle error:', err);
+      setListings(previous); // rollback
+    }
   };
 
   return (

@@ -7,6 +7,8 @@ import {
   getListings,
   getListingById,
   getMyListings,
+  toggleListingAvailability,
+  deleteListing,
 } from "../controllers/listingController.js";
 
 const router = express.Router();
@@ -35,6 +37,12 @@ router.get("/", getListings);
 
 // ✅ GET /api/listings/:id — Fetch single listing
 router.get("/:id", getListingById);
+
+// PATCH /api/listings/:id/availability — Toggle availability
+router.patch("/:id/availability", authMiddleware, toggleListingAvailability);
+
+// DELETE /api/listings/:id — Soft delete
+router.delete("/:id", authMiddleware, deleteListing);
 
 
 // ✅ POST /api/listings — Create listing

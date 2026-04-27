@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useListings } from '../context/ListingsContext';
-import { Pencil, Trash2, EyeOff, Eye, Search } from 'lucide-react';
+import { Pencil, Trash2, EyeOff, Eye, Search, MessageCircle, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './MyListings.css';
 
 export default function MyListings() {
@@ -9,6 +10,27 @@ export default function MyListings() {
   const [filter, setFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const navigate = useNavigate();
+
+  // Handle countdowns
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCountdown = (endDate) => {
+    const end = new Date(endDate).getTime();
+    const diff = end - now;
+    if (diff <= 0) return 'Expired';
+    
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((diff / 1000 / 60) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    
+    return `${d}d ${h}h ${m}m ${s}s remaining`;
+  };
 
   const filtered = listings.filter((l) => {
     const matchSearch =
@@ -148,12 +170,35 @@ export default function MyListings() {
                       {listing.available ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                     <button
+                      className="action-icon message-btn"
+                      title="Messages"
+                      onClick={() => navigate(`/seller/messages?listingId=${listing.id}`)}
+                    >
+                      <MessageCircle size={15} />
+                    </button>
+                    <button
                       className="action-icon delete"
                       title="Delete"
-                      onClick={() => deleteListing(listing.id)}
+                      onClick={() => {
+                        if(window.confirm('Are you sure you want to delete this listing?')) {
+                          deleteListing(listing.id);
+                        }
+                      }}
                     >
                       <Trash2 size={15} />
                     </button>
+                  </div>
+                </div>
+              )}
+              {/* Ongoing Booking Info */}
+              {listing.ongoingBookings && listing.ongoingBookings.length > 0 && !editingId && (
+                <div className="ongoing-booking-banner">
+                  <div className="booking-info">
+                    <strong>Current Renter:</strong> {listing.ongoingBookings[0].renter?.name || 'Unknown'}
+                  </div>
+                  <div className="booking-countdown">
+                    <Clock size={14} />
+                    <span>{formatCountdown(listing.ongoingBookings[0].endDate)}</span>
                   </div>
                 </div>
               )}

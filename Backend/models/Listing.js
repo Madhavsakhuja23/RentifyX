@@ -56,6 +56,14 @@ const listingSchema = new mongoose.Schema(
         publicId: { type: String, required: true },
       },
     ],
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

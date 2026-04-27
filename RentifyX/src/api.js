@@ -3,7 +3,7 @@
  * Sends userId in Authorization header for authenticated requests.
  */
 
-const BASE_URL = "https://rentifyx-ff33.onrender.com/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const parseJsonSafely = async (response) => {
   const contentType = response.headers.get("content-type") || "";
@@ -146,3 +146,20 @@ export const updateProfileApi = (updates) =>
     method: "PUT",
     body: JSON.stringify(updates),
   });
+
+/**
+ * Axios-like default API instance for use with `import api from './api'`
+ * Supports: api.get(url), api.post(url, data), api.patch(url, data), api.delete(url)
+ */
+const api = {
+  get: (endpoint) => apiRequest(endpoint),
+  post: (endpoint, data) =>
+    apiRequest(endpoint, { method: "POST", body: JSON.stringify(data) }),
+  patch: (endpoint, data) =>
+    apiRequest(endpoint, { method: "PATCH", body: data ? JSON.stringify(data) : undefined }),
+  delete: (endpoint) => apiRequest(endpoint, { method: "DELETE" }),
+  put: (endpoint, data) =>
+    apiRequest(endpoint, { method: "PUT", body: JSON.stringify(data) }),
+};
+
+export default api;

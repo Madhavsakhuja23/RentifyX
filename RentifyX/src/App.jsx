@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { AuthProvider } from './seller/context/AuthContext';
 import { ListingsProvider } from './seller/context/ListingsContext';
+import { SocketProvider } from './seller/context/SocketContext';
 import SellerProtectedRoute from './seller/components/ProtectedRoute';
 import DashboardLayout from './seller/components/DashboardLayout';
 import DashboardHome from './seller/pages/DashboardHome';
@@ -13,6 +14,7 @@ import RentalHistory from './seller/pages/RentalHistory';
 import RevenueAnalytics from './seller/pages/RevenueAnalytics';
 import Notifications from './seller/pages/Notifications';
 import ProfileSettings from './seller/pages/ProfileSettings';
+import Messages from './seller/pages/Messages';
 import DriveablesMain from './Saksham/DriveablesMain';
 import Dwelling from "./pages/dwelling";
 import ListingDetails from "./pages/ListingDetails";
@@ -35,8 +37,9 @@ function App() {
   return (
     <AuthProvider>
       <ListingsProvider>
-        <Router>
-          <Routes>
+        <SocketProvider>
+          <Router>
+            <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -82,12 +85,14 @@ function App() {
               <Route path="history" element={<RentalHistory />} />
               <Route path="analytics" element={<RevenueAnalytics />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="messages" element={<Messages />} />
               <Route path="profile" element={<ProfileSettings />} />
             </Route>
 
           </Routes>
           <Chatbot />
         </Router>
+        </SocketProvider>
       </ListingsProvider>
     </AuthProvider>
   )
