@@ -1,5 +1,6 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Shield } from 'lucide-react';
+import { getVehicles } from '../api';
 
 // Component Imports
 import Header from '../components/Header/Header';
@@ -36,39 +37,14 @@ import ktmDukeImg from '../assets/ktmduke.avif';
 import KiaSeltosImg from '../assets/KiaSeltos.avif';
 import gravelBikeImg from '../assets/gravelbike.jpg';
 
-import { useEffect } from 'react';
-
 const imageMap = { hondaCityImg, royalEnfieldImg, teslaImg, mountainBikeImg, activa6gImg, olaS1ProImg, marutiSwiftImg, cityBicycleImg, cretaImg, bajajPulsarImg, MGZsEVImg, hybridBikkeImg, toyotaFortunerImg, jupiterImg, ather450Img, bmxBikeImg, tataNexomImg, ktmDukeImg, KiaSeltosImg, gravelBikeImg };
-
-const mockData = [
-  { id: 1, name: 'Honda City', category: 'cars', image: hondaCityImg, hourlyRate: 200, dayRate: 2000, rating: 4.5, location: 'Downtown', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 5 } },
-  { id: 2, name: 'Royal Enfield Classic 350', category: 'bikes', image: royalEnfieldImg, hourlyRate: 80, dayRate: 800, rating: 4.7, location: 'East Side', specifications: { fuelType: 'Petrol', transmission: 'Manual', seatingCapacity: 2 } },
-  { id: 3, name: 'Tesla Model 3', category: 'evs', image: teslaImg, hourlyRate: 500, dayRate: 5000, rating: 4.9, location: 'Tech Park', specifications: { fuelType: 'Electric', transmission: 'Automatic', seatingCapacity: 5, range: '350 km' } },
-  { id: 4, name: 'Mountain Bike Pro', category: 'bicycles', image: mountainBikeImg, hourlyRate: 50, dayRate: 250, rating: 4.3, location: 'Park Area', specifications: { type: 'Mountain', gears: '21-speed', frameMaterial: 'Aluminum' } },
-  { id: 5, name: 'Activa 6G', category: 'bikes', image: activa6gImg, hourlyRate: 40, dayRate: 400, rating: 4.4, location: 'Central', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 2 } },
-  { id: 6, name: 'Ola S1 Pro', category: 'evs', image: olaS1ProImg, hourlyRate: 60, dayRate: 600, rating: 4.6, location: 'West End', specifications: { fuelType: 'Electric', transmission: 'Automatic', seatingCapacity: 2, range: '180 km' } },
-  { id: 7, name: 'Maruti Swift', category: 'cars', image: marutiSwiftImg, hourlyRate: 150, dayRate: 1500, rating: 4.4, location: 'North Zone', specifications: { fuelType: 'Petrol', transmission: 'Manual', seatingCapacity: 5 } },
-  { id: 8, name: 'City Bicycle', category: 'bicycles', image: cityBicycleImg, hourlyRate: 20, dayRate: 100, rating: 4.1, location: 'City Center', specifications: { type: 'City', gears: 'Single-speed', frameMaterial: 'Steel' } },
-  { id: 9, name: 'Hyundai Creta', category: 'cars', image: cretaImg, hourlyRate: 250, dayRate: 2500, rating: 4.6, location: 'Airport Road', specifications: { fuelType: 'Diesel', transmission: 'Automatic', seatingCapacity: 5 } },
-  { id: 10, name: 'Bajaj Pulsar 150', category: 'bikes', image: bajajPulsarImg, hourlyRate: 60, dayRate: 600, rating: 4.3, location: 'South Gate', specifications: { fuelType: 'Petrol', transmission: 'Manual', seatingCapacity: 2 } },
-  { id: 11, name: 'MG ZS EV', category: 'evs', image: MGZsEVImg, hourlyRate: 300, dayRate: 3000, rating: 4.5, location: 'Green Valley', specifications: { fuelType: 'Electric', transmission: 'Automatic', seatingCapacity: 5, range: '460 km' } },
-  { id: 12, name: 'Hybrid Road Bike', category: 'bicycles', image: hybridBikkeImg, hourlyRate: 40, dayRate: 200, rating: 4.4, location: 'Lake Side', specifications: { type: 'Hybrid', gears: '18-speed', frameMaterial: 'Carbon Fiber' } },
-  { id: 13, name: 'Toyota Fortuner', category: 'cars', image: toyotaFortunerImg, hourlyRate: 500, dayRate: 5000, rating: 4.8, location: 'Highway Hub', specifications: { fuelType: 'Diesel', transmission: 'Automatic', seatingCapacity: 7 } },
-  { id: 14, name: 'TVS Jupiter', category: 'bikes', image: jupiterImg, hourlyRate: 40, dayRate: 400, rating: 4.2, location: 'Market Square', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 2 } },
-  { id: 15, name: 'Ather 450X', category: 'evs', image: ather450Img, hourlyRate: 70, dayRate: 700, rating: 4.7, location: 'Eco Park', specifications: { fuelType: 'Electric', transmission: 'Automatic', seatingCapacity: 2, range: '150 km' } },
-  { id: 16, name: 'BMX Freestyle', category: 'bicycles', image: bmxBikeImg, hourlyRate: 30, dayRate: 150, rating: 4.0, location: 'Sports Arena', specifications: { type: 'BMX', gears: 'Single-speed', frameMaterial: 'Chromoly' } },
-  { id: 17, name: 'Tata Nexon EV', category: 'evs', image: tataNexomImg, hourlyRate: 200, dayRate: 2000, rating: 4.5, location: 'Riverside', specifications: { fuelType: 'Electric', transmission: 'Automatic', seatingCapacity: 5, range: '312 km' } },
-  { id: 18, name: 'KTM Duke 200', category: 'bikes', image: ktmDukeImg, hourlyRate: 100, dayRate: 1000, rating: 4.6, location: 'Race Track', specifications: { fuelType: 'Petrol', transmission: 'Manual', seatingCapacity: 2 } },
-  { id: 19, name: 'Kia Seltos', category: 'cars', image: KiaSeltosImg, hourlyRate: 220, dayRate: 2200, rating: 4.5, location: 'University Area', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 5 } },
-  { id: 20, name: 'Gravel Adventure Bike', category: 'bicycles', image: gravelBikeImg, hourlyRate: 50, dayRate: 250, rating: 4.3, location: 'Trail Head', specifications: { type: 'Gravel', gears: '24-speed', frameMaterial: 'Aluminum' } }
-];
 
 const ITEMS_PER_PAGE = 6;
 
 const DriveablesMain = () => {
   // State matched to Dwellings index.tsx logic
   const [activeCategory, setActiveCategory] = useState('all');
-  const [dbVehicles, setDbVehicles] = useState([...mockData]); // Initialized to mockData to avoid disappearing cars
+  const [dbVehicles, setDbVehicles] = useState([]); // Initialized to empty array as we use getVehicles
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDriveable, setSelectedDriveable] = useState(null);
   const [sortOrder, setSortOrder] = useState('default');
@@ -82,24 +58,38 @@ const DriveablesMain = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/vehicles?category=${activeCategory}`);
+        const data = await getVehicles({ category: activeCategory === 'all' ? undefined : activeCategory });
         
-        if (!res.ok) throw new Error("Backend response not OK");
-        
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const mappedData = data.map(v => ({
-              ...v,
-              id: v._id || v.id, 
-              image: imageMap[v.imageKey] || hondaCityImg 
-          }));
+        if (Array.isArray(data)) {
+          const mappedData = data.map(v => {
+              // Priority 1: Cloudinary array from MongoDB (as shown in your screenshot)
+              // Priority 2: Mapped local image from imageMap
+              // Priority 3: Fallback image
+              const dbImage = (v.images && v.images.length > 0) ? v.images[0].url : null;
+              const allDbImages = (v.images && v.images.length > 0) ? v.images.map(img => img.url) : null;
+
+              return {
+                  ...v,
+                  id: v._id || v.id, 
+                  name: v.name || v.title, // Map 'title' from DB to 'name' used in UI
+                  image: dbImage || imageMap[v.imageKey] || hondaCityImg,
+                  images: allDbImages || (v.images) || [], // Keep the original array if it exists
+                  hourlyRate: v.hourlyRate || (v.price && v.price.includes('/') ? parseInt(v.price.split('/')[0]) : v.price) || 0,
+                  dayRate: v.dayRate || (v.price && v.price.includes('/') ? parseInt(v.price.split('/')[0]) * 10 : 0) || 0,
+                  rating: v.rating || 4.5,
+                  location: v.location || 'Bangalore',
+                  category: v.category?.toLowerCase() === 'vehicle' ? (v.subcategory?.toLowerCase() + 's') : v.category, // Handle "Vehicle" category
+                  specifications: v.specifications || { 
+                    fuelType: v.subcategory === 'EV' ? 'Electric' : 'Petrol',
+                    transmission: 'Automatic',
+                    seatingCapacity: 2
+                  }
+              };
+          });
           setDbVehicles(mappedData);
-        } else {
-          setDbVehicles([...mockData]); // Fallback safely if api returns empty (maybe backend dropped)
         }
       } catch (error) {
-        console.error("Failed to fetch vehicles from DB, falling back to local data:", error);
-        setDbVehicles([...mockData]); 
+        console.error("Failed to fetch vehicles from DB:", error);
       }
     };
     fetchVehicles();
@@ -113,11 +103,66 @@ const DriveablesMain = () => {
     }
 
     if (searchFilters.location && searchFilters.location.trim() !== '') {
-      const q = searchFilters.location.toLowerCase();
-      result = result.filter((item) =>
-        item?.location?.toLowerCase().includes(q) ||
-        item?.name?.toLowerCase().includes(q)
-      );
+      const q = searchFilters.location.toLowerCase().trim();
+      
+      // Keyword-based suitability mapping
+      const getSuitabilityScore = (item, query) => {
+        const subcat = (item?.subcategory || "").toLowerCase();
+        const terrain = {
+          hills: ['manali', 'leh', 'shimla', 'kasol', 'mountains', 'hill', 'coorg', 'munnar'],
+          city: ['mumbai', 'bangalore', 'delhi', 'pune', 'downtown', 'traffic', 'tech park'],
+          coastal: ['goa', 'pondy', 'varkala', 'beach', 'coast']
+        };
+
+        if (terrain.hills.some(k => query.includes(k))) {
+          if (subcat.includes('suv')) return 10;
+          if (item?.name?.toLowerCase().includes('enfield')) return 8;
+        }
+        if (terrain.city.some(k => query.includes(k))) {
+          if (subcat.includes('ev')) return 10;
+          if (subcat.includes('scooter')) return 7;
+        }
+        if (terrain.coastal.some(k => query.includes(k))) {
+          if (subcat.includes('scooter')) return 10;
+        }
+        return 0;
+      };
+
+      // 1. Filter: Check if any field contains the query
+      result = result.filter((item) => {
+        const loc = (item?.location || "").toLowerCase();
+        const name = (item?.name || "").toLowerCase();
+        const title = (item?.title || "").toLowerCase();
+        const tagline = (item?.tagline || "").toLowerCase();
+        const subcat = (item?.subcategory || "").toLowerCase();
+        
+        return loc.includes(q) || 
+               name.includes(q) || 
+               title.includes(q) || 
+               tagline.includes(q) || 
+               subcat.includes(q);
+      });
+
+      // 2. Priority Sorting: Show "Suitable" and "Best" results first
+      result = [...result].sort((a, b) => {
+        // First check Suitability (e.g. SUVs for Hills)
+        const scoreA = getSuitabilityScore(a, q);
+        const scoreB = getSuitabilityScore(b, q);
+        if (scoreA !== scoreB) return scoreB - scoreA;
+
+        const locA = (a?.location || "").toLowerCase();
+        const locB = (b?.location || "").toLowerCase();
+        
+        // Then Exact Location match
+        if (locA === q && locB !== q) return -1;
+        if (locB === q && locA !== q) return 1;
+
+        // Then starts with query
+        if (locA.startsWith(q) && !locB.startsWith(q)) return -1;
+        if (locB.startsWith(q) && !locA.startsWith(q)) return 1;
+
+        return 0;
+      });
     }
 
     if (searchFilters.guests && searchFilters.guests > 1) {

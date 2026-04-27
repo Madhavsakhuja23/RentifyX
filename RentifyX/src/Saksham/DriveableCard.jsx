@@ -33,7 +33,7 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
           />
         </button>
         <div className="drv-badge drv-badge-category">
-          {driveable.category.charAt(0).toUpperCase() + driveable.category.slice(1)}
+          {driveable.category ? (driveable.category.charAt(0).toUpperCase() + driveable.category.slice(1)) : 'Vehicle'}
         </div>
         {driveable.rating && (
           <div className="drv-badge drv-badge-rating">
@@ -44,38 +44,39 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
 
       <div className="drv-listing-content">
         <div className="drv-listing-header">
-          <h3 className="drv-listing-title">{driveable.name}</h3>
+          <h3 className="drv-listing-title">{driveable.name || driveable.title}</h3>
           <div className="drv-listing-rating">
             <Star className="drv-star-icon" fill="currentColor" size={14} />
-            <span className="drv-rating-score">{driveable.rating}</span>
+            <span className="drv-rating-score">{driveable.rating || 4.5}</span>
           </div>
         </div>
 
         <div className="drv-listing-location">
           <MapPin className="drv-location-icon" size={14} />
-          <span>{driveable.location}</span>
+          <span>{driveable.location || 'Bangalore, Karnataka'}</span>
         </div>
 
         {/* Specs tags */}
         <div className="drv-specs-tags">
-          {driveable.specifications?.fuelType && (
-            <span className="drv-spec-tag">{driveable.specifications.fuelType}</span>
+          {(driveable.specifications?.fuelType || (driveable.subcategory === 'EV' ? 'Electric' : null)) && (
+            <span className="drv-spec-tag">{driveable.specifications?.fuelType || 'Electric'}</span>
+          )}
+          {driveable.tagline && (
+            <span className="drv-spec-tag bg-light text-dark border-0">{driveable.tagline}</span>
           )}
           {driveable.specifications?.transmission && (
             <span className="drv-spec-tag">{driveable.specifications.transmission}</span>
-          )}
-          {driveable.specifications?.seatingCapacity && (
-            <span className="drv-spec-tag">{driveable.specifications.seatingCapacity} seats</span>
-          )}
-          {driveable.specifications?.type && (
-            <span className="drv-spec-tag">{driveable.specifications.type}</span>
           )}
         </div>
 
         <div className="drv-listing-footer">
           <div>
-            <span className="drv-listing-price">₹{driveable.hourlyRate}</span>
-            <span className="drv-listing-price-unit">/hr</span>
+            <span className="drv-listing-price">
+              {typeof driveable.price === 'string' && driveable.price.includes('/') 
+                ? `₹${driveable.price.split('/')[0]}` 
+                : `₹${driveable.hourlyRate || driveable.price || 0}`}
+            </span>
+            <span className="drv-listing-price-unit">/{driveable.price?.includes('hour') ? 'hr' : 'day'}</span>
           </div>
           <div className="drv-card-actions">
             {/* Compare checkbox */}

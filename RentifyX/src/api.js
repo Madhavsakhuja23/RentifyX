@@ -112,6 +112,9 @@ const buildQueryString = (params = {}) => {
 export const getDwellings = (params = {}) =>
   publicApiRequest(`/listings${buildQueryString({ category: "Dwelling", ...params })}`);
 
+export const getVehicles = (params = {}) =>
+  publicApiRequest(`/vehicles${buildQueryString(params)}`);
+
 export const getListingById = (id) =>
   publicApiRequest(`/listings/${id}`);
 

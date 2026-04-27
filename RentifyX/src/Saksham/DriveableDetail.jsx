@@ -45,8 +45,8 @@ const DriveableDetail = ({ driveable, onClose }) => {
   if (!driveable) return null;
 
   // We need 5 images for the gallery. If we only have 1, we duplicate it for visual matching.
-  const allImages = driveable.images && driveable.images.length >= 5
-    ? driveable.images
+  const allImages = driveable.images && driveable.images.length > 0
+    ? (typeof driveable.images[0] === 'string' ? driveable.images : driveable.images.map(img => img.url))
     : [driveable.image, driveable.image, driveable.image, driveable.image, driveable.image];
 
   const lbNav = (delta) => {
@@ -57,26 +57,24 @@ const DriveableDetail = ({ driveable, onClose }) => {
     if (bookingType === 'daily' && driveable.dayRate) {
       return selectedDays * driveable.dayRate;
     }
-    return selectedHours * driveable.hourlyRate;
+    const rate = driveable.hourlyRate || (typeof driveable.price === 'string' ? parseInt(driveable.price) : driveable.price) || 0;
+    return selectedHours * rate;
   };
-  const checkAuth = () => {
-    const token = localStorage.getItem("token");
-
-    if (token !== "dummy-token") {
+    const checkAuth = () => {
+    const token = localStorage.getItem("token"); 
+    if (!token) {
       window.location.href = "/login";
       return false;
     }
-
     return true;
   };
+
   const handleBooking = () => {
-    let auth = checkAuth();
+    if (!checkAuth()) return; 
+
     if (!licenseVerified) {
       alert('Please verify your driving license first!');
       return;
-    }
-    if(!auth){
-      window.location.href="/login";
     }
     
     // Calculate final price and duration for the payment page
@@ -207,16 +205,16 @@ const DriveableDetail = ({ driveable, onClose }) => {
 
             <div className="ld-host-row">
               <div>
-                <h2>Premium {driveable.category.replace(/s$/, "")} provided by RentifyX</h2>
+                <h2>{driveable.tagline || `Premium ${driveable.category?.replace(/s$/, "")} provided by RentifyX`}</h2>
                 <p>
-                  {driveable.specifications.seatingCapacity} seats &nbsp;·&nbsp;
-                  {driveable.specifications.transmission} &nbsp;·&nbsp;
-                  {driveable.specifications.fuelType || driveable.specifications.type}
+                  {driveable.specifications?.seatingCapacity || 2} seats &nbsp;·&nbsp;
+                  {driveable.specifications?.transmission || 'Manual'} &nbsp;·&nbsp;
+                  {driveable.specifications?.fuelType || driveable.specifications?.type || (driveable.subcategory === 'EV' ? 'Electric' : 'Petrol')}
                 </p>
               </div>
               <div className="ld-av-wrap">
                 <div className="ld-host-row-av" style={{ background: '#FF4D00', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold' }}>
-                  R
+                  {driveable.sellerName?.charAt(0) || 'R'}
                 </div>
                 <div className="ld-sh-dot">★</div>
               </div>
@@ -243,7 +241,7 @@ const DriveableDetail = ({ driveable, onClose }) => {
 
             <div className="ld-sec">
               <h2>About this vehicle</h2>
-              <p className="ld-desc-txt">Experience the thrill of the open road with this premium {driveable.name}. Perfectly maintained and fully loaded with features, it's ready for your next adventure in {driveable.location}.</p>
+              <p className="ld-desc-txt">{driveable.description || `Experience the thrill of the open road with this premium ${driveable.name}. Perfectly maintained and fully loaded with features, it's ready for your next adventure in ${driveable.location}.`}</p>
             </div>
 
             <div className="ld-divider" />
