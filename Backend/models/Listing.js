@@ -34,7 +34,12 @@ const listingSchema = new mongoose.Schema(
       default: "",
     },
     price: {
+      type: Number,
+      required: true,
+    },
+    timespan: {
       type: String,
+      enum: ["hour", "night", "week", "month"],
       required: true,
     },
     location: {

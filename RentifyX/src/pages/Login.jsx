@@ -31,11 +31,12 @@ const Login = () => {
     const result = await signInWithPopup(auth, provider);
     const firebaseUser = result.user;
 
-    // Send to backend — no role passed, backend uses existing account role
+    // Send to backend — pass 'user' as default role
     const data = await googleAuthApi(
       firebaseUser.displayName,
       firebaseUser.email,
-      firebaseUser.photoURL
+      firebaseUser.photoURL,
+      "user"
     );
 
     // Store user in context
@@ -61,13 +62,8 @@ const Login = () => {
 
     try {
       setLoading(true);
-
-      
-      // Store user in context
-   const data = await loginApi(email, password);
-
-// Store user + token
-login(data.user, data.token);
+      const data = await loginApi(email, password);
+      login(data.user, data.token);
 
       // Redirect based on state or role
       if (location.state?.from && location.state?.bookingData) {
@@ -79,7 +75,8 @@ login(data.user, data.token);
       }
 
     } catch (err) {
-      setError(err.message || "Invalid credentials");
+      // Always show a generic message for login — never expose "User already exists"
+      setError("Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }

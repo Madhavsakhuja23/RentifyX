@@ -74,8 +74,8 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
 
         <div className="drv-listing-footer">
           <div>
-            <span className="drv-listing-price">₹{driveable.hourlyRate}</span>
-            <span className="drv-listing-price-unit">/hr</span>
+            <span className="drv-listing-price">₹{driveable.price || driveable.hourlyRate}</span>
+            <span className="drv-listing-price-unit">/{driveable.timespan || 'hr'}</span>
           </div>
           <div className="drv-card-actions">
             {/* Compare checkbox */}

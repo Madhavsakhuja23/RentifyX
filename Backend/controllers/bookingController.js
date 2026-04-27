@@ -90,3 +90,16 @@ export const createBooking = async (req, res) => {
     res.status(500).json({ msg: "Server error while saving booking" });
   }
 };
+
+// GET /api/bookings — Get current user's bookings
+export const getMyBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const bookings = await Booking.find({ userId }).populate("listingId").sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (err) {
+    console.error("Get my bookings error:", err);
+    res.status(500).json({ msg: "Server error while fetching bookings" });
+  }
+};

@@ -14,14 +14,20 @@ function calculatePrice(listing, booking) {
   const SERVICE_RATE = 0.12;
   const TAX_RATE = 0.05;
   let sub = 0;
-  if (listing?.pricingType === "monthly") {
+  if (listing?.timespan === "month" || listing?.pricingType === "monthly") {
     const checkIn = new Date(booking.checkIn);
     const checkOut = new Date(booking.checkOut);
     const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
     const perDayPrice = listing.price / 30;
     sub = Math.round(perDayPrice * days);
+  } else if (listing?.timespan === "week") {
+    const checkIn = new Date(booking.checkIn);
+    const checkOut = new Date(booking.checkOut);
+    const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+    const perDayPrice = listing.price / 7;
+    sub = Math.round(perDayPrice * days);
   } else {
-    sub = listing.price * booking.nights;
+    sub = Math.round(listing.price * (booking.nights || 0));
   }
   const svc = Math.round(sub * SERVICE_RATE);
   const taxes = Math.round(sub * TAX_RATE);

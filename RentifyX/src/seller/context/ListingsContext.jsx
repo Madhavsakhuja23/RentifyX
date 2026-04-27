@@ -21,10 +21,10 @@ export function ListingsProvider({ children }) {
   const fetchListings = async () => {
     setLoading(true);
     try {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/my`, {
         headers: {
-          Authorization: currentUser?.id || '',
+          Authorization: token ? `Bearer ${token}` : '',
         },
       });
       const data = await res.json();

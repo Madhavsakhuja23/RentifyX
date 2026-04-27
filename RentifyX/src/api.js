@@ -30,13 +30,6 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   try {
     token = localStorage.getItem("token");
-    
-    // Fallback to userId if no token is found (for backwards compatibility)
-    if (!token) {
-      const currentUser = localStorage.getItem("currentUser");
-      const userId = currentUser ? JSON.parse(currentUser).id : null;
-      token = userId;
-    }
   } catch {
     token = null;
   }
@@ -165,6 +158,8 @@ export const createBookingApi = (bookingData) =>
     method: "POST",
     body: JSON.stringify(bookingData),
   });
+
+export const getMyBookingsApi = () => apiRequest("/bookings");
 
 // ── Wishlist ──────────────────────────────────────────────────
 

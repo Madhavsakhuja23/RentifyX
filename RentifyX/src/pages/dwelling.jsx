@@ -77,8 +77,9 @@ const normalizeDwelling = (dwelling) => {
         price: Number(String(dwelling.price || "0").replace(/[^0-9.]/g, "")),
         pricingType: normalizedPricingType,
         priceUnit:
-            dwelling.priceUnit ||
-            (normalizedPricingType === "perNight" ? "/night" : "/mo"),
+            dwelling.timespan ? `/${dwelling.timespan}` :
+            (dwelling.priceUnit ||
+            (normalizedPricingType === "perNight" ? "/night" : "/mo")),
         image: primaryImage,
         images: imageList.length ? imageList : primaryImage ? [primaryImage] : [],
         available: dwelling.available ?? true,
