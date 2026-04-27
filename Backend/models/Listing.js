@@ -51,6 +51,13 @@ const listingSchema = new mongoose.Schema(
         publicId: { type: String, required: true },
       },
     ],
+    bookings: [
+      {
+        userId: { type: String, required: true },
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true },
+      }
+    ]
   },
   { timestamps: true }
 );
