@@ -81,22 +81,33 @@ const VehicleComparison = ({ vehicles, onRemove }) => {
             </tr>
 
             {/* DYNAMIC SPECIFICATIONS */}
-            {['fuelType', 'transmission', 'seatingCapacity', 'range', 'type', 'gears'].map((specKey) => {
+            {['fuelType', 'transmission', 'seatingCapacity', 'range', 'type', 'gears', 'mileage', 'engine', 'deposit', 'freeKms'].map((specKey) => {
               // Only render row if at least one vehicle has this spec
-              const hasSpec = vehicles.some(v => v.specifications && v.specifications[specKey]);
+              const hasSpec = vehicles.some(v => v.specifications && v.specifications[specKey] !== undefined);
               if (!hasSpec) return null;
 
               // Format label (camelCase to Title Case)
-              const label = specKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+              let label = specKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+              
+              // Custom labels for better clarity
+              if (specKey === 'freeKms') label = 'Free Kms Included';
+              if (specKey === 'deposit') label = 'Security Deposit';
+              if (specKey === 'mileage') label = 'Fuel Economy';
+              if (specKey === 'engine') label = 'Engine / Motor';
 
               return (
                 <tr key={specKey}>
                   <td className="text-start fw-bold px-4 py-3 bg-light text-secondary">{label}</td>
-                  {vehicles.map(v => (
-                    <td key={v.id} className="bg-white">
-                      {v.specifications && v.specifications[specKey] ? v.specifications[specKey] : <span className="text-muted">-</span>}
-                    </td>
-                  ))}
+                  {vehicles.map(v => {
+                    const value = v.specifications ? v.specifications[specKey] : null;
+                    const displayValue = specKey === 'deposit' && typeof value === 'number' ? `₹${value}` : value;
+                    
+                    return (
+                      <td key={v.id} className="bg-white">
+                        {value !== null && value !== undefined ? displayValue : <span className="text-muted">-</span>}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })}

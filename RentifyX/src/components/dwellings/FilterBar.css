@@ -249,6 +249,72 @@
     padding: 0.6rem;
 }
 
+/* Location Custom Search Styles */
+.location-search-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.4rem;
+}
+
+.location-search-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.search-icon-inline {
+    color: var(--text-muted);
+}
+
+.custom-location-item {
+    color: var(--accent-purple);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    border: 1px dashed var(--accent-purple);
+    background: var(--glow-purple);
+    margin: 0.4rem 0;
+}
+
+.custom-location-item:hover {
+    background: var(--accent-purple);
+    color: white;
+}
+
+.suggest-header {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin: 0.8rem 0 0.4rem 0.5rem;
+}
+
+.location-suggest-section {
+    border-top: 1px solid var(--border-light);
+    margin-top: 0.5rem;
+    padding-top: 0.2rem;
+}
+
+.suggest-icon {
+    margin-right: 10px;
+    opacity: 0.7;
+}
+
+.no-results-text {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
 .guest-title {
     font-size: 0.9rem;
     font-weight: 500;
