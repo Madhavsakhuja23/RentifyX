@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User, Briefcase, Heart, Settings, Edit, ChevronRight, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header/Header";
@@ -12,6 +12,7 @@ import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logOut } = useAuth();
   const [activeTab, setActiveTab] = useState("about");
 

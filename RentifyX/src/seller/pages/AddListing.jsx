@@ -9,7 +9,7 @@ const SUBCATEGORY_OPTIONS = {
   Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
 };
 
-const API_URL = 'https://rentifyx-ff33.onrender.com/api/listings';
+const API_URL = 'http://localhost:5000/api/listings';
 
 export default function AddListing() {
   const navigate = useNavigate();
