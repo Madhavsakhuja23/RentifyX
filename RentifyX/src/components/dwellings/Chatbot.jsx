@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./Chatbot.css";
 import { FaComments } from "react-icons/fa";
 
+
 function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
 

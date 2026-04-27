@@ -4,20 +4,29 @@ const authMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ msg: "No token, access denied" });
+    if (!authHeader) {
+      return res.status(401).json({ msg: "No auth token" });
     }
 
-    // Extract token after "Bearer "
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : authHeader;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, iat, exp }
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    req.user = {
+      id: decoded.id
+    };
 
     next();
 
   } catch (err) {
-    return res.status(401).json({ msg: "Invalid or expired token" });
+    return res.status(401).json({
+      msg: "Invalid token"
+    });
   }
 };
 

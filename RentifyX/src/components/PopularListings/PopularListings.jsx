@@ -93,9 +93,9 @@ const PopularListings = () => {
         {/* CTA */}
         <div className="text-center mt-5">
           <Link to="/listing">
-          <button className="view-all-btn">
-            View All Listings
-          </button>
+            <button className="view-all-btn">
+              View All Listings
+            </button>
           </Link>
         </div>
 

@@ -20,7 +20,7 @@ const Hero = () => {
             Find the perfect rental or list your own property easily.
           </p>
 
-          <Link to="/listings">
+          <Link to="/listing">
             <Button className="hero-cta">
               Explore Listings
             </Button>

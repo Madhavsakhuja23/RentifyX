@@ -75,7 +75,7 @@ function SuccessScreen({ booking, listing, onBack }) {
 
 /* ── Success screen styles (injected into early-return branch) ─── */
 const successStyles = `
-  .rtb-root { font-family: 'Inter', -apple-system, sans-serif; background: #f5f5f5; min-height: 100vh; }
+  .rtb-root { font-family: var(--font-airbnb); background: #f5f5f5; min-height: 100vh; }
   .rtb-root * { box-sizing: border-box; margin: 0; padding: 0; }
   .rtb-page { max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; }
   .rtb-success { max-width: 520px; margin: 60px auto; text-align: center; background: white; border-radius: 20px; padding: 50px 40px; box-shadow: 0 8px 40px rgba(0,0,0,.1); border: 1px solid #eee; }

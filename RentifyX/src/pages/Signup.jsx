@@ -7,10 +7,12 @@ import Input from "../components/common/Input";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
 import { signupApi, googleAuthApi } from "../api";
+import { useAuth } from "../seller/context/AuthContext";
 import "./Signup.css";
 
 
 const Signup = () => {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,19 +31,24 @@ const Signup = () => {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
 
-      // Send to backend — get a real JWT back
+      // Send to backend for authentication
       const data = await googleAuthApi(
-        firebaseUser.displayName || "Google User",
-        firebaseUser.email,
-        firebaseUser.photoURL
-      );
+  firebaseUser.displayName || "Google User",
+  firebaseUser.email,
+  firebaseUser.photoURL,
+  role
+);
 
-      // Store real backend JWT and user
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      // Store user in context
+      login(data.user);
 
-      navigate("/");
+      // Redirect based on role
+      console.log(data.user.role);
+      if (data.user.role == "owner" || data.user.role == "both") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (error) {
       console.log(error);
@@ -87,9 +94,18 @@ const Signup = () => {
     try {
       setLoading(true);
 
-      await signupApi(name, email, password, role);
+      const data = await signupApi(name, email, password, role);
 
-      navigate("/login");
+      // signupApi now returns user data directly
+      login(data.user);
+
+      // Redirect based on role
+      console.log(data.user.role);
+      if (data.user.role == "owner" || data.user.role == "both") {
+        navigate("/seller/dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
       console.log(err);

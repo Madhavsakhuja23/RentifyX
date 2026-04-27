@@ -1,5 +1,5 @@
 import express from "express";
-import { signupUser, loginUser, googleAuth, getMe } from "../controllers/authController.js";
+import { signupUser, loginUser, googleAuth, getMe, updateProfile } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -8,12 +8,11 @@ const router = express.Router();
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 router.post("/google", googleAuth);
-
-// Protected routes (require valid JWT)
+router.get("/", (req, res) => {
+  res.json({ message: "Auth API Working" });
+});
+// Protected routes
 router.get("/me", authMiddleware, getMe);
+router.put("/profile", authMiddleware, updateProfile);
 
 export default router;
-
-
-
-

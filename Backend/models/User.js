@@ -18,7 +18,23 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["user", "owner", "both"],
         default: "user"
-    } 
+    },
+    photo:{
+        type: String,
+        default: ""
+    },
+    phone:{
+        type: String,
+        default: ""
+    },
+    location:{
+        type: String,
+        default: ""
+    },
+    dob:{
+        type: String,
+        default: ""
+    }
 }, {timestamps:true});
 
 export default mongoose.model("User", userSchema);

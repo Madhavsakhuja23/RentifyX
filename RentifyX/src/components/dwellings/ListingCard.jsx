@@ -8,6 +8,8 @@ const ListingCard = ({ listing }) => {
     const [liked, setLiked] = useState(false);
     const navigate = useNavigate();
 
+    const displayPrice = Number(listing.price) || 0;
+
     return (
         <div
     className="listing-card"
@@ -40,13 +42,18 @@ const ListingCard = ({ listing }) => {
                     </div>
                 )}
                 <div className="badge-category">
-                    {categoryLabels[listing.type]}
+                    {categoryLabels[listing.type] || listing.type || "Dwelling"}
                 </div>
             </div>
 
             <div className="listing-content">
                 <div className="listing-header">
-                    <h3 className="listing-title">{listing.name}</h3>
+                    <div>
+                        <h3 className="listing-title">{listing.name}</h3>
+                        {listing.tagline && (
+                            <p className="listing-tagline">{listing.tagline}</p>
+                        )}
+                    </div>
                     <div className="listing-rating">
                         <Star className="star-icon" fill="currentColor" />
                         <span className="rating-score">{listing.rating}</span>
@@ -57,15 +64,18 @@ const ListingCard = ({ listing }) => {
                 <div className="listing-location">
                     <MapPin className="location-icon" />
                     <span>{listing.location}</span>
+                    {listing.sellerName && (
+                        <span className="listing-seller"> · by {listing.sellerName}</span>
+                    )}
                 </div>
 
                 <div className="listing-footer">
                     <div>
-                        <span className="listing-price">₹{listing.price.toLocaleString()}</span>
+                        <span className="listing-price">₹{displayPrice.toLocaleString()}</span>
                         <span className="listing-price-unit">{listing.priceUnit}</span>
                     </div>
                     <span className="listing-rule">
-                        {pricingRules[listing.type]}
+                        {pricingRules[listing.type] || "Rental"}
                     </span>
                 </div>
             </div>
