@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header/Header";
+import { getListingById, checkAvailabilityApi, createBookingApi } from "../api";
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 /* ── helpers ─────────────────────────────────── */
 function fmt(n) {
@@ -12,14 +14,20 @@ function calculatePrice(listing, booking) {
   const SERVICE_RATE = 0.12;
   const TAX_RATE = 0.05;
   let sub = 0;
-  if (listing?.pricingType === "monthly") {
+  if (listing?.timespan === "month" || listing?.pricingType === "monthly") {
     const checkIn = new Date(booking.checkIn);
     const checkOut = new Date(booking.checkOut);
     const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
     const perDayPrice = listing.price / 30;
     sub = Math.round(perDayPrice * days);
+  } else if (listing?.timespan === "week") {
+    const checkIn = new Date(booking.checkIn);
+    const checkOut = new Date(booking.checkOut);
+    const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+    const perDayPrice = listing.price / 7;
+    sub = Math.round(perDayPrice * days);
   } else {
-    sub = listing.price * booking.nights;
+    sub = Math.round(listing.price * (booking.nights || 0));
   }
   const svc = Math.round(sub * SERVICE_RATE);
   const taxes = Math.round(sub * TAX_RATE);
@@ -96,49 +104,58 @@ const successStyles = `
 
 /* ── Main Component ──────────────────────────── */
 export default function RequestToBook() {
+  const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const booking = location.state || {
-    checkIn: "2026-03-13",
-    checkOut: "2026-03-15",
-    nights: 2,
+  const [listing, setListing] = useState(location.state?.listing || null);
+  const [booking, setBooking] = useState(location.state || {
+    checkIn: "",
+    checkOut: "",
+    nights: 0,
     guests: { adults: 1, children: 0, infants: 0 },
-  };
+  });
 
-  const listing = booking.listing || null;
-
-  // If navigated directly with no listing data, redirect back
-  if (!listing) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, fontFamily: "sans-serif" }}>
-        <p style={{ fontSize: 18, color: "#666" }}>No booking details found.</p>
-        <button onClick={() => navigate("/dwellings")} style={{ padding: "12px 24px", background: "rgb(255,102,0)", color: "white", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
-          Browse Dwellings
-        </button>
-      </div>
-    );
-  }
-
-  const price = calculatePrice(listing, booking);
-
-  const UPI_ID = "8295190177@ybl";
-  const HOST_NAME = "RentifyX";
-
+  const [loading, setLoading] = useState(!listing);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(null);
   const [utr, setUtr] = useState("");
   const [utrError, setUtrError] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  const checkInDate = new Date(booking.checkIn).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-  });
-  const checkOutDate = new Date(booking.checkOut).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-  });
+  // Fetch listing details if not provided in state
+  useEffect(() => {
+    if (!listing && id) {
+      const fetchListing = async () => {
+        try {
+          const data = await getListingById(id);
+          setListing(data.listing || data);
+        } catch (err) {
+          console.error("Failed to fetch listing:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchListing();
+    }
+  }, [id, listing]);
 
-  function handleConfirm() {
+  // If no dates, redirect back (this should ideally be handled by ListingDetails)
+  useEffect(() => {
+    if (!booking.checkIn || !booking.checkOut) {
+      // If we don't even have basic info, redirect to dwellings
+      if (!id) navigate("/dwellings");
+    }
+  }, [booking, id, navigate]);
+
+  const price = listing ? calculatePrice(listing, booking) : { total: 0 };
+
+  const UPI_ID = "8295190177@ybl";
+  const HOST_NAME = "RentifyX";
+
+  async function handleConfirm() {
     const cleaned = utr.trim().replace(/\s/g, "");
     if (cleaned.length < 12) {
       setUtrError("Please enter a valid UTR ID (minimum 12 digits).");
@@ -147,32 +164,63 @@ export default function RequestToBook() {
     setUtrError("");
     setConfirming(true);
 
-    setTimeout(() => {
-      // Build and save booking to localStorage
-      const newBooking = {
-        id: Date.now().toString(),
-        listingId: listing?.id || "",
-        title: listing?.name || "Booked Property",
-        location: listing?.location || "",
-        image: listing?.images?.[0] || listing?.image || "",
+    try {
+      // Step 1: Double check availability
+      const availability = await checkAvailabilityApi(listing._id || listing.id, booking.checkIn, booking.checkOut);
+      
+      if (!availability.available) {
+        setAvailabilityError(true);
+        setConfirming(false);
+        return;
+      }
+
+      // Step 2: Save booking to backend
+      const res = await createBookingApi({
+        listingId: listing._id || listing.id,
         checkIn: booking.checkIn,
         checkOut: booking.checkOut,
         guests: booking.guests,
-        amount: fmt(price.total),
-        status: "upcoming",
-        utr: cleaned,
-        bookedAt: new Date().toISOString(),
-      };
+        totalPrice: price.total,
+        utr: cleaned
+      });
 
-      const existing = JSON.parse(localStorage.getItem("bookings") || "[]");
-      existing.push(newBooking);
-      localStorage.setItem("bookings", JSON.stringify(existing));
-
-      setConfirmedBooking(newBooking);
+      if (res.success) {
+        setConfirmedBooking(res.booking);
+        setConfirmed(true);
+      }
+    } catch (err) {
+      setUtrError(err.message || "Failed to process booking. Please try again.");
+    } finally {
       setConfirming(false);
-      setConfirmed(true);
-    }, 1800);
+    }
   }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 className="animate-spin" size={48} color="rgb(255,102,0)" />
+      </div>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, fontFamily: "sans-serif" }}>
+        <p style={{ fontSize: 18, color: "#666" }}>Listing not found.</p>
+        <button onClick={() => navigate("/dwellings")} style={{ padding: "12px 24px", background: "rgb(255,102,0)", color: "white", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
+          Browse Dwellings
+        </button>
+      </div>
+    );
+  }
+
+  const checkInDate = booking.checkIn ? new Date(booking.checkIn).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  }) : "Not selected";
+  
+  const checkOutDate = booking.checkOut ? new Date(booking.checkOut).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  }) : "Not selected";
 
   if (confirmed && confirmedBooking) {
     return (
@@ -189,6 +237,22 @@ export default function RequestToBook() {
   return (
     <div className="rtb-root">
       <div className="rtb-page">
+
+        {/* Availability Error Modal */}
+        {availabilityError && (
+          <div className="rtb-modal-overlay">
+            <div className="rtb-modal">
+              <div className="rtb-modal-icon error">
+                <AlertCircle size={40} />
+              </div>
+              <h2>Dates Unavailable</h2>
+              <p>❌ This place is already booked for the selected dates. Please select different dates.</p>
+              <button className="rtb-modal-btn" onClick={() => navigate(-1)}>
+                Choose Other Dates
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Topbar */}
         <div className="rtb-topbar">
@@ -793,6 +857,39 @@ export default function RequestToBook() {
           }
           .rtb-qr-card { position: static; }
         }
+        /* Modals */
+        .rtb-modal-overlay {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,.5);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 2000; padding: 20px;
+          backdrop-filter: blur(4px);
+        }
+        .rtb-modal {
+          background: white; border-radius: 20px;
+          padding: 40px; max-width: 440px; width: 100%;
+          text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,.2);
+          animation: modalIn .3s ease-out;
+        }
+        @keyframes modalIn {
+          from { opacity: 0; transform: scale(.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .rtb-modal-icon {
+          width: 72px; height: 72px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 24px;
+        }
+        .rtb-modal-icon.error { background: #fee2e2; color: #ef4444; }
+        .rtb-modal h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #222; }
+        .rtb-modal p { color: #666; line-height: 1.6; margin-bottom: 28px; }
+        .rtb-modal-btn {
+          width: 100%; padding: 14px; border: none;
+          border-radius: 10px; background: #222;
+          color: white; font-weight: 700; cursor: pointer;
+          font-family: inherit; font-size: 15px;
+        }
+        .rtb-modal-btn:hover { background: #000; }
       `}</style>
     </div>
   );

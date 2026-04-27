@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listings } from "../data/dwellings";
-import { getListingById } from "../api";
+import { getListingById, checkAvailabilityApi } from "../api";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
@@ -119,11 +119,14 @@ const STATIC_BOOKED_DATE_RANGES = {
  * Returns "monthly" | "perNight"
  */
 function getRentalType(listing) {
-  if (listing.pricingType === "monthly") return "monthly";
-  if (listing.pricingType === "perNight") return "perNight";
-  // Legacy fallback: infer from priceUnit string
+  if (listing.timespan === "month" || listing.pricingType === "monthly") return "monthly";
+  if (listing.timespan === "week") return "weekly";
+  if (listing.timespan === "night" || listing.pricingType === "perNight") return "perNight";
+  
+  // Legacy fallback
   const unit = listing.priceUnit?.toLowerCase() || "";
   if (unit.includes("month") || unit.includes("mo")) return "monthly";
+  if (unit.includes("week")) return "weekly";
   return "perNight";
 }
 
@@ -370,14 +373,13 @@ function BookingCard({ listing }) {
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState({ adults: 1, children: 0, infants: 0 });
   const [blockedRange, setBlockedRange] = useState(null);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   const bookedRanges = STATIC_BOOKED_DATE_RANGES[listing.id] || [];
-
   const today = new Date().toISOString().split("T")[0];
-  const rentalType = getRentalType(listing);           // "monthly" | "perNight"
+  const rentalType = getRentalType(listing);
   const isMonthly = rentalType === "monthly";
 
-  /* ── Step 1: raw day count ─────────────────── */
   const nights =
     checkIn && checkOut
       ? Math.max(0, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000))
@@ -397,8 +399,13 @@ function BookingCard({ listing }) {
 
   if (canCalculate) {
     if (isMonthly) {
-      sub = months * listing.price;
-      displayUnit = `× ${months} month${months > 1 ? "s" : ""}`;
+      const perDay = listing.price / 30;
+      sub = Math.round(perDay * nights);
+      displayUnit = `× ${nights} days (Monthly rate)`;
+    } else if (rentalType === "weekly") {
+      const perDay = listing.price / 7;
+      sub = Math.round(perDay * nights);
+      displayUnit = `× ${nights} days (Weekly rate)`;
     } else {
       sub = nights * listing.price;
       displayUnit = `× ${nights} night${nights > 1 ? "s" : ""}`;
@@ -417,27 +424,57 @@ function BookingCard({ listing }) {
   };
 
   /* ── Reserve handler ───────────────────────── */
-  function handleReserve() {
+  async function handleReserve() {
     const currentUser = localStorage.getItem("currentUser");
     if (!currentUser) {
-      navigate("/login");
+      // Redirect to login but save the current booking intent in state
+      navigate("/login", { 
+        state: { 
+          from: `/book/${listing.id}`,
+          bookingData: { listing, checkIn, checkOut, nights, guests, sub, total }
+        } 
+      });
       return;
     }
 
     if (!checkIn || !checkOut) return;
     if (isBelowMinStay) return;
+    
+    // Check static ranges first (if any)
     if (overlappingBookedRange) {
       setBlockedRange(overlappingBookedRange);
       return;
     }
 
-    navigate(`/book/${listing.id}`, {
-      state: { listing, checkIn, checkOut, nights, guests, sub, total },
-    });
+    try {
+      setCheckingAvailability(true);
+      // Real backend check
+      const availability = await checkAvailabilityApi(listing.id, checkIn, checkOut);
+      
+      if (!availability.available) {
+        setBlockedRange({
+          start: availability.conflictingDates?.[0]?.checkIn || checkIn,
+          end: availability.conflictingDates?.[0]?.checkOut || checkOut
+        });
+        return;
+      }
+
+      // If available, proceed to booking page
+      navigate(`/book/${listing.id}`, {
+        state: { listing, checkIn, checkOut, nights, guests, sub, total },
+      });
+
+    } catch (error) {
+      console.error("Availability check failed:", error);
+      alert("Failed to check availability. Please try again.");
+    } finally {
+      setCheckingAvailability(false);
+    }
   }
 
   /* ── Button label ──────────────────────────── */
   const btnLabel = () => {
+    if (checkingAvailability) return "Checking availability...";
     if (!checkIn || !checkOut) return "Check availability";
     if (isBelowMinStay) return "Min. 1-month rental required";
     return `Reserve · ${fmt(total)}`;
@@ -473,7 +510,7 @@ function BookingCard({ listing }) {
         <div className="ld-book-fields-head">
           <div>
             <p className="ld-book-fields-label">Availability</p>
-            <h3 className="ld-book-fields-title">Choose your stay dates</h3>
+           
           </div>
           <p className="ld-book-fields-note">
             {isMonthly ? "Minimum 30 days" : "Select check-in and checkout"}
@@ -661,7 +698,8 @@ export default function ListingDetails() {
           beds: Number(raw.beds || 1),
           bathrooms: Number(raw.bathrooms || 1),
           price: Number(raw.price || 0),
-          pricingType: raw.pricingType || "monthly",
+          timespan: raw.timespan || "month",
+          pricingType: raw.timespan === "month" ? "monthly" : "perNight",
           priceUnit: raw.timespan ? `/${raw.timespan}` : (raw.priceUnit || "/mo"),
           image: imgList[0] || "",
           images: imgList,
