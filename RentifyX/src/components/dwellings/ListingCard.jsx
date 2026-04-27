@@ -1,12 +1,18 @@
 import { Star, MapPin, Heart } from "lucide-react";
 import { pricingRules, categoryLabels } from "../../data/dwellings";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { addToWishlistApi, removeFromWishlistApi } from "../../api";
 import "./ListingCard.css";
 
-const ListingCard = ({ listing }) => {
-    const [liked, setLiked] = useState(false);
+const ListingCard = ({ listing, isWishlisted = false }) => {
+    const [liked, setLiked] = useState(isWishlisted);
     const navigate = useNavigate();
+
+    // Sync local state if parent prop changes
+    useEffect(() => {
+        setLiked(isWishlisted);
+    }, [isWishlisted]);
 
     const displayPrice = Number(listing.price) || 0;
 
@@ -25,9 +31,27 @@ const ListingCard = ({ listing }) => {
                     loading="lazy"
                 />
                 <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                         e.stopPropagation();
-                        setLiked(!liked);
+                        const currentUser = localStorage.getItem("currentUser");
+                        if (!currentUser) {
+                            navigate("/login");
+                            return;
+                        }
+                        
+                        const listingId = listing.id || listing._id;
+                        
+                        try {
+                            if (liked) {
+                                await removeFromWishlistApi(listingId);
+                                setLiked(false);
+                            } else {
+                                await addToWishlistApi(listingId);
+                                setLiked(true);
+                            }
+                        } catch (error) {
+                            console.error("Error toggling wishlist:", error);
+                        }
                     }}
                     className="like-button"
                 >

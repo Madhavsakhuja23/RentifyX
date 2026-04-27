@@ -40,7 +40,7 @@ const Signup = () => {
 );
 
       // Store user in context
-      login(data.user);
+      login(data.user, data.token);
 
       // Redirect based on role
       console.log(data.user.role);
@@ -97,7 +97,7 @@ const Signup = () => {
       const data = await signupApi(name, email, password, role);
 
       // signupApi now returns user data directly
-      login(data.user);
+      login(data.user, data.token);
 
       // Redirect based on role
       console.log(data.user.role);

@@ -15,6 +15,7 @@ import Notifications from './seller/pages/Notifications';
 import ProfileSettings from './seller/pages/ProfileSettings';
 import DriveablesMain from './Saksham/DriveablesMain';
 import Dwelling from "./pages/dwelling";
+import Wishlist from "./pages/Wishlist";
 import ListingDetails from "./pages/ListingDetails";
 import RequestToBook from "./pages/RequestToBook";
 import PaymentPage from "./pages/PaymentPage";
@@ -22,6 +23,7 @@ import "./App.css";
 import Profile from "./pages/Profile";
 import Chatbot from "./components/dwellings/Chatbot";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import NotFound from "./pages/NotFound";
 
 /* Info Pages */
 import AboutUs from "./pages/info/AboutUs";
@@ -47,6 +49,7 @@ function App() {
             <Route path="/listing/:id" element={<ListingDetails />} />
             <Route path="/book/:id" element={<RequestToBook />} />
             <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/wishlist" element={<Wishlist />} />
 
         {/* Info Pages */}
         <Route path="/about" element={<AboutUs />} />
@@ -84,6 +87,9 @@ function App() {
               <Route path="notifications" element={<Notifications />} />
               <Route path="profile" element={<ProfileSettings />} />
             </Route>
+
+            {/* Catch-all Not Found Route */}
+            <Route path="*" element={<NotFound />} />
 
           </Routes>
           <Chatbot />

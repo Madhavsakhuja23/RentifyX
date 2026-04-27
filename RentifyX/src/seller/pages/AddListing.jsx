@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useListings } from '../context/ListingsContext';
-import { Upload, Home, Car, X, ImagePlus, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react';
+import { Upload, Home, Car, X, ImagePlus, CheckCircle, AlertCircle, ChevronDown, Clock } from 'lucide-react';
 import './AddListing.css';
 
 const SUBCATEGORY_OPTIONS = {
@@ -9,7 +9,7 @@ const SUBCATEGORY_OPTIONS = {
   Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
 };
 
-const API_URL = 'http://localhost:5001/api/listings';
+const API_URL = 'http://localhost:5000/api/listings';
 
 export default function AddListing() {
   const navigate = useNavigate();
@@ -27,6 +27,7 @@ export default function AddListing() {
     category: 'Dwelling',
     subcategory: '',
     price: '',
+    timespan: '',
     location: '',
     availableDates: '',
   });
@@ -121,6 +122,7 @@ export default function AddListing() {
       body.append('category', formData.category);
       body.append('subcategory', formData.subcategory);
       body.append('price', formData.price);
+      body.append('timespan', formData.timespan);
       body.append('location', formData.location);
       body.append('availableDates', formData.availableDates);
 
@@ -128,12 +130,12 @@ export default function AddListing() {
         body.append('images', img.file);
       });
 
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      const token = localStorage.getItem('token');
 
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          Authorization: currentUser?.id || '',
+          Authorization: token ? `Bearer ${token}` : '',
         },
         body,
       });
@@ -260,17 +262,41 @@ export default function AddListing() {
               />
             </div>
 
-            <div className="input-group">
-              <label htmlFor="price">Rent per Day/Hour <span className="req">*</span></label>
-              <input
-                id="price"
-                name="price"
-                type="text"
-                placeholder="e.g., ₹2,500/day"
-                value={formData.price}
-                onChange={handleChange}
-                required
-              />
+            <div className="input-group full-width">
+              <label htmlFor="price">Rent Price <span className="req">*</span></label>
+              <div className="price-timespan-row">
+                <div className="price-input-wrapper">
+                  <span className="currency-symbol">₹</span>
+                  <input
+                    id="price"
+                    name="price"
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 2500"
+                    value={formData.price}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="timespan-select-wrapper">
+                  <Clock size={16} className="timespan-icon" />
+                  <select
+                    id="timespan"
+                    name="timespan"
+                    value={formData.timespan}
+                    onChange={handleChange}
+                    required
+                    className="styled-select timespan-select"
+                  >
+                    <option value="" disabled>Select</option>
+                    <option value="hour">per Hour</option>
+                    <option value="night">per Night</option>
+                    <option value="week">per Week</option>
+                    <option value="month">per Month</option>
+                  </select>
+                  <ChevronDown size={16} className="select-icon" />
+                </div>
+              </div>
             </div>
 
             <div className="input-group">

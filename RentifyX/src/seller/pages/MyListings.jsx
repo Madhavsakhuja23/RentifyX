@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useListings } from '../context/ListingsContext';
 import { Pencil, Trash2, EyeOff, Eye, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './MyListings.css';
 
 export default function MyListings() {
@@ -72,9 +73,9 @@ export default function MyListings() {
               : 'Try adjusting your search or filter.'}
           </p>
           {listings.length === 0 && (
-            <a href="/dashboard/add-listing" className="empty-cta">
+            <Link to="/seller/add-listing" className="empty-cta">
               + Add Your First Listing
-            </a>
+            </Link>
           )}
         </div>
       ) : (
@@ -127,7 +128,7 @@ export default function MyListings() {
                   <h3>{listing.title}</h3>
                   <p className="listing-desc">{listing.description}</p>
                   <div className="listing-meta">
-                    <span className="listing-price">{listing.price}</span>
+                    <span className="listing-price">₹{listing.price}/{listing.timespan}</span>
                     {listing.location && (
                       <span className="listing-location">📍 {listing.location}</span>
                     )}

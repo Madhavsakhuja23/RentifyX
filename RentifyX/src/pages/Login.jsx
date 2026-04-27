@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { signInWithPopup } from "firebase/auth";
@@ -21,6 +21,7 @@ const Login = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
  const handleGoogleLogin = async () => {
   try {
@@ -30,11 +31,12 @@ const Login = () => {
     const result = await signInWithPopup(auth, provider);
     const firebaseUser = result.user;
 
-    // Send to backend — no role passed, backend uses existing account role
+    // Send to backend — pass 'user' as default role
     const data = await googleAuthApi(
       firebaseUser.displayName,
       firebaseUser.email,
-      firebaseUser.photoURL
+      firebaseUser.photoURL,
+      "user"
     );
 
     // Store user in context
@@ -60,23 +62,21 @@ const Login = () => {
 
     try {
       setLoading(true);
+      const data = await loginApi(email, password);
+      login(data.user, data.token);
 
-      
-      // Store user in context
-   const data = await loginApi(email, password);
-
-// Store user + token
-login(data.user, data.token);
-
-      // Redirect based on role
-      if (data.user.role === "owner" || data.user.role === "both") {
+      // Redirect based on state or role
+      if (location.state?.from && location.state?.bookingData) {
+        navigate(location.state.from, { state: location.state.bookingData });
+      } else if (data.user.role === "owner" || data.user.role === "both") {
         navigate("/seller/dashboard");
       } else {
         navigate("/");
       }
 
     } catch (err) {
-      setError(err.message || "Invalid credentials");
+      // Always show a generic message for login — never expose "User already exists"
+      setError("Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }

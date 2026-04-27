@@ -1,36 +1,71 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User, Briefcase, Heart, Settings, Edit, ChevronRight, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header/Header";
 import EditProfile from "../components/Profile/EditProfile";
 import BookingHistory from "../components/Profile/BookingHistory";
 import Favourites from "../components/Profile/Favourites";
+import { getMyBookingsApi, getWishlistApi } from "../api";
 import { useAuth } from "../seller/context/AuthContext";
 import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logOut } = useAuth();
   const [activeTab, setActiveTab] = useState("about");
 
-  // Reactive localStorage data
   const [bookings, setBookings] = useState([]);
   const [favourites, setFavourites] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const bookingsRef = useRef(null);
   const favouritesRef = useRef(null);
 
-  // Load from localStorage on mount and when storage changes
   useEffect(() => {
-    const load = () => {
-      setBookings(JSON.parse(localStorage.getItem("bookings") || "[]"));
-      setFavourites(JSON.parse(localStorage.getItem("favourites") || "[]"));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch Bookings
+        const bookingsData = await getMyBookingsApi();
+        const formattedBookings = bookingsData.map(b => ({
+          id: b._id,
+          title: b.listingId?.title || "Unknown Property",
+          location: b.listingId?.location || "",
+          image: b.listingId?.images?.[0]?.url || "",
+          checkIn: b.checkIn,
+          checkOut: b.checkOut,
+          amount: `₹${b.totalPrice.toLocaleString("en-IN")}`,
+          status: new Date(b.checkIn) > new Date() ? "upcoming" : "completed",
+          utr: b.utr
+        }));
+        setBookings(formattedBookings);
+
+        // Fetch Wishlist
+        const wishlistData = await getWishlistApi();
+        const formattedFavs = (wishlistData.listings || []).map(l => ({
+          id: l._id,
+          title: l.title,
+          location: l.location,
+          image: l.images?.[0]?.url || "",
+          price: l.price,
+          priceUnit: l.timespan === "night" ? "night" : l.timespan
+        }));
+        setFavourites(formattedFavs);
+
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    load();
-    window.addEventListener("storage", load);
-    return () => window.removeEventListener("storage", load);
-  }, []);
+
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logOut();
@@ -43,6 +78,16 @@ const Profile = () => {
   };
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="loading-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      );
+    }
+
     switch(activeTab) {
       case "about":
         return (
@@ -197,9 +242,11 @@ const Profile = () => {
               className={`nav-item-premium ${activeTab === "bookings" ? "active" : ""}`}
               onClick={() => handleTabChange("bookings")}
             >
-              <div className="nav-item-icon"><Briefcase size={20} /></div>
+              <div className="nav-item-icon">
+                <Briefcase size={20} />
+                {bookings.length > 0 && <span className="badge">{bookings.length}</span>}
+              </div>
               <span>Bookings</span>
-              {bookings.length > 0 && <span className="badge">{bookings.length}</span>}
               <ChevronRight className="chevron" size={16} />
             </button>
 
@@ -207,9 +254,11 @@ const Profile = () => {
               className={`nav-item-premium ${activeTab === "favourites" ? "active" : ""}`}
               onClick={() => handleTabChange("favourites")}
             >
-              <div className="nav-item-icon"><Heart size={20} /></div>
+              <div className="nav-item-icon">
+                <Heart size={20} />
+                {favourites.length > 0 && <span className="badge">{favourites.length}</span>}
+              </div>
               <span>Wishlist</span>
-              {favourites.length > 0 && <span className="badge">{favourites.length}</span>}
               <ChevronRight className="chevron" size={16} />
             </button>
 

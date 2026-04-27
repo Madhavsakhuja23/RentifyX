@@ -8,6 +8,8 @@ import {
   getListingById,
   getMyListings,
   bookListing,
+  updateListing,
+  deleteListing,
 } from "../controllers/listingController.js";
 
 const router = express.Router();
@@ -39,5 +41,10 @@ router.get("/:id", getListingById);
 
 // ✅ POST /api/listings/book/:id — Book a listing
 router.post("/book/:id", bookListing);
+// PUT /api/listings/:id — Update listing
+router.put("/:id", authMiddleware, updateListing);
+
+// DELETE /api/listings/:id — Delete listing
+router.delete("/:id", authMiddleware, deleteListing);
 
 export default router;

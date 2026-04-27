@@ -3,7 +3,7 @@
  * Sends userId in Authorization header for authenticated requests.
  */
 
-const BASE_URL = "https://rentifyx-ff33.onrender.com/api";
+const BASE_URL = "http://localhost:5001/api";
 
 const parseJsonSafely = async (response) => {
   const contentType = response.headers.get("content-type") || "";
@@ -26,18 +26,17 @@ const parseJsonSafely = async (response) => {
  * @returns {Promise<any>}   - parsed JSON response
  */
 export const apiRequest = async (endpoint, options = {}) => {
-  let userId = null;
+  let token = null;
 
   try {
-    const currentUser = localStorage.getItem("currentUser");
-    userId = currentUser ? JSON.parse(currentUser).id : null;
+    token = localStorage.getItem("token");
   } catch {
-    userId = null;
+    token = null;
   }
 
   const headers = {
     "Content-Type": "application/json",
-    ...(userId ? { Authorization: userId } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 
@@ -163,4 +162,75 @@ export const updateProfileApi = (updates) =>
   apiRequest("/auth/profile", {
     method: "PUT",
     body: JSON.stringify(updates),
+  });
+
+export const checkAvailabilityApi = (listingId, checkIn, checkOut) =>
+  publicApiRequest("/bookings/check-availability", {
+    method: "POST",
+    body: JSON.stringify({ listingId, checkIn, checkOut }),
+  });
+
+export const createBookingApi = (bookingData) =>
+  apiRequest("/bookings", {
+    method: "POST",
+    body: JSON.stringify(bookingData),
+  });
+
+export const getMyBookingsApi = () => apiRequest("/bookings");
+
+// ── Wishlist ──────────────────────────────────────────────────
+
+export const getWishlistApi = () => apiRequest("/wishlist");
+
+export const addToWishlistApi = (listingId) =>
+  apiRequest("/wishlist/add", {
+    method: "POST",
+    body: JSON.stringify({ listingId }),
+  });
+
+export const removeFromWishlistApi = (listingId) =>
+  apiRequest("/wishlist/remove", {
+    method: "POST",
+    body: JSON.stringify({ listingId }),
+  });
+
+export const createListingApi = async (formData) => {
+  let token = null;
+  try {
+    token = localStorage.getItem("token");
+  } catch {
+    token = null;
+  }
+
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}/listings`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch (error) {
+    throw new Error("Unable to connect to the backend API.");
+  }
+
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    throw new Error(data?.msg || data?.message || "Request failed");
+  }
+  return data;
+};
+
+export const updateListingApi = (id, updates) =>
+  apiRequest(`/listings/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(updates),
+  });
+
+export const deleteListingApi = (id) =>
+  apiRequest(`/listings/${id}`, {
+    method: "DELETE",
   });
