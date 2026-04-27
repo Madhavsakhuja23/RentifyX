@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PricingSection from './PricingSection';
 import LicenseVerification from './LicenseVerification';
@@ -29,6 +29,18 @@ const DriveableDetail = ({ driveable, onClose }) => {
   const [selectedDays, setSelectedDays] = useState(0);
   const [licenseVerified, setLicenseVerified] = useState(false);
   const [bookingType, setBookingType] = useState('hourly'); // 'hourly' or 'daily'
+  const [lbIndex, setLbIndex] = useState(null);
+
+  useEffect(() => {
+    if (lbIndex !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [lbIndex]);
 
   if (!driveable) return null;
 
@@ -36,6 +48,10 @@ const DriveableDetail = ({ driveable, onClose }) => {
   const allImages = driveable.images && driveable.images.length >= 5
     ? driveable.images
     : [driveable.image, driveable.image, driveable.image, driveable.image, driveable.image];
+
+  const lbNav = (delta) => {
+    setLbIndex((prev) => (prev + delta + allImages.length) % allImages.length);
+  };
 
   const calculateTotalPrice = () => {
     if (bookingType === 'daily' && driveable.dayRate) {
@@ -84,8 +100,23 @@ const DriveableDetail = ({ driveable, onClose }) => {
     return "₹" + Number(n).toLocaleString("en-IN");
   }
 
+  function Lightbox({ images, index, onClose, onNav }) {
+    return (
+      <div className="ld-lb" onClick={onClose}>
+        <button className="ld-lb-close" onClick={onClose}>✕</button>
+        <button className="ld-lb-arrow ld-lb-prev" onClick={(e) => { e.stopPropagation(); onNav(-1); }}>&#8249;</button>
+        <img src={images[index]} alt="" onClick={(e) => e.stopPropagation()} />
+        <button className="ld-lb-arrow ld-lb-next" onClick={(e) => { e.stopPropagation(); onNav(1); }}>&#8250;</button>
+        <div className="ld-lb-counter">{index + 1} / {images.length}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="ld-root pb-5">
+      {lbIndex !== null && (
+        <Lightbox images={allImages} index={lbIndex} onClose={() => setLbIndex(null)} onNav={lbNav} />
+      )}
       <div className="ld-page" style={{ paddingTop: '28px' }}>
 
         {/* Back Button */}
@@ -139,25 +170,26 @@ const DriveableDetail = ({ driveable, onClose }) => {
           </div>
         </div>
 
-        // ...existing code...
-<div className="ld-gallery">
-  <img
-    className="ld-gal-main"
-    src={allImages[0]}
-    alt={`${driveable.name} - main view`}
-    style={{ objectFit: 'cover' }}
-  />
-  <div className="ld-gal-side">
-    {allImages.slice(1, 5).map((img, i) => (
-      <div key={i} className="ld-g-cell">
-        <img
-          src={img}
-          alt={i < 3 ? `${driveable.name} - gallery view ${i + 2}` : ""}
-          style={{ objectFit: 'cover' }}
-        />
-        {i === 3 && (
-          <button className="ld-show-all-btn">
-// ...existing code...
+        
+        <div className="ld-gallery">
+          <img
+            className="ld-gal-main"
+            src={allImages[0]}
+            alt={`${driveable.name} - main view`}
+            style={{ objectFit: 'cover' }}
+            onClick={() => setLbIndex(0)}
+          />
+          <div className="ld-gal-side">
+            {allImages.slice(1, 5).map((img, i) => (
+              <div key={i} className="ld-g-cell">
+                <img
+                  src={img}
+                  alt={i < 3 ? `${driveable.name} - gallery view ${i + 2}` : ""}
+                  style={{ objectFit: 'cover' }}
+                  onClick={() => setLbIndex(i + 1)}
+                />
+                {i === 3 && (
+                  <button className="ld-show-all-btn" onClick={() => setLbIndex(0)}>
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
                       <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
                       <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />

@@ -17,13 +17,23 @@ const vehicleLocations = [
 
 const DriveablesFilterBar = ({ filters, onChange }) => {
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [locationSearch, setLocationSearch] = useState("");
     const barRef = useRef(null);
 
     const update = (partial) => onChange({ ...filters, ...partial });
 
     const toggleDropdown = (name) => {
         setOpenDropdown(openDropdown === name ? null : name);
+        if (name === 'location' && openDropdown !== 'location') {
+            setLocationSearch("");
+        }
     };
+
+    const filteredLocations = vehicleLocations.filter(loc => 
+        loc.toLowerCase().startsWith(locationSearch.toLowerCase())
+    );
+
+    const matchFound = vehicleLocations.some(l => l.toLowerCase() === locationSearch.toLowerCase());
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -56,21 +66,66 @@ const DriveablesFilterBar = ({ filters, onChange }) => {
                     {openDropdown === 'location' && (
                         <div className="filter-popover location-popover">
                             <div className="popover-content">
+                                <div className="location-search-container">
+                                    <Search size={16} className="search-icon-inline" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search or enter location..."
+                                        className="location-search-input"
+                                        value={locationSearch}
+                                        onChange={(e) => setLocationSearch(e.target.value)}
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && locationSearch.trim()) {
+                                                update({ location: locationSearch.trim() });
+                                                setOpenDropdown(null);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                
                                 <button
                                     onClick={() => { update({ location: "" }); setOpenDropdown(null); }}
                                     className={`dropdown-item ${!filters.location ? 'active' : ''}`}
                                 >
                                     Anywhere
                                 </button>
-                                {vehicleLocations.map((loc) => (
-                                    <button
-                                        key={loc}
-                                        onClick={() => { update({ location: loc }); setOpenDropdown(null); }}
-                                        className={`dropdown-item ${filters.location === loc ? 'active' : ''}`}
-                                    >
-                                        {loc}
-                                    </button>
-                                ))}
+
+                                {locationSearch && !matchFound && (
+                                    <div className="location-suggest-section">
+                                        <p className="suggest-header">Add new location</p>
+                                        <button
+                                            onClick={() => { update({ location: locationSearch }); setOpenDropdown(null); }}
+                                            className="dropdown-item custom-location-item"
+                                        >
+                                            <MapPin size={14} className="suggest-icon" />
+                                            <span>Enter "{locationSearch}"</span>
+                                        </button>
+                                    </div>
+                                )}
+
+                                {filteredLocations.length > 0 && (
+                                    <div className="location-suggest-section">
+                                        <p className="suggest-header">Matching Locations</p>
+                                        {filteredLocations.map((loc) => (
+                                            <button
+                                                key={loc}
+                                                onClick={() => { update({ location: loc }); setOpenDropdown(null); }}
+                                                className={`dropdown-item ${filters.location === loc ? 'active' : ''}`}
+                                            >
+                                                {loc}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {filteredLocations.length === 0 && !locationSearch && (
+                                    <p className="no-results-text">Start typing to find a location</p>
+                                )}
+                                
+                                {filteredLocations.length === 0 && locationSearch && !matchFound && (
+                                    <p className="no-results-text">No matching predefined locations found</p>
+                                )}
                             </div>
                         </div>
                     )}

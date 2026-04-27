@@ -58,16 +58,16 @@ const DriveableCard = ({ driveable, onViewDetails, index = 0, onToggleCompare, i
 
         {/* Specs tags */}
         <div className="drv-specs-tags">
-          {driveable.specifications.fuelType && (
+          {driveable.specifications?.fuelType && (
             <span className="drv-spec-tag">{driveable.specifications.fuelType}</span>
           )}
-          {driveable.specifications.transmission && (
+          {driveable.specifications?.transmission && (
             <span className="drv-spec-tag">{driveable.specifications.transmission}</span>
           )}
-          {driveable.specifications.seatingCapacity && (
+          {driveable.specifications?.seatingCapacity && (
             <span className="drv-spec-tag">{driveable.specifications.seatingCapacity} seats</span>
           )}
-          {driveable.specifications.type && (
+          {driveable.specifications?.type && (
             <span className="drv-spec-tag">{driveable.specifications.type}</span>
           )}
         </div>

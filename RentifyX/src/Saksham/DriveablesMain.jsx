@@ -36,6 +36,10 @@ import ktmDukeImg from '../assets/ktmduke.avif';
 import KiaSeltosImg from '../assets/KiaSeltos.avif';
 import gravelBikeImg from '../assets/gravelbike.jpg';
 
+import { useEffect } from 'react';
+
+const imageMap = { hondaCityImg, royalEnfieldImg, teslaImg, mountainBikeImg, activa6gImg, olaS1ProImg, marutiSwiftImg, cityBicycleImg, cretaImg, bajajPulsarImg, MGZsEVImg, hybridBikkeImg, toyotaFortunerImg, jupiterImg, ather450Img, bmxBikeImg, tataNexomImg, ktmDukeImg, KiaSeltosImg, gravelBikeImg };
+
 const mockData = [
   { id: 1, name: 'Honda City', category: 'cars', image: hondaCityImg, hourlyRate: 200, dayRate: 2000, rating: 4.5, location: 'Downtown', specifications: { fuelType: 'Petrol', transmission: 'Automatic', seatingCapacity: 5 } },
   { id: 2, name: 'Royal Enfield Classic 350', category: 'bikes', image: royalEnfieldImg, hourlyRate: 80, dayRate: 800, rating: 4.7, location: 'East Side', specifications: { fuelType: 'Petrol', transmission: 'Manual', seatingCapacity: 2 } },
@@ -64,6 +68,7 @@ const ITEMS_PER_PAGE = 6;
 const DriveablesMain = () => {
   // State matched to Dwellings index.tsx logic
   const [activeCategory, setActiveCategory] = useState('all');
+  const [dbVehicles, setDbVehicles] = useState([...mockData]); // Initialized to mockData to avoid disappearing cars
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDriveable, setSelectedDriveable] = useState(null);
   const [sortOrder, setSortOrder] = useState('default');
@@ -73,37 +78,59 @@ const DriveablesMain = () => {
   const fleetRef = useRef(null);
   const compareCategory = compareList[0]?.category;
 
-  // useMemo used just like the filtered variable in Dwellings
-  const filtered = useMemo(() => {
-    let result = [...mockData];
+  // DYNAMIC FETCH FROM MONGODB
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/vehicles?category=${activeCategory}`);
+        
+        if (!res.ok) throw new Error("Backend response not OK");
+        
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const mappedData = data.map(v => ({
+              ...v,
+              id: v._id || v.id, 
+              image: imageMap[v.imageKey] || hondaCityImg 
+          }));
+          setDbVehicles(mappedData);
+        } else {
+          setDbVehicles([...mockData]); // Fallback safely if api returns empty (maybe backend dropped)
+        }
+      } catch (error) {
+        console.error("Failed to fetch vehicles from DB, falling back to local data:", error);
+        setDbVehicles([...mockData]); 
+      }
+    };
+    fetchVehicles();
+  }, [activeCategory]);
 
-    // Category Filter
+  const filtered = useMemo(() => {
+    let result = [...dbVehicles];
+
     if (activeCategory !== 'all') {
-      result = result.filter((item) => item.category === activeCategory);
+      result = result.filter((item) => item?.category === activeCategory);
     }
 
-    // Search Location Filter
     if (searchFilters.location && searchFilters.location.trim() !== '') {
       const q = searchFilters.location.toLowerCase();
       result = result.filter((item) =>
-        item.location.toLowerCase().includes(q) ||
-        item.name.toLowerCase().includes(q)
+        item?.location?.toLowerCase().includes(q) ||
+        item?.name?.toLowerCase().includes(q)
       );
     }
 
-    // Guests / Seating Capacity Filter
     if (searchFilters.guests && searchFilters.guests > 1) {
       result = result.filter((item) =>
-        (item.specifications.seatingCapacity || 1) >= searchFilters.guests
+        (item?.specifications?.seatingCapacity || 1) >= searchFilters.guests
       );
     }
 
-    // Sorting Logic
-    if (sortOrder === 'low') result.sort((a, b) => a.hourlyRate - b.hourlyRate);
-    if (sortOrder === 'high') result.sort((a, b) => b.hourlyRate - a.hourlyRate);
+    if (sortOrder === 'low') result.sort((a, b) => (a?.hourlyRate || 0) - (b?.hourlyRate || 0));
+    if (sortOrder === 'high') result.sort((a, b) => (b?.hourlyRate || 0) - (a?.hourlyRate || 0));
 
     return result;
-  }, [activeCategory, sortOrder]);
+  }, [activeCategory, sortOrder, dbVehicles, searchFilters]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
