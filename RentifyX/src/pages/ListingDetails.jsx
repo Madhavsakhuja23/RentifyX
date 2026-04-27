@@ -420,7 +420,13 @@ function BookingCard({ listing }) {
   function handleReserve() {
     const currentUser = localStorage.getItem("currentUser");
     if (!currentUser) {
-      navigate("/login");
+      // Redirect to login but save the current booking intent in state
+      navigate("/login", { 
+        state: { 
+          from: `/book/${listing.id}`,
+          bookingData: { listing, checkIn, checkOut, nights, guests, sub, total }
+        } 
+      });
       return;
     }
 
@@ -473,7 +479,7 @@ function BookingCard({ listing }) {
         <div className="ld-book-fields-head">
           <div>
             <p className="ld-book-fields-label">Availability</p>
-            <h3 className="ld-book-fields-title">Choose your stay dates</h3>
+           
           </div>
           <p className="ld-book-fields-note">
             {isMonthly ? "Minimum 30 days" : "Select check-in and checkout"}

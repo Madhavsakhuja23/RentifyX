@@ -4,7 +4,7 @@ import FilterBar from "../components/dwellings/FilterBar";
 import ListingCard from "../components/dwellings/ListingCard";
 import Pagination from "../components/dwellings/Pagination";
 import WelcomeModal from "../components/dwellings/WelcomeModal";
-import { getDwellings } from "../api";
+import { getDwellings, getWishlistApi } from "../api";
 import { getNormalizedLocationName, listings as staticListings, normalizeLocation } from "../data/dwellings";
 import { Shield } from "lucide-react";
 import "./dwelling.css";
@@ -139,6 +139,7 @@ const Dwelling = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [dwellings, setDwellings] = useState([]);
     const [allDwellings, setAllDwellings] = useState([]);
+    const [wishlistedIds, setWishlistedIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFiltering, setIsFiltering] = useState(false);
     const [error, setError] = useState("");
@@ -168,6 +169,23 @@ const Dwelling = () => {
         };
 
         loadSuggestionData();
+
+        // Load wishlist if logged in
+        const loadWishlist = async () => {
+            const currentUser = localStorage.getItem("currentUser");
+            if (currentUser) {
+                try {
+                    const res = await getWishlistApi();
+                    if (res && res.listings) {
+                        const ids = res.listings.map(l => l._id || l.id);
+                        setWishlistedIds(ids);
+                    }
+                } catch (err) {
+                    console.error("Failed to load wishlist:", err);
+                }
+            }
+        };
+        loadWishlist();
 
         return () => {
             ignore = true;
@@ -352,7 +370,11 @@ const Dwelling = () => {
                         ) : paginated.length > 0 ? (
                             <div className="listings-grid">
                                 {paginated.map((listing) => (
-                                    <ListingCard key={listing.id} listing={listing} />
+                                    <ListingCard 
+                                      key={listing.id} 
+                                      listing={listing} 
+                                      isWishlisted={wishlistedIds.includes(listing.id || listing._id)} 
+                                    />
                                 ))}
                             </div>
                         ) : (

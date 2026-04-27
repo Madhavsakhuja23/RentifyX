@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { signInWithPopup } from "firebase/auth";
@@ -21,6 +21,7 @@ const Login = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
  const handleGoogleLogin = async () => {
   try {
@@ -40,8 +41,10 @@ const Login = () => {
     // Store user in context
     login(data.user);
 
-    // Redirect based on role
-    if (data.user.role === "owner" || data.user.role === "both") {
+    // Redirect based on state or role
+    if (location.state?.from && location.state?.bookingData) {
+      navigate(location.state.from, { state: location.state.bookingData });
+    } else if (data.user.role === "owner" || data.user.role === "both") {
       navigate("/seller/dashboard");
     } else {
       navigate("/");
@@ -67,8 +70,10 @@ const Login = () => {
       // Store user in context
       login(data.user);
 
-      // Redirect based on role
-      if (data.user.role === "owner" || data.user.role === "both") {
+      // Redirect based on state or role
+      if (location.state?.from && location.state?.bookingData) {
+        navigate(location.state.from, { state: location.state.bookingData });
+      } else if (data.user.role === "owner" || data.user.role === "both") {
         navigate("/seller/dashboard");
       } else {
         navigate("/");

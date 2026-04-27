@@ -141,3 +141,32 @@ export const updateProfileApi = (updates) =>
     method: "PUT",
     body: JSON.stringify(updates),
   });
+
+export const checkAvailabilityApi = (listingId, checkIn, checkOut) =>
+  publicApiRequest("/bookings/check-availability", {
+    method: "POST",
+    body: JSON.stringify({ listingId, checkIn, checkOut }),
+  });
+
+export const createBookingApi = (bookingData) =>
+  apiRequest("/bookings", {
+    method: "POST",
+    body: JSON.stringify(bookingData),
+  });
+
+// ── Wishlist ──────────────────────────────────────────────────
+
+export const getWishlistApi = () => apiRequest("/wishlist");
+
+export const addToWishlistApi = (listingId) =>
+  apiRequest("/wishlist/add", {
+    method: "POST",
+    body: JSON.stringify({ listingId }),
+  });
+
+export const removeFromWishlistApi = (listingId) =>
+  apiRequest("/wishlist/remove", {
+    method: "POST",
+    body: JSON.stringify({ listingId }),
+  });
+
