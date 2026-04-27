@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User, Briefcase, Heart, Settings, Edit, ChevronRight, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header/Header";
@@ -11,8 +11,17 @@ import "./Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logOut } = useAuth();
   const [activeTab, setActiveTab] = useState("about");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab && ["about", "bookings", "favourites", "settings", "wishlist"].includes(tab)) {
+      setActiveTab(tab === "wishlist" ? "favourites" : tab);
+    }
+  }, [location.search]);
 
   // Reactive localStorage data
   const [bookings, setBookings] = useState([]);

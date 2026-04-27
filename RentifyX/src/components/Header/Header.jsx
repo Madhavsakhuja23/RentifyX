@@ -54,7 +54,7 @@ const Header = () => {
           <nav className="d-flex gap-4 nav-section ms-auto">
             <Link className="nav-link-custom" to="/dwellings">Dwellings</Link>
             <Link className="nav-link-custom" to="/driveables">Driveables</Link>
-            <Link className="nav-link-custom" to="/messages">Messages</Link>
+            <Link className="nav-link-custom" to="/contact">Contact</Link>
           </nav>
 
           {/* Right Section */}
@@ -99,6 +99,7 @@ const Header = () => {
                 className={`mobile-link ${currentPath === "/profile" ? "active-item" : ""
                   }`}
                 to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 <User size={18} />
                 Profile
@@ -108,6 +109,7 @@ const Header = () => {
                 className={`mobile-link ${currentPath.includes("bookings") ? "active-item" : ""
                   }`}
                 to="/profile?tab=bookings"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 🏠 Bookings
               </Link>
@@ -116,6 +118,7 @@ const Header = () => {
                 className={`mobile-link ${currentPath.includes("wishlist") ? "active-item" : ""
                   }`}
                 to="/profile?tab=wishlist"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 ❤️ Wishlist
               </Link>
@@ -124,6 +127,7 @@ const Header = () => {
                 className={`mobile-link ${currentPath.includes("settings") ? "active-item" : ""
                   }`}
                 to="/profile?tab=settings"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 ⚙️ Settings
               </Link>

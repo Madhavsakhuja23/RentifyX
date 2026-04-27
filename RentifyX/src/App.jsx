@@ -22,6 +22,7 @@ import "./App.css";
 import Profile from "./pages/Profile";
 import Chatbot from "./components/dwellings/Chatbot";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import NotFound from "./pages/NotFound";
 
 /* Info Pages */
 import AboutUs from "./pages/info/AboutUs";
@@ -84,6 +85,9 @@ function App() {
               <Route path="notifications" element={<Notifications />} />
               <Route path="profile" element={<ProfileSettings />} />
             </Route>
+
+            {/* Catch-all Not Found Route */}
+            <Route path="*" element={<NotFound />} />
 
           </Routes>
           <Chatbot />

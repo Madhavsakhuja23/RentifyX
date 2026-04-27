@@ -160,3 +160,71 @@ export const getListingById = async (req, res) => {
     });
   }
 };
+
+// PUT /api/listings/:id — Update a listing
+export const updateListing = async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const sellerId = req.user.id;
+
+    let listing = await Listing.findById(listingId);
+
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found" });
+    }
+
+    if (listing.seller.toString() !== sellerId) {
+      return res.status(403).json({ msg: "Not authorized to update this listing" });
+    }
+
+    const { title, description, price, location, availableDates, available } = req.body;
+
+    if (title) listing.title = title;
+    if (description) listing.description = description;
+    if (price) listing.price = price;
+    if (location) listing.location = location;
+    if (availableDates !== undefined) listing.availableDates = availableDates;
+    if (available !== undefined) listing.available = available;
+
+    await listing.save();
+
+    res.status(200).json({ msg: "Listing updated successfully", listing });
+  } catch (error) {
+    console.error("Update listing error:", error);
+    res.status(500).json({ msg: "Server error while updating listing" });
+  }
+};
+
+// DELETE /api/listings/:id — Delete a listing
+export const deleteListing = async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const sellerId = req.user.id;
+
+    const listing = await Listing.findById(listingId);
+
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found" });
+    }
+
+    if (listing.seller.toString() !== sellerId) {
+      return res.status(403).json({ msg: "Not authorized to delete this listing" });
+    }
+
+    // Delete images from Cloudinary
+    if (listing.images && listing.images.length > 0) {
+      for (const image of listing.images) {
+        if (image.publicId) {
+          await cloudinary.uploader.destroy(image.publicId);
+        }
+      }
+    }
+    
+    await Listing.findByIdAndDelete(listingId);
+
+    res.status(200).json({ msg: "Listing deleted successfully" });
+  } catch (error) {
+    console.error("Delete listing error:", error);
+    res.status(500).json({ msg: "Server error while deleting listing" });
+  }
+};
