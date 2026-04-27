@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useListings } from '../context/ListingsContext';
 import { Pencil, Trash2, EyeOff, Eye, Search, MessageCircle, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './MyListings.css';
 
 export default function MyListings() {
@@ -12,7 +12,7 @@ export default function MyListings() {
   const [editForm, setEditForm] = useState({});
   const navigate = useNavigate();
 
-  // Handle countdowns
+  // Live countdown timer
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -23,12 +23,12 @@ export default function MyListings() {
     const end = new Date(endDate).getTime();
     const diff = end - now;
     if (diff <= 0) return 'Expired';
-    
+
     const d = Math.floor(diff / (1000 * 60 * 60 * 24));
     const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
     const m = Math.floor((diff / 1000 / 60) % 60);
     const s = Math.floor((diff / 1000) % 60);
-    
+
     return `${d}d ${h}h ${m}m ${s}s remaining`;
   };
 
@@ -42,7 +42,12 @@ export default function MyListings() {
 
   const startEdit = (listing) => {
     setEditingId(listing.id);
-    setEditForm({ title: listing.title, description: listing.description, price: listing.price, location: listing.location || '' });
+    setEditForm({
+      title: listing.title,
+      description: listing.description,
+      price: listing.price,
+      location: listing.location || '',
+    });
   };
 
   const saveEdit = () => {
@@ -94,9 +99,9 @@ export default function MyListings() {
               : 'Try adjusting your search or filter.'}
           </p>
           {listings.length === 0 && (
-            <a href="/dashboard/add-listing" className="empty-cta">
+            <Link to="/seller/add-listing" className="empty-cta">
               + Add Your First Listing
-            </a>
+            </Link>
           )}
         </div>
       ) : (
@@ -180,7 +185,7 @@ export default function MyListings() {
                       className="action-icon delete"
                       title="Delete"
                       onClick={() => {
-                        if(window.confirm('Are you sure you want to delete this listing?')) {
+                        if (window.confirm('Are you sure you want to delete this listing?')) {
                           deleteListing(listing.id);
                         }
                       }}
@@ -190,7 +195,8 @@ export default function MyListings() {
                   </div>
                 </div>
               )}
-              {/* Ongoing Booking Info */}
+
+              {/* Ongoing Booking Info (seller dashboard feature) */}
               {listing.ongoingBookings && listing.ongoingBookings.length > 0 && !editingId && (
                 <div className="ongoing-booking-banner">
                   <div className="booking-info">

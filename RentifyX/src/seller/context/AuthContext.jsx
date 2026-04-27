@@ -7,13 +7,30 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("currentUser");
 
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+      if (storedToken) {
+        try {
+          const { getMe } = await import("../../api");
+          const data = await getMe();
+          setUser(data.user);
+          localStorage.setItem("currentUser", JSON.stringify(data.user));
+        } catch (err) {
+          console.error("Token validation failed", err);
+          localStorage.removeItem("token");
+          localStorage.removeItem("currentUser");
+          setUser(null);
+        }
+      } else if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
 
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = (userData, token) => {

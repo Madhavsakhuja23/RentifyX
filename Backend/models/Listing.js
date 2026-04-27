@@ -56,6 +56,7 @@ const listingSchema = new mongoose.Schema(
         publicId: { type: String, required: true },
       },
     ],
+    // Seller dashboard fields (from HEAD)
     isAvailable: {
       type: Boolean,
       default: true,

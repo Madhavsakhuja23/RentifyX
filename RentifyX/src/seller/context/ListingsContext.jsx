@@ -2,14 +2,13 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const ListingsContext = createContext(null);
-const API_URL = 'https://rentifyx-ff33.onrender.com/api/listings';
+const API_URL = 'http://localhost:5000/api/listings';
 
 export function ListingsProvider({ children }) {
   const { user } = useAuth();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch listings from MongoDB whenever user changes
   useEffect(() => {
     if (user) {
       fetchListings();
@@ -58,14 +57,30 @@ export function ListingsProvider({ children }) {
     return newListing;
   };
 
-  const updateListing = (id, updates) => {
-    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
+  const updateListing = async (id, updates) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
+      }
+    } catch (err) {
+      console.error('Failed to update listing:', err);
+    }
   };
 
   const deleteListing = async (id) => {
+    // Optimistic update with rollback
     const previous = [...listings];
     setListings((prev) => prev.filter((l) => l.id !== id));
-    
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/${id}`, {
@@ -75,11 +90,12 @@ export function ListingsProvider({ children }) {
       if (!res.ok) throw new Error('Delete failed');
     } catch (err) {
       console.error('Delete error:', err);
-      setListings(previous); // rollback
+      setListings(previous); // rollback on failure
     }
   };
 
   const toggleAvailability = async (id) => {
+    // Optimistic update with rollback
     const previous = [...listings];
     setListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, available: !l.available } : l))
@@ -87,6 +103,7 @@ export function ListingsProvider({ children }) {
 
     try {
       const token = localStorage.getItem('token');
+      // Use PATCH /availability endpoint (HEAD approach — cleaner REST)
       const res = await fetch(`${API_URL}/${id}/availability`, {
         method: 'PATCH',
         headers: { Authorization: token ? `Bearer ${token}` : '' },
@@ -94,7 +111,7 @@ export function ListingsProvider({ children }) {
       if (!res.ok) throw new Error('Toggle failed');
     } catch (err) {
       console.error('Toggle error:', err);
-      setListings(previous); // rollback
+      setListings(previous); // rollback on failure
     }
   };
 

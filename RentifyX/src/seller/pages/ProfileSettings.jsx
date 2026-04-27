@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Camera, Save } from 'lucide-react';
+import { updateProfileApi } from '../../api';
 import './ProfileSettings.css';
 
 export default function ProfileSettings() {
@@ -22,22 +23,23 @@ export default function ProfileSettings() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSuccessMsg('');
 
-    // In a real app, you'd add password checking here.
-    setTimeout(() => {
-      updateProfile({
+    try {
+      const data = await updateProfileApi({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         paymentMethod: formData.paymentMethod,
         ...(formData.newPassword && { password: formData.newPassword })
       });
+      
+      updateProfile(data.user);
+      
       setSuccessMsg('Profile updated successfully!');
-      setLoading(false);
       
       // Clear password fields
       setFormData(prev => ({
@@ -47,7 +49,13 @@ export default function ProfileSettings() {
       }));
 
       setTimeout(() => setSuccessMsg(''), 3000);
-    }, 600);
+    } catch (err) {
+      console.error('Update profile error:', err);
+      // In a real app we'd display this error in the UI
+      setSuccessMsg('Failed to update profile.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const initials = formData.name
