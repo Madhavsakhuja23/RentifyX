@@ -1,25 +1,32 @@
-import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
-// Simple auth middleware — reads userId from Authorization header
-// Frontend sends: Authorization: <userId>
-const authMiddleware = async (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   try {
-    const userId = req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (!userId) {
-      return res.status(401).json({ msg: "No auth, access denied" });
+    if (!authHeader) {
+      return res.status(401).json({ msg: "No auth token" });
     }
 
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res.status(401).json({ msg: "User not found" });
-    }
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : authHeader;
 
-    req.user = { id: user._id.toString(), name: user.name, role: user.role };
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    req.user = {
+      id: decoded.id
+    };
+
     next();
 
   } catch (err) {
-    return res.status(401).json({ msg: "Invalid auth" });
+    return res.status(401).json({
+      msg: "Invalid token"
+    });
   }
 };
 

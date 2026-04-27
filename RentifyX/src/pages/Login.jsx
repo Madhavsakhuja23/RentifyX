@@ -39,12 +39,9 @@ const Login = () => {
     );
 
     // Store user in context
-    login(data.user);
-
-    // Redirect based on state or role
-    if (location.state?.from && location.state?.bookingData) {
-      navigate(location.state.from, { state: location.state.bookingData });
-    } else if (data.user.role === "owner" || data.user.role === "both") {
+   login(data.user, data.token);
+    // Redirect based on role
+    if (data.user.role === "owner" || data.user.role === "both") {
       navigate("/seller/dashboard");
     } else {
       navigate("/");
@@ -65,10 +62,12 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const data = await loginApi(email, password);
-
+      
       // Store user in context
-      login(data.user);
+   const data = await loginApi(email, password);
+
+// Store user + token
+login(data.user, data.token);
 
       // Redirect based on state or role
       if (location.state?.from && location.state?.bookingData) {
@@ -148,9 +147,9 @@ const Login = () => {
                 </p>
               )}
 
-              <Button type="submit" className="w-100">
-                Sign In
-              </Button>
+              <Button type="submit" className="w-100" disabled={loading}>
+  {loading ? "Signing In..." : "Sign In"}
+</Button>
             </form>
 
             <button

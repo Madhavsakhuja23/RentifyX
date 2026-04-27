@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes.js";
+import vehicleRoutes from "./routes/vehicleRoutes.js";
 import listingRoutes from "./routes/listingRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
@@ -12,10 +13,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+ origin: "*"
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/wishlist", wishlistRoutes);
