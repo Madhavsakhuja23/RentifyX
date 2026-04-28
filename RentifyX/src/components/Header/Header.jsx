@@ -9,12 +9,14 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../seller/context/AuthContext";
+import { useSocket } from "../../seller/context/SocketContext";
 import "./Header.css";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { user, logOut } = useAuth();
+  const { unreadCount } = useSocket() || { unreadCount: 0 };
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname + location.search;
@@ -24,6 +26,13 @@ const Header = () => {
       (path.includes("?") && location.pathname + location.search === path)
       ? "mobile-link active-item"
       : "mobile-link";
+
+  const getDesktopActiveClass = (path) =>
+    location.pathname === path ||
+      (path.includes("?") && location.pathname + location.search === path) ||
+      (path !== "/" && location.pathname.startsWith(path + "/"))
+      ? "nav-link-custom active-nav"
+      : "nav-link-custom";
 
   const isLoggedIn = Boolean(user);
 
@@ -52,9 +61,20 @@ const Header = () => {
 
           {/* Desktop Nav */}
           <nav className="d-flex gap-4 nav-section ms-auto">
-            <Link className="nav-link-custom" to="/dwellings">Dwellings</Link>
-            <Link className="nav-link-custom" to="/driveables">Driveables</Link>
-            <Link className="nav-link-custom" to="/contact">Contact</Link>
+            <Link className={getDesktopActiveClass("/dwellings")} to="/dwellings">Dwellings</Link>
+            <Link className={getDesktopActiveClass("/driveables")} to="/driveables">Driveables</Link>
+            {isLoggedIn ? (
+              <Link className={`${getDesktopActiveClass("/messages")} position-relative`} to="/messages">
+                Messages
+                {unreadCount > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.65rem' }}>
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <Link className={getDesktopActiveClass("/login")} to="/login">Messages</Link>
+            )}
           </nav>
 
           {/* Right Section */}
@@ -103,6 +123,19 @@ const Header = () => {
               >
                 <User size={18} />
                 Profile
+              </Link>
+
+              <Link
+                className={`mobile-link position-relative ${currentPath === "/messages" ? "active-item" : ""}`}
+                to={isLoggedIn ? "/messages" : "/login"}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                💬 Messages
+                {isLoggedIn && unreadCount > 0 && (
+                  <span className="badge rounded-pill bg-danger ms-2">
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
 
               <Link

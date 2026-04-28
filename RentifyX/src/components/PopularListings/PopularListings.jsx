@@ -1,60 +1,67 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import ListingCard from "../dwellings/ListingCard";
+import { getDwellings } from "../../api";
 import "./PopularListings.css";
 
-const listings = [
-  {
-    id: 1,
-    name: "Luxury Beach Villa",
-    location: "Malibu",
-    price: 250,
-    priceUnit: "/ night",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811",
-    rating: 4.8,
-    reviews: 128,
-    type: "villa",
-    available: true,
-  },
-  {
-    id: 2,
-    name: "Modern Urban Flat",
-    location: "Los Angeles",
-    price: 120,
-    priceUnit: "/ day",
-    image: "https://images.unsplash.com/photo-1617788138017-80ad40651399",
-    rating: 4.9,
-    reviews: 95,
-    type: "flats",
-    available: true,
-  },
-  {
-    id: 3,
-    name: "Cozy Studio Flat",
-    location: "San Francisco",
-    price: 180,
-    priceUnit: "/ night",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
-    rating: 4.7,
-    reviews: 82,
-    type: "flats",
-    available: true,
-  },
-  {
-    id: 4,
-    name: "Mountain View PG",
-    location: "Colorado",
-    price: 150,
-    priceUnit: "/ month",
-    image: "https://images.unsplash.com/photo-1570129477492-45289003c313",
-    rating: 4.6,
-    reviews: 64,
-    type: "pgs",
-    available: true,
-  },
-];
-
 const PopularListings = () => {
+  const [listings, setListings] = useState([]);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const res = await getDwellings();
+        const rawListings = res.listings || [];
+        
+        let normalized = rawListings.map(item => {
+          const rawSub = (item.subcategory || "").toLowerCase();
+          let subcategoryType = item.subcategory || "Dwelling";
+
+          // Align with categoryLabels in data/dwellings.js
+          if (rawSub.includes("travel")) {
+              subcategoryType = "travel";
+          } else if (rawSub.includes("flat") || rawSub.includes("apartment")) {
+              subcategoryType = "flats";
+          } else if (rawSub.includes("pg") || rawSub.includes("hostel")) {
+              subcategoryType = "pgs";
+          } else if (rawSub.includes("villa")) {
+              subcategoryType = "villa";
+          }
+
+          return {
+            ...item,
+            id: item._id,
+            name: item.title,
+            // Extract URL from images array [{url, publicId}]
+            image: item.images && item.images[0] ? (typeof item.images[0] === 'string' ? item.images[0] : item.images[0].url) : "",
+            priceUnit: item.timespan ? `/${item.timespan}` : "/month",
+            type: subcategoryType,
+            // Map isAvailable from backend to 'available' used by ListingCard
+            available: item.isAvailable !== undefined ? item.isAvailable : true,
+            rating: item.rating || 4.5,
+            reviews: item.reviews || 0,
+          };
+        });
+
+        // Specific swap: Replace 'Mountain Escape Retreat' with 'Urban Nest Flat' in the top 4
+        const mountainIdx = normalized.findIndex(l => l.name === "Mountain Escape Retreat");
+        const urbanIdx = normalized.findIndex(l => l.name === "Urban Nest Flat");
+
+        if (mountainIdx !== -1 && urbanIdx !== -1) {
+          // If mountain is in top 4 and urban is not, or just swap them
+          const temp = normalized[mountainIdx];
+          normalized[mountainIdx] = normalized[urbanIdx];
+          normalized[urbanIdx] = temp;
+        }
+
+        setListings(normalized.slice(0, 4));
+      } catch (error) {
+        console.error("Error fetching popular listings", error);
+      }
+    };
+    fetchListings();
+  }, []);
 
   return (
     <section className="popular-section">
@@ -78,7 +85,7 @@ const PopularListings = () => {
         <div className="row g-4">
           {listings.map((item, index) => (
             <motion.div
-              key={item.id}
+              key={item._id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.08 }}

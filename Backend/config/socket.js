@@ -31,6 +31,9 @@ export const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id} (User ID: ${socket.user.id})`);
 
+    // Join a personal room for global notifications
+    socket.join(socket.user.id);
+
     // Join a conversation room
     socket.on("join_conversation", (conversationId) => {
       socket.join(conversationId);
@@ -60,6 +63,9 @@ export const initSocket = (server) => {
 
         // Emit to room
         io.to(conversationId).emit("receive_message", message);
+        
+        // Emit global notification to receiver
+        io.to(receiverId).emit("new_message_notification", message);
       } catch (err) {
         console.error("Error saving message via socket:", err);
       }
@@ -81,6 +87,9 @@ export const initSocket = (server) => {
 
         // Broadcast to room that messages were read
         io.to(conversationId).emit("messages_read", { conversationId });
+        
+        // Notify the current user to update their global unread count
+        io.to(socket.user.id).emit("messages_read_by_me", { conversationId });
       } catch (err) {
         console.error("Error marking messages as read:", err);
       }

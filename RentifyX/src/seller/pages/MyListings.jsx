@@ -10,7 +10,23 @@ export default function MyListings() {
   const [filter, setFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [unreadCounts, setUnreadCounts] = useState({});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    import('../../api').then(({ default: api }) => {
+      api.get('/conversations').then(res => {
+        const counts = {};
+        res.conversations?.forEach(c => {
+          if (c.unreadForMe > 0 && c.listingId) {
+            const lId = c.listingId._id || c.listingId.id;
+            counts[lId] = (counts[lId] || 0) + c.unreadForMe;
+          }
+        });
+        setUnreadCounts(counts);
+      }).catch(err => console.error("Error fetching unread counts:", err));
+    });
+  }, []);
 
   // Live countdown timer
   const [now, setNow] = useState(Date.now());
@@ -175,11 +191,16 @@ export default function MyListings() {
                       {listing.available ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                     <button
-                      className="action-icon message-btn"
+                      className="action-icon message-btn position-relative"
                       title="Messages"
-                      onClick={() => navigate(`/seller/messages?listingId=${listing.id}`)}
+                      onClick={() => navigate(`/seller/messages?listingId=${listing.id || listing._id}`)}
                     >
                       <MessageCircle size={15} />
+                      {unreadCounts[listing.id || listing._id] > 0 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.55rem', padding: '0.2em 0.4em' }}>
+                          {unreadCounts[listing.id || listing._id]}
+                        </span>
+                      )}
                     </button>
                     <button
                       className="action-icon delete"

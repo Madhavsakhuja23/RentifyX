@@ -1,11 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listings } from "../data/dwellings";
-<<<<<<< HEAD
-import api, { getListingById } from "../api";
-=======
-import { getListingById, checkAvailabilityApi } from "../api";
->>>>>>> main
+import api, { getListingById, checkAvailabilityApi } from "../api";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
@@ -218,10 +214,9 @@ function MessageHostModal({ host, listing, listingId, sellerId, onClose }) {
         sellerId
       });
       
-      if (res.data.conversation) {
-        // Redirect to messages page (assuming common route or buyer-accessible route)
-        // For now, redirecting to /seller/messages as requested for the dashboard features
-        navigate(`/seller/messages?id=${res.data.conversation._id}`);
+      if (res.conversation) {
+        // Redirect to messages page (accessible by both buyers and sellers)
+        navigate(`/messages?id=${res.conversation._id}`);
       }
     } catch (err) {
       console.error("Failed to start conversation:", err);
@@ -704,6 +699,7 @@ export default function ListingDetails() {
           description: raw.description || "",
           tagline: raw.tagline || "",
           sellerName: raw.sellerName || "",
+          sellerId: raw.seller || raw.sellerId || "",
           host: {
             name: raw.sellerName || "Host",
             avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(raw.sellerName || "Host")}&background=FF385C&color=fff&size=128`,

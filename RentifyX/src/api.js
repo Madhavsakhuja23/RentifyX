@@ -99,6 +99,9 @@ export const getVehicleListings = (params = {}) =>
 export const getVehicles = (params = {}) =>
   publicApiRequest(`/vehicles${buildQueryString(params)}`);
 
+export const getListings = (params = {}) =>
+  publicApiRequest(`/listings${buildQueryString(params)}`);
+
 export const getListingById = (id) =>
   publicApiRequest(`/listings/${id}`);
 

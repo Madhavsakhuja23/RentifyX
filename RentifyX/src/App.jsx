@@ -26,6 +26,8 @@ import Profile from "./pages/Profile";
 import Chatbot from "./components/dwellings/Chatbot";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import BuyerMessages from "./pages/BuyerMessages";
+import { Toaster } from "react-hot-toast";
 
 /* Info Pages */
 import AboutUs from "./pages/info/AboutUs";
@@ -41,6 +43,7 @@ function App() {
       <ListingsProvider>
         <SocketProvider>
           <Router>
+            <Toaster position="top-right" />
             <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
@@ -68,6 +71,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <BuyerMessages />
                 </ProtectedRoute>
               }
             />

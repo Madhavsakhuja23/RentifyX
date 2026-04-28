@@ -1,60 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, CheckCircle, Info, AlertTriangle, Check, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import api from '../../api';
 import './Notifications.css';
 
-const dummyNotifications = [
-  {
-    id: 1,
-    type: 'success',
-    title: 'Payment Received',
-    message: 'You received ₹7,500 from Rahul Verma for Honda City 2023.',
-    time: '2 hours ago',
-    read: false,
-  },
-  {
-    id: 2,
-    type: 'info',
-    title: 'New Rental Request',
-    message: 'Priya Sharma requested to rent Modern 2BHK Flat.',
-    time: '5 hours ago',
-    read: false,
-  },
-  {
-    id: 3,
-    type: 'alert',
-    title: 'Listing Expiring Soon',
-    message: 'Your listing "Yamaha R15" will be marked unavailable tomorrow.',
-    time: '1 day ago',
-    read: true,
-  },
-  {
-    id: 4,
-    type: 'success',
-    title: 'Rental Completed',
-    message: 'Booking TR-1082 has been marked as completed successfully.',
-    time: '2 days ago',
-    read: true,
-  },
-  {
-    id: 5,
-    type: 'info',
-    title: 'System Update',
-    message: 'We have updated our platform fee guidelines. Please review them.',
-    time: '4 days ago',
-    read: true,
-  },
-];
+
 
 export default function Notifications() {
-  const [notifs, setNotifs] = useState(dummyNotifications);
+  const [notifs, setNotifs] = useState([]);
+  const navigate = useNavigate();
 
-  const markAllRead = () => {
-    setNotifs(notifs.map((n) => ({ ...n, read: true })));
-  };
-
-  const markRead = (id) => {
-    setNotifs(notifs.map((n) => (n.id === id ? { ...n, read: true } : n)));
-  };
+  useEffect(() => {
+    api.get('/conversations').then(res => {
+      const messageNotifs = (res.conversations || [])
+        // Only show conversations that actually have messages
+        .filter(c => c.lastMessage)
+        .map(c => ({
+          id: `msg-${c._id}`,
+          type: c.unreadForMe > 0 ? 'alert' : 'info',
+          title: c.unreadForMe > 0 ? 'New Message' : 'Message',
+          message: c.unreadForMe > 0 
+            ? `You have ${c.unreadForMe} new message(s) regarding ${c.listingId?.title}`
+            : `Message regarding ${c.listingId?.title}`,
+          time: formatDistanceToNow(new Date(c.updatedAt), { addSuffix: true }),
+          read: c.unreadForMe === 0,
+          link: `/seller/messages?id=${c._id}`
+        }));
+      setNotifs(messageNotifs);
+    }).catch(err => console.error("Error fetching notifications:", err));
+  }, []);
 
   const deleteNotif = (id) => {
     setNotifs(notifs.filter((n) => n.id !== id));
@@ -75,11 +50,6 @@ export default function Notifications() {
           <h1>Notifications</h1>
           <p>You have {unreadCount} unread messages.</p>
         </div>
-        {unreadCount > 0 && (
-          <button className="mark-all-btn" onClick={markAllRead}>
-            <Check size={16} /> Mark all as read
-          </button>
-        )}
       </div>
 
       <div className="notif-list">
@@ -99,12 +69,11 @@ export default function Notifications() {
                   <h4>{notif.title}</h4>
                   <span className="notif-time">{notif.time}</span>
                 </div>
-                <p>{notif.message}</p>
-                {!notif.read && (
-                  <button className="btn-read-text" onClick={() => markRead(notif.id)}>
-                    Mark as read
-                  </button>
-                )}
+                <p style={{ cursor: notif.link ? 'pointer' : 'default', textDecoration: notif.link ? 'underline' : 'none' }} onClick={() => {
+                  if (notif.link) {
+                    navigate(notif.link);
+                  }
+                }}>{notif.message}</p>
               </div>
               <button
                 className="notif-delete"

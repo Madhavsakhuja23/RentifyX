@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../../api';
@@ -7,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import './Messages.css';
 
 export default function Messages() {
+  const location = useLocation();
   const { socket } = useSocket();
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
@@ -22,6 +24,17 @@ export default function Messages() {
   }, []);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const convId = searchParams.get('id');
+    if (convId && conversations.length > 0) {
+      const found = conversations.find(c => c._id === convId);
+      if (found) {
+        setSelectedConv(found);
+      }
+    }
+  }, [location.search, conversations]);
+
+  useEffect(() => {
     if (selectedConv) {
       fetchMessages(selectedConv._id);
       socket?.emit('join_conversation', selectedConv._id);
@@ -33,15 +46,29 @@ export default function Messages() {
     if (!socket) return;
 
     socket.on('receive_message', (message) => {
+      let isReadByMe = false;
       if (selectedConv && message.conversationId === selectedConv._id) {
         setMessages((prev) => [...prev, message]);
         socket.emit('mark_read', selectedConv._id);
+        isReadByMe = true;
       }
-      // Update conversations list with last message
-      setConversations((prev) => 
-        prev.map(c => c._id === message.conversationId ? { ...c, lastMessage: message.text, updatedAt: new Date() } : c)
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      );
+      
+      // Update conversations list with last message and unread count
+      setConversations((prev) => {
+        // If the message is from me, it's not unread for me
+        const fromMe = message.senderId === user.id || message.senderId?._id === user.id;
+        
+        return prev.map(c => 
+          c._id === message.conversationId 
+            ? { 
+                ...c, 
+                lastMessage: message.text, 
+                updatedAt: new Date(),
+                unreadForMe: fromMe || isReadByMe ? 0 : (c.unreadForMe || 0) + 1 
+              } 
+            : c
+        ).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      });
     });
 
     socket.on('typing_indicator', ({ conversationId }) => {
@@ -57,10 +84,15 @@ export default function Messages() {
        }
     });
 
+    socket.on('messages_read_by_me', ({ conversationId }) => {
+       setConversations(prev => prev.map(c => c._id === conversationId ? { ...c, unreadForMe: 0 } : c));
+    });
+
     return () => {
       socket.off('receive_message');
       socket.off('typing_indicator');
       socket.off('messages_read');
+      socket.off('messages_read_by_me');
     };
   }, [socket, selectedConv]);
 
@@ -71,7 +103,9 @@ export default function Messages() {
   const fetchConversations = async () => {
     try {
       const res = await api.get('/conversations');
-      setConversations(res.conversations || []);
+      const fetchedConvs = res.conversations || [];
+      setConversations(fetchedConvs);
+      
       setLoading(false);
     } catch (err) {
       console.error('Error fetching conversations:', err);
@@ -103,8 +137,6 @@ export default function Messages() {
     };
 
     socket.emit('send_message', messageData);
-    // Optimistically add the message to the UI
-    setMessages(prev => [...prev, { ...messageData, createdAt: new Date().toISOString(), read: false }]);
     setNewMessage('');
   };
 
@@ -129,10 +161,12 @@ export default function Messages() {
           <div className="conversations-list">
             {loading ? (
               <div className="loading-state">Loading chats...</div>
-            ) : conversations.length === 0 ? (
+            ) : conversations.filter(c => c.lastMessage || c._id === selectedConv?._id).length === 0 ? (
               <div className="empty-state">No conversations yet</div>
             ) : (
-              conversations.map((conv) => (
+              conversations
+                .filter(conv => conv.lastMessage || conv._id === selectedConv?._id)
+                .map((conv) => (
                 <div
                   key={conv._id}
                   className={`conversation-item ${selectedConv?._id === conv._id ? 'active' : ''}`}
@@ -159,8 +193,8 @@ export default function Messages() {
                       {conv.lastMessage || 'Start a conversation'}
                     </div>
                   </div>
-                  {conv.unreadCount > 0 && selectedConv?._id !== conv._id && (
-                    <div className="unread-badge">{conv.unreadCount}</div>
+                  {conv.unreadForMe > 0 && selectedConv?._id !== conv._id && (
+                    <div className="unread-badge">{conv.unreadForMe}</div>
                   )}
                 </div>
               ))

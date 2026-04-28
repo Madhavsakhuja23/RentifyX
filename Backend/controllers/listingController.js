@@ -9,7 +9,7 @@ export const getMyListings = async (req, res) => {
     const sellerId = new mongoose.Types.ObjectId(req.user.id);
 
     const listings = await Listing.aggregate([
-      { $match: { seller: sellerId, deleted: false } },
+      { $match: { seller: sellerId, deleted: { $ne: true } } },
       {
         $lookup: {
           from: "bookings",
@@ -132,7 +132,7 @@ export const getListings = async (req, res) => {
   try {
     const { location, category } = req.query;
 
-    let query = { deleted: false };
+    let query = { deleted: { $ne: true } };
 
     if (location) {
       query.location = { $regex: location, $options: "i" };

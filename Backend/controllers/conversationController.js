@@ -15,7 +15,23 @@ export const getConversations = async (req, res) => {
       .populate("sellerId", "name photo")
       .populate("listingId", "title category images");
 
-    res.json({ conversations });
+    // Enhance conversations with the number of unread messages for the current user
+    const enhancedConversations = await Promise.all(
+      conversations.map(async (conv) => {
+        const unreadForMe = await Message.countDocuments({
+          conversationId: conv._id,
+          receiverId: userId,
+          read: false,
+        });
+        
+        return {
+          ...conv.toObject(),
+          unreadForMe
+        };
+      })
+    );
+
+    res.json({ conversations: enhancedConversations });
   } catch (err) {
     console.error("Error fetching conversations:", err);
     res.status(500).json({ msg: "Server error" });
@@ -41,11 +57,39 @@ export const getMessages = async (req, res) => {
   }
 };
 
+// GET /api/messages/unread-count
+export const getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Count distinct conversations that have unread messages for the user
+    const unreadConvs = await Message.distinct("conversationId", {
+      receiverId: userId,
+      read: false
+    });
+    res.json({ unreadCount: unreadConvs.length });
+  } catch (err) {
+    console.error("Error fetching unread count:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
 // POST /api/conversations
 export const createConversation = async (req, res) => {
   try {
     const buyerId = req.user.id;
-    const { listingId, sellerId } = req.body;
+    let { listingId, sellerId } = req.body;
+
+    // If sellerId is missing from frontend, dynamically fetch it from the listing
+    if (!sellerId) {
+      const Listing = mongoose.model("Listing");
+      const listing = await Listing.findById(listingId);
+      if (!listing) {
+        return res.status(404).json({ msg: "Listing not found" });
+      }
+      sellerId = listing.seller;
+    }
+    
+    console.log("createConversation processing:", { listingId, sellerId, buyerId });
 
     let conversation = await Conversation.findOne({
       listingId,
