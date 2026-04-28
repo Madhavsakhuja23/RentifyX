@@ -31,12 +31,11 @@ const Login = () => {
     const result = await signInWithPopup(auth, provider);
     const firebaseUser = result.user;
 
-    // Send to backend — pass 'user' as default role
+    // Send to backend — do not force a role on login
     const data = await googleAuthApi(
       firebaseUser.displayName,
       firebaseUser.email,
-      firebaseUser.photoURL,
-      "user"
+      firebaseUser.photoURL
     );
 
     // Store user in context

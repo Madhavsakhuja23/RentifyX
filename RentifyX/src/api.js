@@ -1,17 +1,13 @@
 /**
  * api.js — Centralized fetch wrapper for RentifyX
- * Sends userId in Authorization header for authenticated requests.
+ * Supports both authenticated and public requests.
  */
 
-const BASE_URL = "http://localhost:5001/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const parseJsonSafely = async (response) => {
   const contentType = response.headers.get("content-type") || "";
-
-  if (!contentType.includes("application/json")) {
-    return null;
-  }
-
+  if (!contentType.includes("application/json")) return null;
   try {
     return await response.json();
   } catch {
@@ -20,14 +16,10 @@ const parseJsonSafely = async (response) => {
 };
 
 /**
- * Make an API request.
- * @param {string} endpoint  - e.g. "/auth/me"
- * @param {object} options   - fetch options (method, body, etc.)
- * @returns {Promise<any>}   - parsed JSON response
+ * Authenticated API request (sends JWT token).
  */
 export const apiRequest = async (endpoint, options = {}) => {
   let token = null;
-
   try {
     token = localStorage.getItem("token");
   } catch {
@@ -41,12 +33,8 @@ export const apiRequest = async (endpoint, options = {}) => {
   };
 
   let res;
-
   try {
-    res = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
   } catch (error) {
     throw new Error("Unable to connect to the backend API.");
   }
@@ -56,7 +44,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   if (!res.ok) {
     if (res.status === 401) {
       localStorage.removeItem("currentUser");
-      window.location.href = "/login";
+      localStorage.removeItem("token");
     }
     throw new Error(data?.msg || data?.message || "Request failed");
   }
@@ -64,6 +52,9 @@ export const apiRequest = async (endpoint, options = {}) => {
   return data;
 };
 
+/**
+ * Public API request (no auth token required).
+ */
 export const publicApiRequest = async (endpoint, options = {}) => {
   const headers = {
     "Content-Type": "application/json",
@@ -71,12 +62,8 @@ export const publicApiRequest = async (endpoint, options = {}) => {
   };
 
   let res;
-
   try {
-    res = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
   } catch (error) {
     throw new Error("Unable to connect to the backend API.");
   }
@@ -92,46 +79,33 @@ export const publicApiRequest = async (endpoint, options = {}) => {
 
 const buildQueryString = (params = {}) => {
   const query = new URLSearchParams();
-
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
     if (typeof value === "string" && !value.trim()) return;
-    if (typeof value === "boolean") {
-      query.set(key, String(value));
-      return;
-    }
-
     query.set(key, String(value));
   });
-
   const queryString = query.toString();
   return queryString ? `?${queryString}` : "";
 };
 
+// ── Listings ──────────────────────────────────────────────────
+
 export const getDwellings = (params = {}) =>
   publicApiRequest(`/listings${buildQueryString({ category: "Dwelling", ...params })}`);
 
-// Fetch vehicle listings from the Listing model (category = "Vehicle")
-// Same endpoint used by Dwellings — data includes title, tagline, description,
-// subcategory (Cars|EV|Bike|Bicycle), price, location, and Cloudinary images.
 export const getVehicleListings = (params = {}) =>
-  publicApiRequest(`/listings${buildQueryString({ category: 'Vehicle', ...params })}`);
+  publicApiRequest(`/listings${buildQueryString({ category: "Vehicle", ...params })}`);
 
-// Legacy vehicles route (kept for backward compat / seeded data)
 export const getVehicles = (params = {}) =>
   publicApiRequest(`/vehicles${buildQueryString(params)}`);
 
-// Book a vehicle — backend enforces conflict resolution atomically
-export const bookVehicle = (vehicleId, userId, startDate, endDate) =>
-  publicApiRequest(`/listings/book/${vehicleId}`, {
-    method: 'POST',
-    body: JSON.stringify({ userId, startDate, endDate }),
-  });
+export const getListings = (params = {}) =>
+  publicApiRequest(`/listings${buildQueryString(params)}`);
 
 export const getListingById = (id) =>
   publicApiRequest(`/listings/${id}`);
 
-// ── Convenience methods ──────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────
 
 export const getMe = () => apiRequest("/auth/me");
 
@@ -150,12 +124,7 @@ export const signupApi = (name, email, password, role) =>
 export const googleAuthApi = (name, email, photo, role) =>
   publicApiRequest("/auth/google", {
     method: "POST",
-    body: JSON.stringify({
-      name,
-      email,
-      photo,
-      role
-    }),
+    body: JSON.stringify({ name, email, photo, role }),
   });
 
 export const updateProfileApi = (updates) =>
@@ -163,6 +132,8 @@ export const updateProfileApi = (updates) =>
     method: "PUT",
     body: JSON.stringify(updates),
   });
+
+// ── Bookings ──────────────────────────────────────────────────
 
 export const checkAvailabilityApi = (listingId, checkIn, checkOut) =>
   publicApiRequest("/bookings/check-availability", {
@@ -194,6 +165,8 @@ export const removeFromWishlistApi = (listingId) =>
     body: JSON.stringify({ listingId }),
   });
 
+// ── Seller Listing Management ─────────────────────────────────
+
 export const createListingApi = async (formData) => {
   let token = null;
   try {
@@ -205,7 +178,7 @@ export const createListingApi = async (formData) => {
   const headers = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
-  
+
   let res;
   try {
     res = await fetch(`${BASE_URL}/listings`, {
@@ -231,6 +204,19 @@ export const updateListingApi = (id, updates) =>
   });
 
 export const deleteListingApi = (id) =>
-  apiRequest(`/listings/${id}`, {
-    method: "DELETE",
-  });
+  apiRequest(`/listings/${id}`, { method: "DELETE" });
+
+// ── Axios-like default instance (for components using `import api from './api'`) ──
+
+const api = {
+  get: (endpoint) => apiRequest(endpoint),
+  post: (endpoint, data) =>
+    apiRequest(endpoint, { method: "POST", body: JSON.stringify(data) }),
+  patch: (endpoint, data) =>
+    apiRequest(endpoint, { method: "PATCH", body: data ? JSON.stringify(data) : undefined }),
+  put: (endpoint, data) =>
+    apiRequest(endpoint, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (endpoint) => apiRequest(endpoint, { method: "DELETE" }),
+};
+
+export default api;

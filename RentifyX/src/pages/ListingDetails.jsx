@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listings } from "../data/dwellings";
-import { getListingById, checkAvailabilityApi } from "../api";
+import api, { getListingById, checkAvailabilityApi } from "../api";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
-import emailjs from "@emailjs/browser";
 
 /* ── static data ─────────────────────────────── */
 function AmenityIcon({ name }) {
@@ -195,29 +194,36 @@ function Lightbox({ images, index, onClose, onNav }) {
   );
 }
 /* ── Message Host Modal ───────────────────────── */
-function MessageHostModal({ host, listing, onClose }) {
-  const formRef = useRef();
+function MessageHostModal({ host, listing, listingId, sellerId, onClose }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const sendEmail = (e) => {
+  const handleStartChat = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-    emailjs
-      .sendForm(
-        "service_z6wavoa",
-        "template_jhv1w9k",
-        formRef.current,
-        "Utoi2SbtmtWx2iJjf"
-      )
-      .then(
-        () => {
-          alert("Message sent successfully!");
-          onClose();
-        },
-        (error) => {
-          alert("Failed to send message");
-          console.error(error);
-        }
-      );
+    setLoading(true);
+    try {
+      const res = await api.post('/conversations', {
+        listingId,
+        sellerId
+      });
+      
+      if (res.conversation) {
+        // Redirect to messages page (accessible by both buyers and sellers)
+        navigate(`/messages?id=${res.conversation._id}`);
+      }
+    } catch (err) {
+      console.error("Failed to start conversation:", err);
+      setError("Failed to connect with host. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -233,31 +239,17 @@ function MessageHostModal({ host, listing, onClose }) {
         <h2>Message {host}</h2>
         <p>Regarding: <strong>{listing}</strong></p>
 
-        <form ref={formRef} onSubmit={sendEmail}>
-          <input
-            type="text"
-            name="user_name"
-            placeholder="Your name"
-            required
-          />
-
-          <input
-            type="email"
-            name="user_email"
-            placeholder="Your email"
-            required
-          />
-
-          <textarea
-            name="message"
-            placeholder="Write your message to the host..."
-            required
-          />
-
-          <button type="submit" className="ld-send-btn">
-            Send Message
+        <div className="ld-modal-chat-prompt">
+          <p>Start a real-time conversation with the host to discuss availability, pricing, or property details.</p>
+          {error && <p className="error-text">{error}</p>}
+          <button 
+            onClick={handleStartChat} 
+            className="ld-send-btn"
+            disabled={loading}
+          >
+            {loading ? "Connecting..." : "Start Chatting"}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -707,6 +699,7 @@ export default function ListingDetails() {
           description: raw.description || "",
           tagline: raw.tagline || "",
           sellerName: raw.sellerName || "",
+          sellerId: raw.seller || raw.sellerId || "",
           host: {
             name: raw.sellerName || "Host",
             avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(raw.sellerName || "Host")}&background=FF385C&color=fff&size=128`,
@@ -1155,6 +1148,8 @@ export default function ListingDetails() {
         <MessageHostModal
           host={listing.host.name}
           listing={listing.name}
+          listingId={listing.id}
+          sellerId={listing.sellerId}
           onClose={() => setShowMessageModal(false)}
         />
       )}

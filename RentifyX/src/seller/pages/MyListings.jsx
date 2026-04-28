@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useListings } from '../context/ListingsContext';
-import { Pencil, Trash2, EyeOff, Eye, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Pencil, Trash2, EyeOff, Eye, Search, MessageCircle, Clock } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import './MyListings.css';
 
 export default function MyListings() {
@@ -10,6 +10,43 @@ export default function MyListings() {
   const [filter, setFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    import('../../api').then(({ default: api }) => {
+      api.get('/conversations').then(res => {
+        const counts = {};
+        res.conversations?.forEach(c => {
+          if (c.unreadForMe > 0 && c.listingId) {
+            const lId = c.listingId._id || c.listingId.id;
+            counts[lId] = (counts[lId] || 0) + c.unreadForMe;
+          }
+        });
+        setUnreadCounts(counts);
+      }).catch(err => console.error("Error fetching unread counts:", err));
+    });
+  }, []);
+
+  // Live countdown timer
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCountdown = (endDate) => {
+    const end = new Date(endDate).getTime();
+    const diff = end - now;
+    if (diff <= 0) return 'Expired';
+
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((diff / 1000 / 60) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+
+    return `${d}d ${h}h ${m}m ${s}s remaining`;
+  };
 
   const filtered = listings.filter((l) => {
     const matchSearch =
@@ -21,7 +58,12 @@ export default function MyListings() {
 
   const startEdit = (listing) => {
     setEditingId(listing.id);
-    setEditForm({ title: listing.title, description: listing.description, price: listing.price, location: listing.location || '' });
+    setEditForm({
+      title: listing.title,
+      description: listing.description,
+      price: listing.price,
+      location: listing.location || '',
+    });
   };
 
   const saveEdit = () => {
@@ -149,12 +191,41 @@ export default function MyListings() {
                       {listing.available ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                     <button
+                      className="action-icon message-btn position-relative"
+                      title="Messages"
+                      onClick={() => navigate(`/seller/messages?listingId=${listing.id || listing._id}`)}
+                    >
+                      <MessageCircle size={15} />
+                      {unreadCounts[listing.id || listing._id] > 0 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.55rem', padding: '0.2em 0.4em' }}>
+                          {unreadCounts[listing.id || listing._id]}
+                        </span>
+                      )}
+                    </button>
+                    <button
                       className="action-icon delete"
                       title="Delete"
-                      onClick={() => deleteListing(listing.id)}
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this listing?')) {
+                          deleteListing(listing.id);
+                        }
+                      }}
                     >
                       <Trash2 size={15} />
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Ongoing Booking Info (seller dashboard feature) */}
+              {listing.ongoingBookings && listing.ongoingBookings.length > 0 && !editingId && (
+                <div className="ongoing-booking-banner">
+                  <div className="booking-info">
+                    <strong>Current Renter:</strong> {listing.ongoingBookings[0].renter?.name || 'Unknown'}
+                  </div>
+                  <div className="booking-countdown">
+                    <Clock size={14} />
+                    <span>{formatCountdown(listing.ongoingBookings[0].endDate)}</span>
                   </div>
                 </div>
               )}

@@ -1,4 +1,67 @@
 import Booking from "../models/Booking.js";
+import mongoose from "mongoose";
+
+// GET /api/bookings/history — Seller rental history with filters
+export const getRentalHistory = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const { status, type, from, to } = req.query;
+
+    const matchStage = {
+      sellerId: new mongoose.Types.ObjectId(sellerId),
+    };
+
+    if (status) matchStage.status = status;
+
+    if (from || to) {
+      matchStage.createdAt = {};
+      if (from) matchStage.createdAt.$gte = new Date(from);
+      if (to) matchStage.createdAt.$lte = new Date(to);
+    }
+
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "users",
+          localField: "renterId",
+          foreignField: "_id",
+          as: "renter",
+        },
+      },
+      {
+        $lookup: {
+          from: "listings",
+          localField: "listingId",
+          foreignField: "_id",
+          as: "listing",
+        },
+      },
+      { $unwind: "$renter" },
+      { $unwind: "$listing" },
+    ];
+
+    if (type) {
+      pipeline.push({
+        $match: { "listing.category": type },
+      });
+    }
+
+    pipeline.push({ $sort: { createdAt: -1 } });
+
+    const bookings = await Booking.aggregate(pipeline);
+
+    const totalEarnings = bookings.reduce((sum, b) => {
+      if (b.status === "completed") return sum + b.totalAmount;
+      return sum;
+    }, 0);
+
+    res.json({ bookings, totalEarnings });
+  } catch (err) {
+    console.error("Error fetching rental history:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
 
 // POST /api/bookings/check-availability
 export const checkAvailability = async (req, res) => {
@@ -12,7 +75,6 @@ export const checkAvailability = async (req, res) => {
     const newCheckIn = new Date(checkIn);
     const newCheckOut = new Date(checkOut);
 
-    // Find overlapping bookings
     const overlapping = await Booking.find({
       listingId,
       $or: [
@@ -26,7 +88,7 @@ export const checkAvailability = async (req, res) => {
     if (overlapping.length > 0) {
       return res.json({
         available: false,
-        conflictingDates: overlapping.map(b => ({ checkIn: b.checkIn, checkOut: b.checkOut })),
+        conflictingDates: overlapping.map((b) => ({ checkIn: b.checkIn, checkOut: b.checkOut })),
       });
     }
 
@@ -37,7 +99,7 @@ export const checkAvailability = async (req, res) => {
   }
 };
 
-// POST /api/bookings
+// POST /api/bookings — Create a new booking (user side)
 export const createBooking = async (req, res) => {
   try {
     const { listingId, checkIn, checkOut, guests, totalPrice, utr } = req.body;
@@ -50,7 +112,7 @@ export const createBooking = async (req, res) => {
     const newCheckIn = new Date(checkIn);
     const newCheckOut = new Date(checkOut);
 
-    // Double check availability (Prevention of double booking)
+    // Double check availability
     const overlapping = await Booking.find({
       listingId,
       $or: [
@@ -96,7 +158,6 @@ export const getMyBookings = async (req, res) => {
   try {
     const userId = req.user.id;
     const bookings = await Booking.find({ userId }).populate("listingId").sort({ createdAt: -1 });
-
     res.json(bookings);
   } catch (err) {
     console.error("Get my bookings error:", err);

@@ -3,12 +3,44 @@ import User from "../models/User.js";
 import cloudinary from "../config/cloudinaryConfig.js";
 import mongoose from "mongoose";
 
-// POST /api/listings — Create a new listing with exactly 5 images
 // GET /api/listings/my — Get all listings for the authenticated seller
 export const getMyListings = async (req, res) => {
   try {
-    const sellerId = req.user.id;
-    const listings = await Listing.find({ seller: sellerId }).sort({ createdAt: -1 });
+    const sellerId = new mongoose.Types.ObjectId(req.user.id);
+
+    const listings = await Listing.aggregate([
+      { $match: { seller: sellerId, deleted: { $ne: true } } },
+      {
+        $lookup: {
+          from: "bookings",
+          let: { listingId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$listingId", "$$listingId"] },
+                    { $eq: ["$status", "ongoing"] },
+                  ],
+                },
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "renterId",
+                foreignField: "_id",
+                as: "renter",
+              },
+            },
+            { $unwind: { path: "$renter", preserveNullAndEmptyArrays: true } },
+          ],
+          as: "ongoingBookings",
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+
     res.json({ listings });
   } catch (err) {
     console.error("Get my listings error:", err);
@@ -21,7 +53,6 @@ export const createListing = async (req, res) => {
   try {
     const files = req.files;
 
-    // Validate exactly 5 images
     if (!files || files.length !== 5) {
       return res.status(400).json({
         msg: `Exactly 5 images are required. You uploaded ${files ? files.length : 0}.`,
@@ -31,26 +62,21 @@ export const createListing = async (req, res) => {
     const { title, description, category, subcategory, tagline, price, timespan, location, availableDates } =
       req.body;
 
-    // Validate required fields
     if (!title || !description || !category || !subcategory || !price || !timespan || !location) {
       return res.status(400).json({ msg: "All required fields must be filled." });
     }
 
-    // Generate a listing ID upfront so we can use it in the Cloudinary folder path
     const listingId = new mongoose.Types.ObjectId();
     const sellerId = req.user.id;
 
-    // Fetch seller name from DB
     const sellerUser = await User.findById(sellerId).select("name");
     if (!sellerUser) {
       return res.status(404).json({ msg: "Seller not found" });
     }
 
-    // Sanitize seller name for folder path (replace spaces with underscores, lowercase)
     const sellerName = sellerUser.name.replace(/\s+/g, "_").toLowerCase();
     const folderPath = `seller/${sellerName}/${listingId}`;
 
-    // Upload each image to Cloudinary under the listing-specific folder
     const uploadPromises = files.map((file, index) => {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -73,7 +99,6 @@ export const createListing = async (req, res) => {
 
     const images = await Promise.all(uploadPromises);
 
-    // Create the listing document in MongoDB
     const listing = new Listing({
       _id: listingId,
       seller: sellerId,
@@ -102,40 +127,31 @@ export const createListing = async (req, res) => {
   }
 };
 
-// GET /api/listings — Fetch all listings
+// GET /api/listings — Fetch all listings (with optional filters)
 export const getListings = async (req, res) => {
   try {
     const { location, category } = req.query;
 
-    let query = {};
+    let query = { deleted: { $ne: true } };
 
-    // Optional filters
     if (location) {
-      query.location = {
-        $regex: location,
-        $options: "i",
-      };
+      query.location = { $regex: location, $options: "i" };
     }
 
     if (category) {
       query.category = category;
     }
 
-    const listings = await Listing.find(query)
-      .sort({ createdAt: -1 });
+    const listings = await Listing.find(query).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
       count: listings.length,
       listings,
     });
-
   } catch (error) {
     console.error("Fetch listings error:", error);
-
-    res.status(500).json({
-      msg: "Server error while fetching listings",
-    });
+    res.status(500).json({ msg: "Server error while fetching listings" });
   }
 };
 
@@ -148,56 +164,34 @@ export const getListingById = async (req, res) => {
       return res.status(404).json({ msg: "Listing not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      listing,
-    });
+    res.status(200).json({ success: true, listing });
   } catch (error) {
     console.error("Fetch listing by ID error:", error);
-
-    res.status(500).json({
-      msg: "Server error while fetching listing",
-    });
+    res.status(500).json({ msg: "Server error while fetching listing" });
   }
 };
 
-// POST /api/listings/book/:id — Book a listing with conflict resolution
-export const bookListing = async (req, res) => {
-  const { userId, startDate, endDate } = req.body;
-  const { id } = req.params;
-
+// PATCH /api/listings/:id/availability — Toggle availability (seller dashboard)
+export const toggleListingAvailability = async (req, res) => {
   try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+    const listingId = req.params.id;
+    const sellerId = req.user.id;
 
-      const listing = await Listing.findOneAndUpdate(
-          { 
-              _id: id, 
-              // Ensure no booking overlaps
-              bookings: {
-                  $not: {
-                      $elemMatch: {
-                          startDate: { $lt: end },
-                          endDate: { $gt: start }
-                      }
-                  }
-              }
-          },
-          { 
-              $push: { bookings: { userId: userId || 'testUser', startDate: start, endDate: end } }
-          },
-          { new: true }
-      );
+    const listing = await Listing.findOne({ _id: listingId, seller: sellerId });
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found or unauthorized" });
+    }
 
-      if (!listing) {
-          return res.status(409).json({ 
-              message: "Conflict: This listing is already booked during this time period!" 
-          });
-      }
+    listing.isAvailable = !listing.isAvailable;
+    await listing.save();
 
-      res.json({ message: "Booking successful", listing });
-  } catch (error) {
-      res.status(500).json({ message: error.message });
+    res.json({ listing });
+  } catch (err) {
+    console.error("Error toggling availability:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
 // PUT /api/listings/:id — Update a listing
 export const updateListing = async (req, res) => {
   try {
@@ -214,14 +208,15 @@ export const updateListing = async (req, res) => {
       return res.status(403).json({ msg: "Not authorized to update this listing" });
     }
 
-    const { title, description, price, location, availableDates, available } = req.body;
+    const { title, description, price, location, availableDates, available, isAvailable } = req.body;
 
     if (title) listing.title = title;
     if (description) listing.description = description;
     if (price) listing.price = price;
     if (location) listing.location = location;
     if (availableDates !== undefined) listing.availableDates = availableDates;
-    if (available !== undefined) listing.available = available;
+    if (available !== undefined) listing.isAvailable = available;
+    if (isAvailable !== undefined) listing.isAvailable = isAvailable;
 
     await listing.save();
 
@@ -232,23 +227,18 @@ export const updateListing = async (req, res) => {
   }
 };
 
-// DELETE /api/listings/:id — Delete a listing
+// DELETE /api/listings/:id — Soft delete a listing
 export const deleteListing = async (req, res) => {
   try {
     const listingId = req.params.id;
     const sellerId = req.user.id;
 
-    const listing = await Listing.findById(listingId);
-
+    const listing = await Listing.findOne({ _id: listingId, seller: sellerId });
     if (!listing) {
-      return res.status(404).json({ msg: "Listing not found" });
+      return res.status(404).json({ msg: "Listing not found or unauthorized" });
     }
 
-    if (listing.seller.toString() !== sellerId) {
-      return res.status(403).json({ msg: "Not authorized to delete this listing" });
-    }
-
-    // Delete images from Cloudinary
+    // Also clean up Cloudinary images on delete
     if (listing.images && listing.images.length > 0) {
       for (const image of listing.images) {
         if (image.publicId) {
@@ -256,12 +246,13 @@ export const deleteListing = async (req, res) => {
         }
       }
     }
-    
-    await Listing.findByIdAndDelete(listingId);
 
-    res.status(200).json({ msg: "Listing deleted successfully" });
-  } catch (error) {
-    console.error("Delete listing error:", error);
-    res.status(500).json({ msg: "Server error while deleting listing" });
+    listing.deleted = true;
+    await listing.save();
+
+    res.json({ msg: "Listing deleted successfully", id: listingId });
+  } catch (err) {
+    console.error("Error deleting listing:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 };

@@ -157,7 +157,12 @@ export const googleAuth = async (req, res) => {
         role &&
         ["user", "owner", "both"].includes(role)
       ) {
-        user.role = role;
+        if (role === "both") {
+          user.role = "both";
+        } else if (role === "owner" && user.role === "user") {
+          user.role = "owner";
+        }
+        // If role is 'user' but they are already 'owner' or 'both', do nothing
       }
 
       await user.save();

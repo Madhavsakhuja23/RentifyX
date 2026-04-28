@@ -14,6 +14,7 @@ import {
   X,
   ChevronLeft,
 } from 'lucide-react';
+import { useSocket } from '../context/SocketContext';
 import './DashboardLayout.css';
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
 
 export default function DashboardLayout() {
   const { user, logOut } = useAuth();
+  const { unreadCount } = useSocket() || { unreadCount: 0 };
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -114,7 +116,7 @@ export default function DashboardLayout() {
           <div className="topbar-actions">
             <NavLink to="/seller/notifications" className="topbar-bell">
               <Bell size={20} />
-              <span className="bell-badge">3</span>
+              {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
             </NavLink>
             <div className="topbar-avatar" title={user?.name || 'Seller'}>
               {initials}
