@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Shield } from 'lucide-react';
-import { getVehicleListings } from '../api';
+import { getVehicleListings, getWishlistApi } from '../api';
 
 // Component Imports
 import Header from '../components/Header/Header';
@@ -137,6 +137,7 @@ const DriveablesMain = () => {
   const [searchFilters,         setSearchFilters]         = useState({
     location: '', guests: 1, checkIn: undefined, checkOut: undefined,
   });
+  const [wishlistIds,           setWishlistIds]           = useState([]);
 
   const fleetRef       = useRef(null);
   const compareCategory = compareList[0]?.category;
@@ -150,12 +151,20 @@ const DriveablesMain = () => {
       setIsFiltering(true);
 
       try {
-        const response = await getVehicleListings();
+        const [vRes, wRes] = await Promise.all([
+          getVehicleListings(),
+          localStorage.getItem('token') ? getWishlistApi() : Promise.resolve({ listings: [] })
+        ]);
+        
         if (ignore) return;
 
-        const raw        = fromResponse(response);
+        const raw        = fromResponse(vRes);
         const normalized = raw.map(normalizeListing);
         setVehicles(normalized);
+        
+        if (wRes && wRes.listings) {
+          setWishlistIds(wRes.listings.map(l => l._id || l.id));
+        }
       } catch (err) {
         if (ignore) return;
         console.error('Failed to fetch vehicle listings:', err);
@@ -391,6 +400,7 @@ const DriveablesMain = () => {
                     key={driveable.id}
                     driveable={driveable}
                     index={index}
+                    isWishlisted={wishlistIds.includes(driveable.id)}
                     onViewDetails={() => setSelectedDriveable(driveable)}
                     onToggleCompare={handleToggleCompare}
                     isSelectedForComparison={compareList.some(v => v.id === driveable.id)}
