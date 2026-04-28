@@ -45,71 +45,71 @@ function App() {
           <Router>
             <Toaster position="top-right" />
             <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/driveables" element={<DriveablesMain />} />
-            <Route path="/dwellings" element={<Dwelling />} />
-            <Route path="/listing" element={<Dwelling />} />
-            <Route path="/listing/:id" element={<ListingDetails />} />
-            <Route path="/book/:id" element={<RequestToBook />} />
-            <Route path="/payment" element={<PaymentPage />} />
-            <Route path="/wishlist" element={<Wishlist />} />
+              {/* Public Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/driveables" element={<DriveablesMain />} />
+              <Route path="/dwellings" element={<Dwelling />} />
+              <Route path="/listing" element={<Dwelling />} />
+              <Route path="/listing/:id" element={<ListingDetails />} />
+              <Route path="/book/:id" element={<RequestToBook />} />
+              <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/wishlist" element={<Wishlist />} />
 
-        {/* Info Pages */}
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/help" element={<HelpCenter />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/faq" element={<FAQ />} />
+              {/* Info Pages */}
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/faq" element={<FAQ />} />
 
-            {/* Protected Routes — require login */}
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/messages"
-              element={
-                <ProtectedRoute>
-                  <BuyerMessages />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Routes — require login */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Seller Routes — require seller AuthContext */}
-            <Route
-              path="/seller"
-              element={
-                <SellerProtectedRoute>
-                  <DashboardLayout />
-                </SellerProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardHome />} />
-              <Route path="listings" element={<MyListings />} />
-              <Route path="add-listing" element={<AddListing />} />
-              <Route path="history" element={<RentalHistory />} />
-              <Route path="analytics" element={<RevenueAnalytics />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="messages" element={<Messages />} />
-              <Route path="profile" element={<ProfileSettings />} />
-            </Route>
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute>
+                    <BuyerMessages />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Catch-all Not Found Route */}
-            <Route path="*" element={<NotFound />} />
+              {/* Seller Routes — require seller AuthContext */}
+              <Route
+                path="/seller"
+                element={
+                  <SellerProtectedRoute>
+                    <DashboardLayout />
+                  </SellerProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardHome />} />
+                <Route path="listings" element={<MyListings />} />
+                <Route path="add-listing" element={<AddListing />} />
+                <Route path="history" element={<RentalHistory />} />
+                <Route path="analytics" element={<RevenueAnalytics />} />
+                <Route path="notifications" element={<Notifications />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="profile" element={<ProfileSettings />} />
+              </Route>
 
-          </Routes>
-          <Chatbot />
-        </Router>
+              {/* Catch-all Not Found Route */}
+              <Route path="*" element={<NotFound />} />
+
+            </Routes>
+            <Chatbot />
+          </Router>
         </SocketProvider>
       </ListingsProvider>
     </AuthProvider>
