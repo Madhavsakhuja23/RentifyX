@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header/Header";
 import { getListingById, checkAvailabilityApi, createBookingApi } from "../api";
+import { useRazorpay } from "../utils/useRazorpay";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 /* ── helpers ─────────────────────────────────── */
@@ -124,6 +125,9 @@ export default function RequestToBook() {
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [payMethod, setPayMethod] = useState("razorpay"); // "razorpay" | "upi"
+
+  const { openRazorpay, loading: rzpLoading, error: rzpError, setError: setRzpError } = useRazorpay();
 
   // Fetch listing details if not provided in state
   useEffect(() => {
@@ -155,6 +159,59 @@ export default function RequestToBook() {
   const UPI_ID = "8295190177@ybl";
   const HOST_NAME = "RentifyX";
 
+  // ── Razorpay flow ────────────────────────────────────────────
+  async function handleRazorpayPay() {
+    setRzpError(null);
+
+    // Step 1: Check availability first
+    try {
+      const availability = await checkAvailabilityApi(listing._id || listing.id, booking.checkIn, booking.checkOut);
+      if (!availability.available) {
+        setAvailabilityError(true);
+        return;
+      }
+    } catch (err) {
+      setUtrError(err.message || "Could not check availability.");
+      return;
+    }
+
+    // Step 2: Open Razorpay
+    const amountInPaise = price.total * 100; // convert ₹ → paise
+    const shortId = (listing._id || listing.id).toString().slice(-6);
+    openRazorpay({
+      amountInPaise,
+      receipt: `rtb_${shortId}_${Date.now()}`,
+      description: `Booking: ${listing?.name || "Property"}`,
+      onSuccess: async ({ paymentId, orderId, signature }) => {
+        // Step 3: Save booking with Razorpay payment details
+        try {
+          const res = await createBookingApi({
+            listingId: listing._id || listing.id,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            guests: booking.guests,
+            totalPrice: price.total,
+            utr: paymentId, // store Razorpay payment ID as reference
+            paymentMethod: "razorpay",
+            razorpayOrderId: orderId,
+            razorpaySignature: signature,
+          });
+          if (res.success) {
+            setConfirmedBooking(res.booking);
+            setConfirmed(true);
+          } else {
+            setUtrError(res.msg || "Booking failed after payment. Contact support.");
+          }
+        } catch (err) {
+          setUtrError(err.message || "Booking could not be saved. Contact support with payment ID: " + paymentId);
+        }
+      },
+      onFailure: (msg) => setUtrError(msg),
+      onDismiss: () => {}, // user cancelled — do nothing
+    });
+  }
+
+  // ── Manual UPI / UTR flow ────────────────────────────────────
   async function handleConfirm() {
     const cleaned = utr.trim().replace(/\s/g, "");
     if (cleaned.length < 12) {
@@ -345,107 +402,167 @@ export default function RequestToBook() {
             </div>
           </div>
 
-          {/* RIGHT — QR Payment */}
+          {/* RIGHT — Payment */}
           <div className="rtb-right">
             <div className="rtb-qr-card">
 
-              <div className="rtb-qr-header">
-                <div className="rtb-qr-badge">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" /><rect x="11" y="11" width="3" height="3" />
-                    <rect x="11" y="18" width="3" height="3" /><rect x="18" y="11" width="3" height="3" />
-                    <rect x="15" y="15" width="6" height="6" />
-                  </svg>
-                </div>
-                <div>
-                  <h3>Scan &amp; Pay via UPI</h3>
-                  <p>Use any UPI app — GPay, PhonePe, Paytm</p>
-                </div>
+              {/* Payment Method Toggle */}
+              <div className="rtb-pay-tabs">
+                <button
+                  id="rtb-tab-razorpay"
+                  className={`rtb-pay-tab${payMethod === "razorpay" ? " active" : ""}`}
+                  onClick={() => { setPayMethod("razorpay"); setUtrError(""); }}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
+                  Pay Online
+                </button>
+                <button
+                  id="rtb-tab-upi"
+                  className={`rtb-pay-tab${payMethod === "upi" ? " active" : ""}`}
+                  onClick={() => { setPayMethod("upi"); setUtrError(""); }}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  UPI / QR
+                </button>
               </div>
 
-              {/* QR Code */}
-              <div className="rtb-qr-wrap">
-                <img
-                  src={getQRUrl(UPI_ID, price.total, HOST_NAME)}
-                  alt="UPI QR Code"
-                  className="rtb-qr-img"
-                />
-                <p className="rtb-qr-amount">Pay {fmt(price.total)}</p>
-              </div>
+              {/* ── Razorpay tab ── */}
+              {payMethod === "razorpay" && (
+                <div className="rtb-rzp-section">
+                  <div className="rtb-rzp-info">
+                    <div className="rtb-rzp-icon">
+                      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /><line x1="5" y1="15" x2="9" y2="15" /></svg>
+                    </div>
+                    <div>
+                      <h3>Secure Online Payment</h3>
+                      <p>Cards, UPI, Net Banking, Wallets</p>
+                    </div>
+                  </div>
 
-              {/* UPI ID */}
-              <div className="rtb-upi-info">
-                <span className="rtb-upi-label">UPI ID</span>
-                <div className="rtb-upi-id-wrap">
-                  <span className="rtb-upi-id">{UPI_ID}</span>
+                  <div className="rtb-rzp-amount-display">
+                    <span>Amount to pay</span>
+                    <strong>{fmt(price.total)}</strong>
+                  </div>
+
+                  {(rzpError || utrError) && (
+                    <div className="rtb-rzp-error">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                      {rzpError || utrError}
+                    </div>
+                  )}
+
                   <button
-                    className="rtb-copy-btn"
-                    onClick={() => navigator.clipboard.writeText(UPI_ID)}
-                    title="Copy UPI ID"
+                    id="rzp-pay-btn-rtb"
+                    className="rtb-rzp-pay-btn"
+                    onClick={handleRazorpayPay}
+                    disabled={rzpLoading}
                   >
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" />
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                    Copy
+                    {rzpLoading ? (
+                      <><span className="rtb-spinner" /> Processing...</>
+                    ) : (
+                      <><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> Pay {fmt(price.total)} Securely</>
+                    )}
                   </button>
+
+                  <p className="rtb-secure-note">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    Powered by Razorpay. 100% secure checkout.
+                  </p>
                 </div>
-              </div>
+              )}
 
-              <div className="rtb-qr-divider" />
+              {/* ── UPI / QR tab ── */}
+              {payMethod === "upi" && (
+                <>
+                  <div className="rtb-qr-header">
+                    <div className="rtb-qr-badge">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" /><rect x="11" y="11" width="3" height="3" />
+                        <rect x="11" y="18" width="3" height="3" /><rect x="18" y="11" width="3" height="3" />
+                        <rect x="15" y="15" width="6" height="6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3>Scan &amp; Pay via UPI</h3>
+                      <p>Use any UPI app — GPay, PhonePe, Paytm</p>
+                    </div>
+                  </div>
 
-              {/* UTR Input */}
-              <div className="rtb-utr-section">
-                <label className="rtb-utr-label">
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Enter UTR / Transaction Reference ID
-                </label>
-                <p className="rtb-utr-hint">
-                  After payment, find your UTR ID in the payment app under transaction details.
-                </p>
-                <input
-                  className={`rtb-utr-input${utrError ? " error" : ""}`}
-                  type="text"
-                  placeholder="e.g. 123456789012"
-                  value={utr}
-                  onChange={(e) => {
-                    setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
-                    setUtrError("");
-                  }}
-                  maxLength={25}
-                />
-                {utrError && <span className="rtb-utr-error">{utrError}</span>}
-              </div>
+                  {/* QR Code */}
+                  <div className="rtb-qr-wrap">
+                    <img
+                      src={getQRUrl(UPI_ID, price.total, HOST_NAME)}
+                      alt="UPI QR Code"
+                      className="rtb-qr-img"
+                    />
+                    <p className="rtb-qr-amount">Pay {fmt(price.total)}</p>
+                  </div>
 
-              <button
-                className="rtb-confirm-pay-btn"
-                onClick={handleConfirm}
-                disabled={confirming}
-              >
-                {confirming ? (
-                  <>
-                    <span className="rtb-spinner" />
-                    Verifying Payment...
-                  </>
-                ) : (
-                  <>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                    Confirm &amp; Complete Booking
-                  </>
-                )}
-              </button>
+                  {/* UPI ID */}
+                  <div className="rtb-upi-info">
+                    <span className="rtb-upi-label">UPI ID</span>
+                    <div className="rtb-upi-id-wrap">
+                      <span className="rtb-upi-id">{UPI_ID}</span>
+                      <button
+                        className="rtb-copy-btn"
+                        onClick={() => navigator.clipboard.writeText(UPI_ID)}
+                        title="Copy UPI ID"
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        Copy
+                      </button>
+                    </div>
+                  </div>
 
-              <p className="rtb-secure-note">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                Secured by UPI. Your transaction is protected.
-              </p>
+                  <div className="rtb-qr-divider" />
+
+                  {/* UTR Input */}
+                  <div className="rtb-utr-section">
+                    <label className="rtb-utr-label">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Enter UTR / Transaction Reference ID
+                    </label>
+                    <p className="rtb-utr-hint">
+                      After payment, find your UTR ID in the payment app under transaction details.
+                    </p>
+                    <input
+                      className={`rtb-utr-input${utrError ? " error" : ""}`}
+                      type="text"
+                      placeholder="e.g. 123456789012"
+                      value={utr}
+                      onChange={(e) => {
+                        setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+                        setUtrError("");
+                      }}
+                      maxLength={25}
+                    />
+                    {utrError && <span className="rtb-utr-error">{utrError}</span>}
+                  </div>
+
+                  <button
+                    className="rtb-confirm-pay-btn"
+                    onClick={handleConfirm}
+                    disabled={confirming}
+                  >
+                    {confirming ? (
+                      <><span className="rtb-spinner" />Verifying Payment...</>
+                    ) : (
+                      <><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>Confirm &amp; Complete Booking</>
+                    )}
+                  </button>
+
+                  <p className="rtb-secure-note">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    Secured by UPI. Your transaction is protected.
+                  </p>
+                </>
+              )}
 
             </div>
           </div>
@@ -890,6 +1007,63 @@ export default function RequestToBook() {
           font-family: inherit; font-size: 15px;
         }
         .rtb-modal-btn:hover { background: #000; }
+
+        /* Payment Tabs */
+        .rtb-pay-tabs {
+          display: flex; gap: 8px; margin-bottom: 24px;
+        }
+        .rtb-pay-tab {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+          padding: 10px; border: 1.5px solid #e0e0e0; border-radius: 10px;
+          background: white; font-size: 13px; font-weight: 600; color: #666;
+          cursor: pointer; transition: all .2s; font-family: inherit;
+        }
+        .rtb-pay-tab.active {
+          border-color: rgb(255,102,0); color: rgb(255,102,0);
+          background: rgba(255,102,0,.05);
+        }
+        .rtb-pay-tab:hover:not(.active) { background: #f8f8f8; }
+
+        /* Razorpay Section */
+        .rtb-rzp-section { padding: 4px 0; }
+        .rtb-rzp-info {
+          display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+        }
+        .rtb-rzp-icon {
+          width: 52px; height: 52px; border-radius: 14px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(255,160,50));
+          display: flex; align-items: center; justify-content: center;
+          color: white; flex-shrink: 0;
+        }
+        .rtb-rzp-info h3 { font-size: 17px; font-weight: 700; color: #222; margin-bottom: 2px; }
+        .rtb-rzp-info p { font-size: 12px; color: #888; }
+        .rtb-rzp-amount-display {
+          display: flex; justify-content: space-between; align-items: center;
+          background: #fafafa; border: 1px solid #eee; border-radius: 12px;
+          padding: 16px 20px; margin-bottom: 20px;
+          font-size: 14px; color: #888;
+        }
+        .rtb-rzp-amount-display strong { font-size: 22px; font-weight: 800; color: rgb(255,102,0); }
+        .rtb-rzp-error {
+          display: flex; align-items: flex-start; gap: 8px;
+          background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;
+          padding: 12px 14px; margin-bottom: 16px;
+          font-size: 13px; color: #c53030; line-height: 1.4;
+        }
+        .rtb-rzp-pay-btn {
+          width: 100%; padding: 15px; border: none; border-radius: 12px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          color: white; font-size: 16px; font-weight: 700; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 10px;
+          transition: opacity .2s, transform .15s, box-shadow .2s;
+          box-shadow: 0 4px 14px rgba(255,102,0,.35);
+          margin-bottom: 14px; font-family: inherit;
+        }
+        .rtb-rzp-pay-btn:hover:not(:disabled) {
+          opacity: .92; transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(255,102,0,.45);
+        }
+        .rtb-rzp-pay-btn:disabled { opacity: .65; cursor: not-allowed; }
       `}</style>
     </div>
   );
