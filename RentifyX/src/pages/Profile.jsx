@@ -30,29 +30,38 @@ const Profile = () => {
         
         // Fetch Bookings
         const bookingsData = await getMyBookingsApi();
-        const formattedBookings = bookingsData.map(b => ({
-          id: b._id,
-          title: b.listingId?.title || "Unknown Property",
-          location: b.listingId?.location || "",
-          image: b.listingId?.images?.[0]?.url || "",
-          checkIn: b.checkIn,
-          checkOut: b.checkOut,
-          amount: `₹${b.totalPrice.toLocaleString("en-IN")}`,
-          status: new Date(b.checkIn) > new Date() ? "upcoming" : "completed",
-          utr: b.utr
-        }));
+        const formattedBookings = bookingsData.map(b => {
+          const isVehicle = b.listingId?.category === "Vehicle";
+          return {
+            id: b._id,
+            title: b.listingId?.title || "Unknown Item",
+            location: b.listingId?.location || "",
+            image: b.listingId?.images?.[0]?.url || "",
+            checkIn: b.checkIn,
+            checkOut: b.checkOut,
+            amount: `₹${b.totalPrice.toLocaleString("en-IN")}`,
+            status: new Date(b.checkIn) > new Date() ? "upcoming" : "completed",
+            utr: b.utr,
+            type: isVehicle ? 'driveable' : 'dwelling',
+            listingId: b.listingId?._id || b.listingId
+          };
+        });
         setBookings(formattedBookings);
 
         // Fetch Wishlist
         const wishlistData = await getWishlistApi();
-        const formattedFavs = (wishlistData.listings || []).map(l => ({
-          id: l._id,
-          title: l.title,
-          location: l.location,
-          image: l.images?.[0]?.url || "",
-          price: l.price,
-          priceUnit: l.timespan === "night" ? "night" : l.timespan
-        }));
+        const formattedFavs = (wishlistData.listings || []).map(l => {
+          const isVehicle = l.category === "Vehicle";
+          return {
+            id: l._id,
+            title: l.title,
+            location: l.location,
+            image: l.images?.[0]?.url || "",
+            price: l.price,
+            priceUnit: isVehicle ? (l.timespan === "hour" ? "hr" : "day") : (l.timespan === "night" ? "night" : l.timespan),
+            type: isVehicle ? 'driveable' : 'dwelling'
+          };
+        });
         setFavourites(formattedFavs);
 
       } catch (error) {

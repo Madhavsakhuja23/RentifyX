@@ -12,6 +12,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("RentifyX Backend is Running 🚀");

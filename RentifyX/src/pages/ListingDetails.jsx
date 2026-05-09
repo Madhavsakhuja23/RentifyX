@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { listings } from "../data/dwellings";
-import api, { getListingById, checkAvailabilityApi } from "../api";
+import api, { getListingById, checkAvailabilityApi, getWishlistApi, addToWishlistApi, removeFromWishlistApi } from "../api";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import "./ListingDetails.css";
@@ -732,31 +732,59 @@ export default function ListingDetails() {
 
   const listing = dynamicListing;
 
-  // Favourites — persist to localStorage
-  const [saved, setSaved] = useState(() => {
-    const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
-    return favs.some((f) => f.id === id);
-  });
+  const [saved, setSaved] = useState(false);
 
-  function toggleSaved() {
+  // Check if item is in wishlist on load
+  useEffect(() => {
+    const checkWishlist = async () => {
+      const token = localStorage.getItem("token");
+      if (!token || !id) return;
+      try {
+        const wishlistData = await getWishlistApi();
+        const isInWishlist = (wishlistData.listings || []).some(l => (l._id || l.id) === id);
+        setSaved(isInWishlist);
+      } catch (err) {
+        console.error("Error checking wishlist:", err);
+      }
+    };
+    checkWishlist();
+  }, [id]);
+
+  async function toggleSaved() {
     if (!listing) return;
-    const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
-    if (saved) {
-      const updated = favs.filter((f) => f.id !== listing.id);
-      localStorage.setItem("favourites", JSON.stringify(updated));
-    } else {
-      const newFav = {
-        id: listing.id,
-        name: listing.name,
-        image: listing.images?.[0] || listing.image || "",
-        location: listing.location,
-        price: listing.price,
-        priceUnit: listing.priceUnit,
-      };
-      favs.push(newFav);
-      localStorage.setItem("favourites", JSON.stringify(favs));
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { state: { from: `/listing/${id}` } });
+      return;
     }
-    setSaved((s) => !s);
+
+    try {
+      if (saved) {
+        await removeFromWishlistApi(listing.id || listing._id);
+      } else {
+        await addToWishlistApi(listing.id || listing._id);
+      }
+      setSaved(!saved);
+      // Notify other components if they use localStorage (as a fallback/legacy)
+      const favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+      if (saved) {
+        const updated = favs.filter((f) => f.id !== (listing.id || listing._id));
+        localStorage.setItem("favourites", JSON.stringify(updated));
+      } else {
+        favs.push({
+          id: listing.id || listing._id,
+          name: listing.name,
+          image: listing.images?.[0] || listing.image || "",
+          location: listing.location,
+          price: listing.price,
+          priceUnit: listing.priceUnit,
+        });
+        localStorage.setItem("favourites", JSON.stringify(favs));
+      }
+      window.dispatchEvent(new Event('storage'));
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+    }
   }
 
   const sectionRefs = {

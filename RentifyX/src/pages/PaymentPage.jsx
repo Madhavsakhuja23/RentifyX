@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
-
-const BASE_URL = 'https://rentifyx-ff33.onrender.com/api';
+import { useRazorpay } from '../utils/useRazorpay';
+import api, { createBookingApi, checkAvailabilityApi } from '../api';
 
 /* ── helpers ─────────────────────────────────── */
 function fmt(n) {
@@ -84,12 +84,81 @@ const PaymentPage = () => {
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [payMethod, setPayMethod] = useState("razorpay"); // "razorpay" | "upi"
+
+  const { openRazorpay, loading: rzpLoading, error: rzpError, setError: setRzpError } = useRazorpay();
 
   useEffect(() => {
     if (!vehicle) navigate('/driveables');
   }, [vehicle, navigate]);
 
   if (!vehicle) return null;
+
+  async function handleRazorpayPay() {
+    setRzpError(null);
+
+    // Check availability first if dates are provided
+    if (bookingDetails?.startDate && bookingDetails?.endDate) {
+      try {
+        const availability = await checkAvailabilityApi(vehicle.id || vehicle._id, bookingDetails.startDate, bookingDetails.endDate);
+        if (!availability.available) {
+          setUtrError('Sorry, this vehicle was just booked by someone else for your dates. Please go back and choose different dates.');
+          return;
+        }
+      } catch (err) {
+        setUtrError(err.message || 'Could not check availability.');
+        return;
+      }
+    }
+
+    const amountInPaise = grandTotal * 100;
+    const shortId = (vehicle.id || vehicle._id).toString().slice(-6);
+    openRazorpay({
+      amountInPaise,
+      receipt: `dv_${shortId}_${Date.now()}`,
+      description: `Vehicle Booking: ${vehicle?.name || 'Vehicle'}`,
+      onSuccess: async ({ paymentId, orderId, signature }) => {
+        try {
+          const res = await createBookingApi({
+            listingId: vehicle.id || vehicle._id,
+            checkIn: bookingDetails?.startDate,
+            checkOut: bookingDetails?.endDate,
+            guests: { adults: 1, children: 0, infants: 0 },
+            totalPrice: grandTotal,
+            utr: paymentId,
+            paymentMethod: 'razorpay',
+            razorpayOrderId: orderId,
+            razorpaySignature: signature,
+          });
+
+          if (res.success) {
+            const confirmedData = {
+              ...res.booking,
+              id: res.booking._id,
+              amount: fmt(res.booking.totalPrice || grandTotal),
+              title: vehicle.name,
+              image: vehicle.image,
+              utr: paymentId,
+            };
+            setConfirmedBooking(confirmedData);
+            setConfirmed(true);
+
+            // Update legacy localStorage for fallback
+            const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
+            existing.push({ ...confirmedData, type: 'driveable', duration: bookingDetails?.duration || '', category: vehicle.category || '' });
+            localStorage.setItem('bookings', JSON.stringify(existing));
+            window.dispatchEvent(new Event('storage'));
+          } else {
+            setUtrError(res.msg || 'Booking failed after payment. Contact support.');
+          }
+        } catch (err) {
+          setUtrError(err.message || 'Booking could not be saved. Contact support with payment ID: ' + paymentId);
+        }
+      },
+      onFailure: (msg) => setUtrError(msg),
+      onDismiss: () => {},
+    });
+  }
 
   async function handleConfirm() {
     const cleaned = utr.trim().replace(/\s/g, '');
@@ -103,90 +172,55 @@ const PaymentPage = () => {
     try {
       // ── 1. Register booking on backend (conflict-safe) ──────────────
       if (bookingDetails?.startDate && bookingDetails?.endDate) {
-        let userId = 'guest';
-        try {
-          const cu = localStorage.getItem('currentUser');
-          if (cu) userId = JSON.parse(cu).id || JSON.parse(cu).email || 'guest';
-        } catch { /* ignore */ }
-
-        const bookRes = await fetch(`${BASE_URL}/listings/book/${vehicle.id || vehicle._id}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId,
-            startDate: bookingDetails.startDate,
-            endDate:   bookingDetails.endDate,
-          }),
-        });
-
-        if (bookRes.status === 409) {
-          // Another user booked it between the availability check and payment
+        // Double check availability before confirming
+        const availability = await checkAvailabilityApi(vehicle.id || vehicle._id, bookingDetails.startDate, bookingDetails.endDate);
+        
+        if (!availability.available) {
           setUtrError('Sorry, this vehicle was just booked by someone else for your dates. Please go back and choose different dates.');
           setConfirming(false);
           return;
         }
 
-        if (!bookRes.ok) {
-          // Non-fatal: continue, booking saved locally anyway
-          console.warn('Backend booking registration failed — saving locally only.');
+        // Save booking to backend
+        const res = await createBookingApi({
+          listingId: vehicle.id || vehicle._id,
+          checkIn: bookingDetails.startDate,
+          checkOut: bookingDetails.endDate,
+          guests: { adults: 1, children: 0, infants: 0 },
+          totalPrice: grandTotal,
+          utr: cleaned
+        });
+
+        if (res.success) {
+          const confirmedData = {
+            ...res.booking,
+            id: res.booking._id,
+            amount: fmt(res.booking.totalPrice || grandTotal),
+            title: vehicle.name,
+            image: vehicle.image
+          };
+          setConfirmedBooking(confirmedData);
+          setConfirmed(true);
+
+          // Update legacy localStorage for fallback
+          const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
+          existing.push({
+            ...confirmedData,
+            type: 'driveable',
+            duration: bookingDetails?.duration || '',
+            category: vehicle.category || ''
+          });
+          localStorage.setItem('bookings', JSON.stringify(existing));
+          window.dispatchEvent(new Event('storage'));
+        } else {
+          throw new Error(res.msg || "Booking failed");
         }
       }
-
-      // ── 2. Save booking to localStorage (shown in Profile) ──────────
-      const newBooking = {
-        id: Date.now().toString(),
-        listingId: vehicle.id || vehicle._id || '',
-        title:     vehicle.name,
-        location:  vehicle.location || vehicle.category || 'Driveables',
-        image:     vehicle.image || '',
-        checkIn:   bookingDetails?.startDate  || new Date().toISOString(),
-        checkOut:  bookingDetails?.endDate    || new Date().toISOString(),
-        guests:    { adults: 1, children: 0, infants: 0 },
-        amount:    fmt(grandTotal),
-        status:    'upcoming',
-        utr:       cleaned,
-        bookedAt:  new Date().toISOString(),
-        type:      'driveable',
-        duration:  bookingDetails?.duration || '',
-        category:  vehicle.category || '',
-      };
-
-      const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
-      existing.push(newBooking);
-      localStorage.setItem('bookings', JSON.stringify(existing));
-      // Notify Profile page open in the same tab
-      window.dispatchEvent(new Event('storage'));
-
-      setConfirmedBooking(newBooking);
-      setConfirming(false);
-      setConfirmed(true);
     } catch (err) {
       console.error('Booking error:', err);
-      // Fallback: still save locally so the user doesn't lose the booking
-      const newBooking = {
-        id: Date.now().toString(),
-        listingId: vehicle.id || vehicle._id || '',
-        title:     vehicle.name,
-        location:  vehicle.location || vehicle.category || 'Driveables',
-        image:     vehicle.image || '',
-        checkIn:   bookingDetails?.startDate  || new Date().toISOString(),
-        checkOut:  bookingDetails?.endDate    || new Date().toISOString(),
-        guests:    { adults: 1, children: 0, infants: 0 },
-        amount:    fmt(grandTotal),
-        status:    'upcoming',
-        utr:       cleaned,
-        bookedAt:  new Date().toISOString(),
-        type:      'driveable',
-        duration:  bookingDetails?.duration || '',
-        category:  vehicle.category || '',
-      };
-      const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
-      existing.push(newBooking);
-      localStorage.setItem('bookings', JSON.stringify(existing));
-      window.dispatchEvent(new Event('storage'));
-      setConfirmedBooking(newBooking);
+      setUtrError(err.message || 'Failed to process booking. Please try again.');
+    } finally {
       setConfirming(false);
-      setConfirmed(true);
     }
   }
 
@@ -276,110 +310,171 @@ const PaymentPage = () => {
             </div>
           </div>
 
-          {/* RIGHT — QR Payment */}
+          {/* RIGHT — Payment */}
           <div className="dv-right">
             <div className="dv-qr-card">
 
-              <div className="dv-qr-header">
-                <div className="dv-qr-badge">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" /><rect x="11" y="11" width="3" height="3" />
-                    <rect x="11" y="18" width="3" height="3" /><rect x="18" y="11" width="3" height="3" />
-                    <rect x="15" y="15" width="6" height="6" />
-                  </svg>
-                </div>
-                <div>
-                  <h3>Scan &amp; Pay via UPI</h3>
-                  <p>Use GPay, PhonePe, Paytm or any UPI app</p>
-                </div>
+              {/* Payment Method Toggle */}
+              <div className="dv-pay-tabs">
+                <button
+                  id="dv-tab-razorpay"
+                  className={`dv-pay-tab${payMethod === "razorpay" ? " active" : ""}`}
+                  onClick={() => { setPayMethod("razorpay"); setUtrError(""); }}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
+                  Pay Online
+                </button>
+                <button
+                  id="dv-tab-upi"
+                  className={`dv-pay-tab${payMethod === "upi" ? " active" : ""}`}
+                  onClick={() => { setPayMethod("upi"); setUtrError(""); }}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  UPI / QR
+                </button>
               </div>
 
-              {/* QR Code */}
-              <div className="dv-qr-wrap">
-                <img
-                  src={getQRUrl(UPI_ID, grandTotal, HOST_NAME)}
-                  alt="UPI QR Code"
-                  className="dv-qr-img"
-                />
-                <p className="dv-qr-amount">Pay {fmt(grandTotal)}</p>
-              </div>
+              {/* ── Razorpay tab ── */}
+              {payMethod === "razorpay" && (
+                <div className="dv-rzp-section">
+                  <div className="dv-rzp-info">
+                    <div className="dv-rzp-icon">
+                      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /><line x1="5" y1="15" x2="9" y2="15" /></svg>
+                    </div>
+                    <div>
+                      <h3>Secure Online Payment</h3>
+                      <p>Cards, UPI, Net Banking, Wallets</p>
+                    </div>
+                  </div>
 
-              {/* UPI ID */}
-              <div className="dv-upi-info">
-                <span className="dv-upi-label">UPI ID</span>
-                <div className="dv-upi-id-wrap">
-                  <span className="dv-upi-id">{UPI_ID}</span>
+                  <div className="dv-rzp-amount-display">
+                    <span>Amount to pay</span>
+                    <strong>{fmt(grandTotal)}</strong>
+                  </div>
+
+                  {(rzpError || utrError) && (
+                    <div className="dv-rzp-error">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                      {rzpError || utrError}
+                    </div>
+                  )}
+
                   <button
-                    className="dv-copy-btn"
-                    onClick={() => navigator.clipboard.writeText(UPI_ID)}
-                    title="Copy UPI ID"
+                    id="rzp-pay-btn-dv"
+                    className="dv-rzp-pay-btn"
+                    onClick={handleRazorpayPay}
+                    disabled={rzpLoading}
                   >
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" />
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                    Copy
+                    {rzpLoading ? (
+                      <><span className="dv-spinner" /> Processing...</>
+                    ) : (
+                      <><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> Pay {fmt(grandTotal)} Securely</>
+                    )}
                   </button>
+
+                  <p className="dv-secure-note">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    Powered by Razorpay. 100% secure checkout.
+                  </p>
                 </div>
-              </div>
+              )}
 
-              <div className="dv-qr-divider" />
+              {/* ── UPI / QR tab ── */}
+              {payMethod === "upi" && (
+                <>
+                  <div className="dv-qr-header">
+                    <div className="dv-qr-badge">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" /><rect x="11" y="11" width="3" height="3" />
+                        <rect x="11" y="18" width="3" height="3" /><rect x="18" y="11" width="3" height="3" />
+                        <rect x="15" y="15" width="6" height="6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3>Scan &amp; Pay via UPI</h3>
+                      <p>Use GPay, PhonePe, Paytm or any UPI app</p>
+                    </div>
+                  </div>
 
-              {/* UTR Input */}
-              <div className="dv-utr-section">
-                <label className="dv-utr-label">
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Enter UTR / Transaction Reference ID
-                </label>
-                <p className="dv-utr-hint">
-                  After payment, find your UTR ID in your UPI app under transaction details.
-                </p>
-                <input
-                  className={`dv-utr-input${utrError ? " error" : ""}`}
-                  type="text"
-                  placeholder="e.g. 123456789012"
-                  value={utr}
-                  onChange={(e) => {
-                    setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
-                    setUtrError("");
-                  }}
-                  maxLength={25}
-                />
-                {utrError && <span className="dv-utr-error">{utrError}</span>}
-              </div>
+                  {/* QR Code */}
+                  <div className="dv-qr-wrap">
+                    <img
+                      src={getQRUrl(UPI_ID, grandTotal, HOST_NAME)}
+                      alt="UPI QR Code"
+                      className="dv-qr-img"
+                    />
+                    <p className="dv-qr-amount">Pay {fmt(grandTotal)}</p>
+                  </div>
 
-              <button
-                className="dv-confirm-btn"
-                onClick={handleConfirm}
-                disabled={confirming}
-              >
-                {confirming ? (
-                  <>
-                    <span className="dv-spinner" />
-                    Verifying Payment...
-                  </>
-                ) : (
-                  <>
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                    Confirm &amp; Complete Booking
-                  </>
-                )}
-              </button>
+                  {/* UPI ID */}
+                  <div className="dv-upi-info">
+                    <span className="dv-upi-label">UPI ID</span>
+                    <div className="dv-upi-id-wrap">
+                      <span className="dv-upi-id">{UPI_ID}</span>
+                      <button
+                        className="dv-copy-btn"
+                        onClick={() => navigator.clipboard.writeText(UPI_ID)}
+                        title="Copy UPI ID"
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        Copy
+                      </button>
+                    </div>
+                  </div>
 
-              <p className="dv-secure-note">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                Secured by UPI. Your transaction is protected.
-              </p>
+                  <div className="dv-qr-divider" />
+
+                  {/* UTR Input */}
+                  <div className="dv-utr-section">
+                    <label className="dv-utr-label">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Enter UTR / Transaction Reference ID
+                    </label>
+                    <p className="dv-utr-hint">
+                      After payment, find your UTR ID in your UPI app under transaction details.
+                    </p>
+                    <input
+                      className={`dv-utr-input${utrError ? " error" : ""}`}
+                      type="text"
+                      placeholder="e.g. 123456789012"
+                      value={utr}
+                      onChange={(e) => {
+                        setUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+                        setUtrError("");
+                      }}
+                      maxLength={25}
+                    />
+                    {utrError && <span className="dv-utr-error">{utrError}</span>}
+                  </div>
+
+                  <button
+                    className="dv-confirm-btn"
+                    onClick={handleConfirm}
+                    disabled={confirming}
+                  >
+                    {confirming ? (
+                      <><span className="dv-spinner" />Verifying Payment...</>
+                    ) : (
+                      <><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>Confirm &amp; Complete Booking</>
+                    )}
+                  </button>
+
+                  <p className="dv-secure-note">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    Secured by UPI. Your transaction is protected.
+                  </p>
+                </>
+              )}
 
             </div>
           </div>
+
 
         </div>
       </div>
@@ -764,6 +859,63 @@ const PaymentPage = () => {
           .dv-layout { grid-template-columns: 1fr; gap: 24px; }
           .dv-qr-card { position: static; }
         }
+
+        /* Payment Tabs */
+        .dv-pay-tabs {
+          display: flex; gap: 8px; margin-bottom: 24px;
+        }
+        .dv-pay-tab {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+          padding: 10px; border: 1.5px solid #e0e0e0; border-radius: 10px;
+          background: white; font-size: 13px; font-weight: 600; color: #666;
+          cursor: pointer; transition: all .2s; font-family: inherit;
+        }
+        .dv-pay-tab.active {
+          border-color: rgb(255,102,0); color: rgb(255,102,0);
+          background: rgba(255,102,0,.05);
+        }
+        .dv-pay-tab:hover:not(.active) { background: #f8f8f8; }
+
+        /* Razorpay Section */
+        .dv-rzp-section { padding: 4px 0; }
+        .dv-rzp-info {
+          display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+        }
+        .dv-rzp-icon {
+          width: 52px; height: 52px; border-radius: 14px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(255,160,50));
+          display: flex; align-items: center; justify-content: center;
+          color: white; flex-shrink: 0;
+        }
+        .dv-rzp-info h3 { font-size: 17px; font-weight: 700; color: #222; margin-bottom: 2px; }
+        .dv-rzp-info p { font-size: 12px; color: #888; }
+        .dv-rzp-amount-display {
+          display: flex; justify-content: space-between; align-items: center;
+          background: #fafafa; border: 1px solid #eee; border-radius: 12px;
+          padding: 16px 20px; margin-bottom: 20px;
+          font-size: 14px; color: #888;
+        }
+        .dv-rzp-amount-display strong { font-size: 22px; font-weight: 800; color: rgb(255,102,0); }
+        .dv-rzp-error {
+          display: flex; align-items: flex-start; gap: 8px;
+          background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;
+          padding: 12px 14px; margin-bottom: 16px;
+          font-size: 13px; color: #c53030; line-height: 1.4;
+        }
+        .dv-rzp-pay-btn {
+          width: 100%; padding: 15px; border: none; border-radius: 12px;
+          background: linear-gradient(135deg, rgb(255,102,0), rgb(230,80,0));
+          color: white; font-size: 16px; font-weight: 700; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 10px;
+          transition: opacity .2s, transform .15s, box-shadow .2s;
+          box-shadow: 0 4px 14px rgba(255,102,0,.35);
+          margin-bottom: 14px; font-family: inherit;
+        }
+        .dv-rzp-pay-btn:hover:not(:disabled) {
+          opacity: .92; transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(255,102,0,.45);
+        }
+        .dv-rzp-pay-btn:disabled { opacity: .65; cursor: not-allowed; }
       `}</style>
     </div>
   );

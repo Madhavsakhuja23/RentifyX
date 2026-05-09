@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../../api';
@@ -9,6 +9,7 @@ import './Messages.css';
 
 export default function Messages() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { socket } = useSocket();
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
@@ -28,19 +29,19 @@ export default function Messages() {
     const convId = searchParams.get('id');
     if (convId && conversations.length > 0) {
       const found = conversations.find(c => c._id === convId);
-      if (found) {
+      if (found && (!selectedConv || selectedConv._id !== found._id)) {
         setSelectedConv(found);
       }
     }
   }, [location.search, conversations]);
 
   useEffect(() => {
-    if (selectedConv) {
+    if (selectedConv?._id) {
       fetchMessages(selectedConv._id);
       socket?.emit('join_conversation', selectedConv._id);
       socket?.emit('mark_read', selectedConv._id);
     }
-  }, [selectedConv, socket]);
+  }, [selectedConv?._id, socket]);
 
   useEffect(() => {
     if (!socket) return;
@@ -170,7 +171,10 @@ export default function Messages() {
                 <div
                   key={conv._id}
                   className={`conversation-item ${selectedConv?._id === conv._id ? 'active' : ''}`}
-                  onClick={() => setSelectedConv(conv)}
+                  onClick={() => {
+                    setSelectedConv(conv);
+                    navigate(`?id=${conv._id}`, { replace: true });
+                  }}
                 >
                   <div className="conv-avatar">
                     {conv.listingId?.images?.[0]?.url ? (

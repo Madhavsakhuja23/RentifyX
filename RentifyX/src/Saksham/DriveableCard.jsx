@@ -1,37 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Star, MapPin, Heart } from 'lucide-react';
+import api, { addToWishlistApi, removeFromWishlistApi } from '../api';
 import './Driveables.css';
 
-// ── Wishlist helpers (same localStorage key used by Profile > Favourites) ──
-const getFavourites = () => {
-  try { return JSON.parse(localStorage.getItem('favourites') || '[]'); }
-  catch { return []; }
-};
 
-const isInFavourites = (id) => getFavourites().some((f) => f.id === id);
-
-const toggleFavourite = (vehicle) => {
-  const favs = getFavourites();
-  const idx = favs.findIndex((f) => f.id === vehicle.id);
-  if (idx !== -1) {
-    favs.splice(idx, 1);
-  } else {
-    favs.push({
-      id: vehicle.id,
-      name: vehicle.name || vehicle.title,
-      image: vehicle.image,
-      location: vehicle.location,
-      price: vehicle.hourlyRate || vehicle.dayRate || 0,
-      priceUnit: vehicle.dayRate ? 'day' : 'hr',
-      type: 'driveable',
-      category: vehicle.category,
-    });
-  }
-  localStorage.setItem('favourites', JSON.stringify(favs));
-  // Notify other tabs / Profile page
-  window.dispatchEvent(new Event('storage'));
-  return idx === -1; // returns true if NOW added
-};
 
 const DriveableCard = ({
   driveable,
@@ -40,24 +12,61 @@ const DriveableCard = ({
   onToggleCompare,
   isSelectedForComparison,
   isCompareDisabled = false,
+  isWishlisted = false,
 }) => {
-  const [liked, setLiked] = useState(() => isInFavourites(driveable.id));
+  const [liked, setLiked] = useState(isWishlisted);
+
+  useEffect(() => {
+    setLiked(isWishlisted);
+  }, [isWishlisted]);
 
   const handleHeartClick = useCallback(
-    (e) => {
+    async (e) => {
       e.stopPropagation();
 
-      // Require auth
-      const currentUser = localStorage.getItem('currentUser');
-      if (!currentUser) {
+      const token = localStorage.getItem('token');
+      if (!token) {
         window.location.href = '/login';
         return;
       }
 
-      const nowLiked = toggleFavourite(driveable);
-      setLiked(nowLiked);
+      try {
+        const id = driveable.id || driveable._id;
+        if (liked) {
+          await removeFromWishlistApi(id);
+        } else {
+          await addToWishlistApi(id);
+        }
+        
+        const nowLiked = !liked;
+        setLiked(nowLiked);
+
+        // Update legacy localStorage for other components
+        const favs = JSON.parse(localStorage.getItem('favourites') || '[]');
+        if (nowLiked) {
+          if (!favs.some(f => f.id === id)) {
+            favs.push({
+              id,
+              name: driveable.name || driveable.title,
+              image: driveable.image,
+              location: driveable.location,
+              price: driveable.hourlyRate || driveable.dayRate || 0,
+              priceUnit: driveable.dayRate ? 'day' : 'hr',
+              type: 'driveable',
+              category: driveable.category,
+            });
+          }
+        } else {
+          const idx = favs.findIndex(f => f.id === id);
+          if (idx !== -1) favs.splice(idx, 1);
+        }
+        localStorage.setItem('favourites', JSON.stringify(favs));
+        window.dispatchEvent(new Event('storage'));
+      } catch (err) {
+        console.error("Error toggling wishlist:", err);
+      }
     },
-    [driveable]
+    [driveable, liked]
   );
 
   return (

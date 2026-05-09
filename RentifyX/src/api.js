@@ -149,6 +149,31 @@ export const createBookingApi = (bookingData) =>
 
 export const getMyBookingsApi = () => apiRequest("/bookings");
 
+// ── Razorpay Payments ──────────────────────────────────────────
+
+/**
+ * Creates a Razorpay order on the backend.
+ * @param {number} amount - Amount in paise (e.g. 50000 = ₹500)
+ * @param {string} [receipt] - Optional receipt string
+ */
+export const createRazorpayOrderApi = (amount, receipt) =>
+  apiRequest("/payments/create-order", {
+    method: "POST",
+    body: JSON.stringify({ amount, currency: "INR", receipt }),
+  });
+
+/**
+ * Verifies the Razorpay payment signature on the backend.
+ * @param {string} razorpay_order_id
+ * @param {string} razorpay_payment_id
+ * @param {string} razorpay_signature
+ */
+export const verifyRazorpayPaymentApi = (razorpay_order_id, razorpay_payment_id, razorpay_signature) =>
+  apiRequest("/payments/verify-payment", {
+    method: "POST",
+    body: JSON.stringify({ razorpay_order_id, razorpay_payment_id, razorpay_signature }),
+  });
+
 // ── Wishlist ──────────────────────────────────────────────────
 
 export const getWishlistApi = () => apiRequest("/wishlist");

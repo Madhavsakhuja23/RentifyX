@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PricingSection from './PricingSection';
 import LicenseVerification from './LicenseVerification';
 import CancellationPolicy from './CancellationPolicy';
+import { getWishlistApi, addToWishlistApi, removeFromWishlistApi } from '../api';
 import '../pages/ListingDetails.css';
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
@@ -48,6 +49,22 @@ const DriveableDetail = ({ driveable, onClose }) => {
     document.body.style.overflow = lbIndex !== null ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; };
   }, [lbIndex]);
+
+  // ── Check wishlist status ───────────────────────────────────────────────
+  useEffect(() => {
+    const checkWishlist = async () => {
+      const token = localStorage.getItem('token');
+      if (!token || !driveable) return;
+      try {
+        const wRes = await getWishlistApi();
+        const isSaved = (wRes.listings || []).some(l => (l._id || l.id) === (driveable.id || driveable._id));
+        setSaved(isSaved);
+      } catch (err) {
+        console.error("Error checking wishlist:", err);
+      }
+    };
+    checkWishlist();
+  }, [driveable]);
 
   // ── Availability check (debounced 600 ms) ────────────────────────────────
   useEffect(() => {
@@ -240,15 +257,27 @@ const DriveableDetail = ({ driveable, onClose }) => {
             {/* Save / Wishlist */}
             <button
               className="ld-act-btn"
-              onClick={() => {
-                if (!localStorage.getItem('currentUser')) { window.location.href = '/login'; return; }
-                setSaved((s) => {
-                  const next = !s;
+              onClick={async () => {
+                const token = localStorage.getItem('token');
+                if (!token) { window.location.href = '/login'; return; }
+                
+                try {
+                  const id = driveable.id || driveable._id;
+                  if (saved) {
+                    await removeFromWishlistApi(id);
+                  } else {
+                    await addToWishlistApi(id);
+                  }
+                  
+                  const next = !saved;
+                  setSaved(next);
+
+                  // Sync legacy localStorage
                   const favs = JSON.parse(localStorage.getItem('favourites') || '[]');
                   if (next) {
-                    if (!favs.some((f) => f.id === driveable.id)) {
+                    if (!favs.some((f) => f.id === id)) {
                       favs.push({
-                        id: driveable.id, name: driveable.name, image: driveable.image,
+                        id, name: driveable.name, image: driveable.image,
                         location: driveable.location,
                         price: driveable.hourlyRate || driveable.dayRate || 0,
                         priceUnit: driveable.dayRate ? 'day' : 'hr',
@@ -256,13 +285,14 @@ const DriveableDetail = ({ driveable, onClose }) => {
                       });
                     }
                   } else {
-                    const idx = favs.findIndex((f) => f.id === driveable.id);
+                    const idx = favs.findIndex((f) => f.id === id);
                     if (idx !== -1) favs.splice(idx, 1);
                   }
                   localStorage.setItem('favourites', JSON.stringify(favs));
                   window.dispatchEvent(new Event('storage'));
-                  return next;
-                });
+                } catch (err) {
+                  console.error("Error toggling wishlist:", err);
+                }
               }}
             >
               <svg viewBox="0 0 24 24" width="16" height="16"

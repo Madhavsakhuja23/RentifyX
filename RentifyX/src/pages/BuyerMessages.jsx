@@ -5,13 +5,12 @@ import Messages from "../seller/pages/Messages";
 
 const BuyerMessages = () => {
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <Header />
-      <div style={{ minHeight: "calc(100vh - 80px)", paddingTop: "20px" }}>
+      <div style={{ flex: 1, overflow: 'hidden', padding: '20px 0' }}>
         <Messages />
       </div>
-      <Footer />
-    </>
+    </div>
   );
 };
 
