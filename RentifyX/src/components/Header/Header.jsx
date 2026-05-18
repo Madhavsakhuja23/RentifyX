@@ -95,18 +95,18 @@ const Header = () => {
               )}
             </button>
 
-            <button
+            {isLoggedIn && <button
               className="btn mobile-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X /> : <Menu />}
-            </button>
+            </button>}
 
           </div>
         </div>
 
         {/* Mobile Menu */}
-        <AnimatePresence>
+       <AnimatePresence>
           {mobileMenuOpen && (
             <motion.nav
               initial={{ height: 0, opacity: 0 }}

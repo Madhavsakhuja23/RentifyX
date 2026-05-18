@@ -26,7 +26,7 @@ export const SocketProvider = ({ children }) => {
 
     fetchUnreadCount();
 
-    const socketInstance = io("http://localhost:5000", {
+    const socketInstance = io( `${import.meta.env.VITE_API_URL}`, {
       auth: { token },
     });
 

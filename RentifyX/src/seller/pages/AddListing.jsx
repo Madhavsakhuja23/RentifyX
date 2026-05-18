@@ -9,7 +9,7 @@ const SUBCATEGORY_OPTIONS = {
   Vehicle: ['Cars', 'EV', 'Bike', 'Bicycle'],
 };
 
-const API_URL = 'http://localhost:5000/api/listings';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/listings`;
 
 export default function AddListing() {
   const navigate = useNavigate();
