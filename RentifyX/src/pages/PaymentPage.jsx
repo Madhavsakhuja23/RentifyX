@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
-import { useRazorpay } from '../utils/useRazorpay';
 import api, { createBookingApi, checkAvailabilityApi } from '../api';
 
 /* ── helpers ─────────────────────────────────── */
@@ -84,81 +83,11 @@ const PaymentPage = () => {
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
-  const [payMethod, setPayMethod] = useState("razorpay"); // "razorpay" | "upi"
-
-  const { openRazorpay, loading: rzpLoading, error: rzpError, setError: setRzpError } = useRazorpay();
-
   useEffect(() => {
     if (!vehicle) navigate('/driveables');
   }, [vehicle, navigate]);
 
   if (!vehicle) return null;
-
-  async function handleRazorpayPay() {
-    setRzpError(null);
-
-    // Check availability first if dates are provided
-    if (bookingDetails?.startDate && bookingDetails?.endDate) {
-      try {
-        const availability = await checkAvailabilityApi(vehicle.id || vehicle._id, bookingDetails.startDate, bookingDetails.endDate);
-        if (!availability.available) {
-          setUtrError('Sorry, this vehicle was just booked by someone else for your dates. Please go back and choose different dates.');
-          return;
-        }
-      } catch (err) {
-        setUtrError(err.message || 'Could not check availability.');
-        return;
-      }
-    }
-
-    const amountInPaise = grandTotal * 100;
-    const shortId = (vehicle.id || vehicle._id).toString().slice(-6);
-    openRazorpay({
-      amountInPaise,
-      receipt: `dv_${shortId}_${Date.now()}`,
-      description: `Vehicle Booking: ${vehicle?.name || 'Vehicle'}`,
-      onSuccess: async ({ paymentId, orderId, signature }) => {
-        try {
-          const res = await createBookingApi({
-            listingId: vehicle.id || vehicle._id,
-            checkIn: bookingDetails?.startDate,
-            checkOut: bookingDetails?.endDate,
-            guests: { adults: 1, children: 0, infants: 0 },
-            totalPrice: grandTotal,
-            utr: paymentId,
-            paymentMethod: 'razorpay',
-            razorpayOrderId: orderId,
-            razorpaySignature: signature,
-          });
-
-          if (res.success) {
-            const confirmedData = {
-              ...res.booking,
-              id: res.booking._id,
-              amount: fmt(res.booking.totalPrice || grandTotal),
-              title: vehicle.name,
-              image: vehicle.image,
-              utr: paymentId,
-            };
-            setConfirmedBooking(confirmedData);
-            setConfirmed(true);
-
-            // Update legacy localStorage for fallback
-            const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
-            existing.push({ ...confirmedData, type: 'driveable', duration: bookingDetails?.duration || '', category: vehicle.category || '' });
-            localStorage.setItem('bookings', JSON.stringify(existing));
-            window.dispatchEvent(new Event('storage'));
-          } else {
-            setUtrError(res.msg || 'Booking failed after payment. Contact support.');
-          }
-        } catch (err) {
-          setUtrError(err.message || 'Booking could not be saved. Contact support with payment ID: ' + paymentId);
-        }
-      },
-      onFailure: (msg) => setUtrError(msg),
-      onDismiss: () => {},
-    });
-  }
 
   async function handleConfirm() {
     const cleaned = utr.trim().replace(/\s/g, '');
@@ -310,78 +239,9 @@ const PaymentPage = () => {
             </div>
           </div>
 
-          {/* RIGHT — Payment */}
+          {/* RIGHT — QR Payment */}
           <div className="dv-right">
             <div className="dv-qr-card">
-
-              {/* Payment Method Toggle */}
-              <div className="dv-pay-tabs">
-                <button
-                  id="dv-tab-razorpay"
-                  className={`dv-pay-tab${payMethod === "razorpay" ? " active" : ""}`}
-                  onClick={() => { setPayMethod("razorpay"); setUtrError(""); }}
-                >
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
-                  Pay Online
-                </button>
-                <button
-                  id="dv-tab-upi"
-                  className={`dv-pay-tab${payMethod === "upi" ? " active" : ""}`}
-                  onClick={() => { setPayMethod("upi"); setUtrError(""); }}
-                >
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
-                  UPI / QR
-                </button>
-              </div>
-
-              {/* ── Razorpay tab ── */}
-              {payMethod === "razorpay" && (
-                <div className="dv-rzp-section">
-                  <div className="dv-rzp-info">
-                    <div className="dv-rzp-icon">
-                      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /><line x1="5" y1="15" x2="9" y2="15" /></svg>
-                    </div>
-                    <div>
-                      <h3>Secure Online Payment</h3>
-                      <p>Cards, UPI, Net Banking, Wallets</p>
-                    </div>
-                  </div>
-
-                  <div className="dv-rzp-amount-display">
-                    <span>Amount to pay</span>
-                    <strong>{fmt(grandTotal)}</strong>
-                  </div>
-
-                  {(rzpError || utrError) && (
-                    <div className="dv-rzp-error">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                      {rzpError || utrError}
-                    </div>
-                  )}
-
-                  <button
-                    id="rzp-pay-btn-dv"
-                    className="dv-rzp-pay-btn"
-                    onClick={handleRazorpayPay}
-                    disabled={rzpLoading}
-                  >
-                    {rzpLoading ? (
-                      <><span className="dv-spinner" /> Processing...</>
-                    ) : (
-                      <><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> Pay {fmt(grandTotal)} Securely</>
-                    )}
-                  </button>
-
-                  <p className="dv-secure-note">
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                    Powered by Razorpay. 100% secure checkout.
-                  </p>
-                </div>
-              )}
-
-              {/* ── UPI / QR tab ── */}
-              {payMethod === "upi" && (
-                <>
                   <div className="dv-qr-header">
                     <div className="dv-qr-badge">
                       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -469,9 +329,6 @@ const PaymentPage = () => {
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                     Secured by UPI. Your transaction is protected.
                   </p>
-                </>
-              )}
-
             </div>
           </div>
 
