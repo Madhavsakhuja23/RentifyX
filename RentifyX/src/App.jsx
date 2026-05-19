@@ -40,6 +40,12 @@ import FAQ from "./pages/info/FAQ";
 function AppContent() {
   const location = useLocation();
   const isSellerPath = location.pathname.startsWith('/seller');
+  const hideChatbotRoutes = [
+  "/messages",
+];
+
+const shouldHideChatbot =
+  isSellerPath || hideChatbotRoutes.includes(location.pathname);
 
   return (
     <>
@@ -107,7 +113,7 @@ function AppContent() {
         {/* Catch-all Not Found Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isSellerPath && <Chatbot />}
+      {!shouldHideChatbot && <Chatbot />}
     </>
   );
 }
