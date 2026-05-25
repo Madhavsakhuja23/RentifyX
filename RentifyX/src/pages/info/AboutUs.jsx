@@ -83,22 +83,22 @@ const AboutUs = () => {
           </h2>
           <div className="team-grid">
             <div className="team-card">
-              <div className="team-avatar">A</div>
+              <div className="team-avatar">M</div>
               <h4>Madhav Sakhuja</h4>
               
             </div>
             <div className="team-card">
-              <div className="team-avatar">P</div>
+              <div className="team-avatar">M</div>
               <h4>Mohak Taneja</h4>
          
             </div>
             <div className="team-card">
-              <div className="team-avatar">R</div>
+              <div className="team-avatar">S</div>
               <h4>Saksham Jain</h4>
               
             </div>
             <div className="team-card">
-              <div className="team-avatar">S</div>
+              <div className="team-avatar">M</div>
               <h4>Mansha Verma</h4>
               
             </div>
