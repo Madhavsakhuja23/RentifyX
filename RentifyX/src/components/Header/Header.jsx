@@ -95,12 +95,12 @@ const Header = () => {
               )}
             </button>
 
-            {isLoggedIn && <button
+            <button
               className="btn mobile-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X /> : <Menu />}
-            </button>}
+            </button>
 
           </div>
         </div>
@@ -115,73 +115,102 @@ const Header = () => {
               transition={{ duration: 0.25 }}
               className="mobile-menu"
             >
+              {/* Primary Navigation Links */}
               <Link
-                className={`mobile-link ${currentPath === "/profile" ? "active-item" : ""
-                  }`}
-                to="/profile"
+                className={`mobile-link ${location.pathname === "/dwellings" ? "active-item" : ""}`}
+                to="/dwellings"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <User size={18} />
-                Profile
+                🏠 Dwellings
               </Link>
 
               <Link
-                className={`mobile-link position-relative ${currentPath === "/messages" ? "active-item" : ""}`}
-                to={isLoggedIn ? "/messages" : "/login"}
+                className={`mobile-link ${location.pathname === "/driveables" ? "active-item" : ""}`}
+                to="/driveables"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                💬 Messages
-                {isLoggedIn && unreadCount > 0 && (
-                  <span className="badge rounded-pill bg-danger ms-2">
-                    {unreadCount}
-                  </span>
-                )}
+                🚗 Driveables
               </Link>
 
-              <Link
-                className={`mobile-link ${currentPath.includes("bookings") ? "active-item" : ""
-                  }`}
-                to="/profile?tab=bookings"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                🏠 Bookings
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    className={`mobile-link position-relative ${currentPath === "/messages" ? "active-item" : ""}`}
+                    to="/messages"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    💬 Messages
+                    {unreadCount > 0 && (
+                      <span className="badge rounded-pill bg-danger ms-2">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Link>
 
-              <Link
-                className={`mobile-link ${currentPath.includes("wishlist") ? "active-item" : ""
-                  }`}
-                to="/profile?tab=wishlist"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ❤️ Wishlist
-              </Link>
+                  <Link
+                    className={`mobile-link ${currentPath === "/profile" ? "active-item" : ""}`}
+                    to="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User size={18} />
+                    Profile
+                  </Link>
 
-              <Link
-                className={`mobile-link ${currentPath.includes("settings") ? "active-item" : ""
-                  }`}
-                to="/profile?tab=settings"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ⚙️ Settings
-              </Link>
+                  <Link
+                    className={`mobile-link ${currentPath.includes("bookings") ? "active-item" : ""}`}
+                    to="/profile?tab=bookings"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    🏠 Bookings
+                  </Link>
 
-              <button
-                className="mobile-link logout-item"
-                onClick={() => {
-                  if (isLoggedIn) {
-                    logOut();
-                    navigate("/");
-                  } else {
-                    navigate("/login");
-                  }
+                  <Link
+                    className={`mobile-link ${currentPath.includes("wishlist") ? "active-item" : ""}`}
+                    to="/profile?tab=wishlist"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    ❤️ Wishlist
+                  </Link>
 
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {isLoggedIn ? <LogOut size={18} /> : <User size={18} />}
-                {isLoggedIn ? "Logout" : "Login"}
-              </button>
+                  <Link
+                    className={`mobile-link ${currentPath.includes("settings") ? "active-item" : ""}`}
+                    to="/profile?tab=settings"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    ⚙️ Settings
+                  </Link>
 
+                  <button
+                    className="mobile-link logout-item"
+                    onClick={() => {
+                      logOut();
+                      navigate("/");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut size={18} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    className={`mobile-link ${currentPath === "/login" ? "active-item" : ""}`}
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    💬 Messages
+                  </Link>
+
+                  <Link
+                    className={`mobile-link ${currentPath === "/login" ? "active-item" : ""}`}
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    🔑 Login
+                  </Link>
+                </>
+              )}
             </motion.nav>
           )}
         </AnimatePresence>

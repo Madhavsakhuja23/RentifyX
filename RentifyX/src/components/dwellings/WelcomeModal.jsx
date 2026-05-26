@@ -25,6 +25,17 @@ const WelcomeModal = () => {
         window.resetWelcomeModal = resetModal;
     }, []);
 
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen]);
+
     const handleClose = () => {
         setIsOpen(false);
     };
@@ -34,6 +45,7 @@ const WelcomeModal = () => {
     return (
         <div className="modal-overlay" onClick={handleClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="bottom-sheet-handle mobile-only" />
                 <button className="modal-close" onClick={handleClose}>
                     <X size={24} />
                 </button>

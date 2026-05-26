@@ -1,12 +1,11 @@
 .hero-new {
   position: relative;
-  min-height: 650px;
+  min-height: min(650px, 80vh);
   background: linear-gradient(to left, #d6e4ef, #f0e0c8);
   display: flex;
   justify-content: center;
-  width: 99%;
+  width: 100%;
   margin: 0 auto;
-  border-radius: 20px;
   overflow: hidden;
 }
 
@@ -23,11 +22,10 @@
 /* Text on left */
 .hero-text {
   flex: 1;
-  max-width: 500px;
+  max-width: 540px;
   color: #111;
   z-index: 2;
-  margin-left: 40px;
-  padding: 40px 0;
+  padding: clamp(24px, 5vw, 60px);
 }
 
 .hero-new .hero-badge {
@@ -43,16 +41,16 @@
 }
 
 .hero-text h1 {
-  font-size: 48px;
+  font-size: clamp(30px, 5vw, 48px);
   font-weight: 800;
   margin-bottom: 16px;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: -0.5px;
   color: black;
 }
 
 .hero-text p {
-  font-size: 18px;
+  font-size: clamp(15px, 2vw, 18px);
   color: var(--text-secondary);
   margin-bottom: 28px;
   line-height: 1.6;
@@ -69,12 +67,13 @@
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: all var(--transition);
- box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
+  font-size: clamp(14px, 1.5vw, 16px);
 }
 
 .hero-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
+  box-shadow: 0 12px 30px rgba(255, 102, 0, 0.5);
 }
 
 /* Image on right */
@@ -84,6 +83,7 @@
   border-radius: 14px 0 0 14px;
   overflow: hidden;
   align-self: stretch;
+  min-height: 300px;
 }
 
 .hero-bg-image {
@@ -93,25 +93,49 @@
   display: block;
 }
 
+/* ================= RESPONSIVE ================= */
+
 @media (max-width: 991px) {
+  .hero-new {
+    min-height: auto;
+  }
+
   .hero-content-wrapper {
     flex-direction: column-reverse;
     text-align: center;
-    padding-top: 20px;
+    padding: 0;
   }
 
   .hero-text {
-    margin-left: 0;
-    margin-bottom: 40px;
+    padding: 24px 20px 40px;
+    max-width: 100%;
+  }
+
+  .hero-image-container {
+    width: 100%;
+    flex: none;
+    border-radius: 0;
+    min-height: 280px;
+    max-height: 400px;
+  }
+
+  .hero-cta {
+    margin: 0 auto;
   }
 }
 
-@media (max-width: 768px) {
-  .hero-text h1 {
-    font-size: 32px;
+@media (max-width: 576px) {
+  .hero-text {
+    padding: 20px 16px 32px;
   }
 
-  .hero-text p {
-    font-size: 15px;
+  .hero-image-container {
+    min-height: 220px;
+    max-height: 300px;
+  }
+
+  .hero-new .hero-badge {
+    font-size: 12px;
+    padding: 6px 14px;
   }
 }

@@ -65,7 +65,9 @@ export const initSocket = (server) => {
         io.to(conversationId).emit("receive_message", message);
         
         // Emit global notification to receiver
-        io.to(receiverId).emit("new_message_notification", message);
+        if (receiverId && receiverId !== "undefined") {
+          io.to(receiverId).emit("new_message_notification", message);
+        }
       } catch (err) {
         console.error("Error saving message via socket:", err);
       }

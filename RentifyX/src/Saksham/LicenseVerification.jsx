@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 // Removed import './Driveables.css';
 
 const LicenseVerification = ({ isVerified, onVerificationComplete }) => {
@@ -56,7 +57,7 @@ const LicenseVerification = ({ isVerified, onVerificationComplete }) => {
       setIsVerifying(false);
       setShowVerificationForm(false);
       onVerificationComplete();
-      alert('License verified successfully! ✓');
+      toast.success('License verified successfully! ✓');
     }, 2000);
   };
 

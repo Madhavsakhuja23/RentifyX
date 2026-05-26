@@ -61,12 +61,12 @@ export const getMessages = async (req, res) => {
 export const getUnreadCount = async (req, res) => {
   try {
     const userId = req.user.id;
-    // Count distinct conversations that have unread messages for the user
-    const unreadConvs = await Message.distinct("conversationId", {
+    // Count all unread messages for the user across all conversations
+    const unreadCount = await Message.countDocuments({
       receiverId: userId,
       read: false
     });
-    res.json({ unreadCount: unreadConvs.length });
+    res.json({ unreadCount });
   } catch (err) {
     console.error("Error fetching unread count:", err);
     res.status(500).json({ msg: "Server error" });

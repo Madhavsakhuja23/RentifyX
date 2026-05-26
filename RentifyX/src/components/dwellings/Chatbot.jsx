@@ -7,9 +7,34 @@ function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleChat = () => {
-    setIsOpen(!isOpen);
-    document.body.classList.toggle("chatbot-blur");
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        // Lock body scroll and prevent layout shift from scrollbar disappearing
+        const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+        document.body.classList.add("chatbot-blur");
+        document.body.style.overflow = "hidden";
+        if (scrollBarWidth > 0) {
+          document.body.style.paddingRight = `${scrollBarWidth}px`;
+        }
+      } else {
+        // Unlock body scroll
+        document.body.classList.remove("chatbot-blur");
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+      }
+      return next;
+    });
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove("chatbot-blur");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    };
+  }, []);
 
   const [messages, setMessages] = useState([
     {
@@ -159,52 +184,57 @@ function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="chatbot-overlay">
+        <>
+          {/* Backdrop — closes chat on tap */}
+          <div className="chatbot-backdrop" onClick={toggleChat} />
 
-          <div className="chatbot-header">
-            <h3>Rental Assistant 🏡</h3>
-            <button onClick={toggleChat}>×</button>
+          <div className="chatbot-overlay">
+
+            <div className="chatbot-header">
+              <h3>Rental Assistant 🏡</h3>
+              <button onClick={toggleChat}>×</button>
+            </div>
+
+            {/* Quick Questions */}
+            <div className="chatbot-quick">
+              <button onClick={() => quickAsk("Show villas")}>🏡 Villas</button>
+              <button onClick={() => quickAsk("Available flats")}>🏢 Flats</button>
+              <button onClick={() => quickAsk("PG accommodation")}>🛏 PG</button>
+              <button onClick={() => quickAsk("Vehicle rental")}>🚗 Driveables</button>
+            </div>
+
+            {/* Messages */}
+            <div className="chatbot-messages">
+              {messages.map((msg, i) => (
+                <div key={i} className={`chatbot-message ${msg.sender}`}>
+                  {msg.text}
+                </div>
+              ))}
+
+              {isTyping && (
+                <div className="chatbot-message bot typing">
+                  Typing...
+                </div>
+              )}
+
+              <div ref={messagesEndRef}></div>
+            </div>
+
+            {/* Input */}
+            <div className="chatbot-input">
+              <input
+                type="text"
+                placeholder="Ask about rentals..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              />
+
+              <button onClick={handleSend}>Send</button>
+            </div>
+
           </div>
-
-          {/* Quick Questions */}
-          <div className="chatbot-quick">
-            <button onClick={() => quickAsk("Show villas")}>🏡 Villas</button>
-            <button onClick={() => quickAsk("Available flats")}>🏢 Flats</button>
-            <button onClick={() => quickAsk("PG accommodation")}>🛏 PG</button>
-            <button onClick={() => quickAsk("Vehicle rental")}>🚗 Driveables</button>
-          </div>
-
-          {/* Messages */}
-          <div className="chatbot-messages">
-            {messages.map((msg, i) => (
-              <div key={i} className={`chatbot-message ${msg.sender}`}>
-                {msg.text}
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="chatbot-message bot typing">
-                Typing...
-              </div>
-            )}
-
-            <div ref={messagesEndRef}></div>
-          </div>
-
-          {/* Input */}
-          <div className="chatbot-input">
-            <input
-              type="text"
-              placeholder="Ask about rentals..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            />
-
-            <button onClick={handleSend}>Send</button>
-          </div>
-
-        </div>
+        </>
       )}
     </>
   );

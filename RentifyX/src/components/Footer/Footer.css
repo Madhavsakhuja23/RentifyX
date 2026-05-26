@@ -1,12 +1,12 @@
 .footer {
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin-top: 0;
+  margin-bottom: 0;
   padding-top: 40px;
   background: var(--bg-secondary);
 }
 
 .footer-inner {
-  padding: 70px 40px 30px;
+  padding: clamp(40px, 6vw, 70px) clamp(16px, 4vw, 40px) 30px;
 }
 
 /* Brand */
@@ -35,6 +35,7 @@
   justify-content: center;
   font-weight: 800;
   box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4);
+  flex-shrink: 0;
 }
 
 .footer-desc {
@@ -46,7 +47,7 @@
 /* Socials */
 .footer-socials {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-top: 16px;
 }
 
@@ -101,10 +102,29 @@
 /* Bottom */
 .footer-bottom {
   border-top: 1px solid #e8ecf5;
-  margin-top: 40px;
-  margin-bottom: 20px;
-  padding-top: 18px;
+  margin-top: 32px;
+  margin-bottom: 0;
+  padding: 18px 0 20px;
   text-align: center;
   font-size: 13px;
   color: #8a8f98;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+  .footer-inner {
+    padding: 32px 16px 20px;
+  }
+
+  .footer-inner .row {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-socials a {
+    width: 34px;
+    height: 34px;
+  }
 }

@@ -10,7 +10,7 @@
 /* Hero Section */
 .info-hero {
   position: relative;
-  padding: 80px 24px 60px;
+  padding: clamp(60px, 8vw, 100px) clamp(16px, 4vw, 24px) clamp(40px, 6vw, 80px);
   text-align: center;
   overflow: hidden;
   color: black;
@@ -40,22 +40,24 @@
 
 .info-hero-badge {
   display: inline-block;
-  background: rgba(255, 102, 0, 0.15);
-  color: #ff8a50;
-  padding: 6px 16px;
+  background: rgba(255, 102, 0, 0.1);
+  color: #ff6600;
+  border: 1px solid rgba(255, 102, 0, 0.2);
+  padding: 6px clamp(12px, 2vw, 18px);
   border-radius: 20px;
-  font-size: 13px;
+  font-size: clamp(11px, 2vw, 13px);
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   margin-bottom: 20px;
   position: relative;
   z-index: 1;
+  transition: all 0.3s ease;
 }
 
 .info-hero h1 {
   font-family: var(--font-airbnb);
-  font-size: 48px;
+  font-size: clamp(28px, 6vw, 48px);
   font-weight: 800;
   margin: 0 0 16px;
   position: relative;
@@ -64,7 +66,7 @@
 }
 
 .info-hero p {
-  font-size: 18px;
+  font-size: clamp(15px, 2.5vw, 18px);
   color: #94a3b8;
   max-width: 600px;
   margin: 0 auto;
@@ -77,13 +79,13 @@
 .info-content {
   max-width: 900px;
   margin: 0 auto;
-  padding: 60px 24px 80px;
+  padding: clamp(32px, 6vw, 60px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 80px);
 }
 
 .info-content-wide {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 60px 24px 80px;
+  padding: clamp(32px, 6vw, 60px) clamp(16px, 4vw, 24px) clamp(48px, 8vw, 80px);
 }
 
 /* Section Blocks */
@@ -93,7 +95,7 @@
 
 .info-section h2 {
   font-family: var(--font-airbnb);
-  font-size: 28px;
+  font-size: clamp(22px, 4vw, 28px);
   font-weight: 700;
   color: var(--foreground, #111);
   margin: 0 0 16px;
@@ -145,15 +147,15 @@
 /* Cards Grid */
 .info-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(260px, 30vw, 300px), 1fr));
+  gap: clamp(16px, 3vw, 24px);
   margin-top: 32px;
 }
 
 .info-card {
   background: var(--card, white);
   border-radius: 20px;
-  padding: 32px;
+  padding: clamp(20px, 4vw, 32px);
   border: 1px solid var(--border, #f0f0f0);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
@@ -177,7 +179,7 @@
 }
 
 .info-card h3 {
-  font-size: 20px;
+  font-size: clamp(18px, 3vw, 20px);
   font-weight: 700;
   margin: 0 0 10px;
   color: var(--foreground, #111);
@@ -193,14 +195,14 @@
 /* Values / Stats Row */
 .info-stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 20vw, 200px), 1fr));
+  gap: clamp(16px, 3vw, 24px);
   margin: 40px 0;
 }
 
 .info-stat {
   text-align: center;
-  padding: 32px 20px;
+  padding: clamp(20px, 4vw, 32px) clamp(12px, 2vw, 20px);
   background: var(--card, white);
   border-radius: 20px;
   border: 1px solid var(--border, #f0f0f0);
@@ -208,7 +210,7 @@
 }
 
 .info-stat .stat-number {
-  font-size: 36px;
+  font-size: clamp(28px, 5vw, 36px);
   font-weight: 800;
   color: rgb(255, 102, 0);
   display: block;
@@ -224,15 +226,15 @@
 /* Team Grid */
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(200px, 25vw, 240px), 1fr));
+  gap: clamp(16px, 3vw, 24px);
   margin-top: 32px;
 }
 
 .team-card {
   background: var(--card, white);
   border-radius: 20px;
-  padding: 32px 24px;
+  padding: clamp(20px, 4vw, 32px) clamp(16px, 3vw, 24px);
   border: 1px solid var(--border, #f0f0f0);
   text-align: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
@@ -260,7 +262,7 @@
 }
 
 .team-card h4 {
-  font-size: 18px;
+  font-size: clamp(16px, 2.5vw, 18px);
   font-weight: 700;
   margin: 0 0 4px;
 }
@@ -275,7 +277,7 @@
 .job-card {
   background: var(--card, white);
   border-radius: 20px;
-  padding: 28px 32px;
+  padding: clamp(20px, 4vw, 28px) clamp(16px, 4vw, 32px);
   border: 1px solid var(--border, #f0f0f0);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
   display: flex;
@@ -291,7 +293,7 @@
 }
 
 .job-info h4 {
-  font-size: 18px;
+  font-size: clamp(16px, 2.5vw, 18px);
   font-weight: 700;
   margin: 0 0 6px;
   color: var(--foreground, #111);
@@ -334,8 +336,8 @@
 /* Contact Form */
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1.5fr 1fr;
+  gap: clamp(24px, 4vw, 40px);
   margin-top: 32px;
 }
 
@@ -466,6 +468,7 @@
 .form-char-count--warn {
   color: #f59e0b;
   font-weight: 600;
+  margin-top: 4px;
 }
 
 /* ── Disabled Fields ── */
@@ -606,7 +609,7 @@
 
 /* Legal/Policy content */
 .legal-content h3 {
-  font-size: 20px;
+  font-size: clamp(18px, 3vw, 20px);
   font-weight: 700;
   margin: 32px 0 12px;
   color: var(--foreground, #111);
@@ -628,20 +631,9 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .info-hero h1 {
-    font-size: 32px;
-  }
-
-  .info-hero p {
-    font-size: 16px;
-  }
-
-  .info-cards-grid {
-    grid-template-columns: 1fr;
-  }
-
   .contact-grid {
     grid-template-columns: 1fr;
+    gap: 24px; /* Fix gap on mobile/tablet */
   }
 
   .job-card {
@@ -664,11 +656,13 @@
     padding: 60px 16px 40px;
   }
 
-  .info-hero h1 {
-    font-size: 28px;
-  }
-
   .team-grid {
     grid-template-columns: 1fr;
+  }
+
+  .submit-btn {
+    width: 100%;
+    align-self: stretch;
+    text-align: center;
   }
 }

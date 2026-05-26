@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const ListingsContext = createContext(null);
 const API_URL =  `${import.meta.env.VITE_API_URL}/api/listings`;
@@ -70,9 +71,13 @@ export function ListingsProvider({ children }) {
       });
       if (res.ok) {
         setListings((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
+        toast.success('Listing updated successfully! ✓');
+      } else {
+        toast.error('Failed to update listing. Please try again.');
       }
     } catch (err) {
       console.error('Failed to update listing:', err);
+      toast.error('Failed to update listing.');
     }
   };
 
@@ -88,8 +93,10 @@ export function ListingsProvider({ children }) {
         headers: { Authorization: token ? `Bearer ${token}` : '' },
       });
       if (!res.ok) throw new Error('Delete failed');
+      toast.success('Listing deleted successfully! ✓');
     } catch (err) {
       console.error('Delete error:', err);
+      toast.error('Failed to delete listing. Rollback applied.');
       setListings(previous); // rollback on failure
     }
   };
@@ -109,8 +116,10 @@ export function ListingsProvider({ children }) {
         headers: { Authorization: token ? `Bearer ${token}` : '' },
       });
       if (!res.ok) throw new Error('Toggle failed');
+      toast.success('Listing availability updated! ✓');
     } catch (err) {
       console.error('Toggle error:', err);
+      toast.error('Failed to update availability. Rollback applied.');
       setListings(previous); // rollback on failure
     }
   };

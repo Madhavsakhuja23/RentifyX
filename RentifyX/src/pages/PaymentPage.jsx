@@ -853,11 +853,12 @@ const PaymentPage = () => {
           cursor: pointer;
           font-family: inherit;
         }
-        .dv-success-home-btn:hover { background: #f5f5f5; }
-
         @media (max-width: 900px) {
           .dv-layout { grid-template-columns: 1fr; gap: 24px; }
           .dv-qr-card { position: static; }
+          .dv-page { padding: 20px 16px 60px; }
+          .dv-topbar { margin-bottom: 24px; }
+          .dv-topbar h1 { font-size: 20px; }
         }
 
         /* Payment Tabs */

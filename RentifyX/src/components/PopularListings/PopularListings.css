@@ -4,14 +4,14 @@
 }
 
 .popular-title {
-  font-size: 36px;
+  font-size: clamp(28px, 4vw, 36px);
   font-weight: 800;
   color: black;
 }
 
 .popular-subtitle {
   margin-top: 10px;
-  font-size: 15px;
+  font-size: clamp(14px, 2vw, 15px);
   color: var(--text-secondary);
 }
 
@@ -24,9 +24,22 @@
   border-radius: 12px;
   font-weight: 600;
   transition: all 0.3s ease;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .view-all-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(255, 102, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .popular-section {
+    padding: 40px 0;
+  }
+
+  .view-all-btn {
+    width: 100%;
+    max-width: 300px;
+  }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -34,6 +34,17 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
   const handleLogout = () => {
     logOut();
     navigate('/login');
@@ -49,34 +60,34 @@ export default function DashboardLayout() {
     : 'S';
 
   return (
-    <div className={`dashboard-layout ${sidebarOpen ? '' : 'sidebar-collapsed'}`}>
+    <div className={`seller-dashboard-layout ${sidebarOpen ? '' : 'seller-sidebar-collapsed'}`}>
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />
+        <div className="seller-sidebar-overlay" onClick={() => setMobileOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-brand">
-            {sidebarOpen && <span className="brand-text">RentifyX</span>}
+      <aside className={`seller-sidebar ${mobileOpen ? 'seller-mobile-open' : ''}`}>
+        <div className="seller-sidebar-header">
+          <div className="seller-sidebar-brand">
+            {sidebarOpen && <span className="seller-brand-text">RentifyX</span>}
           </div>
           <button
-            className="sidebar-toggle desktop-only"
+            className="seller-sidebar-toggle seller-desktop-only"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             title={sidebarOpen ? 'Collapse' : 'Expand'}
           >
-            <ChevronLeft className={`toggle-icon ${sidebarOpen ? '' : 'rotated'}`} size={18} />
+            <ChevronLeft className={`seller-toggle-icon ${sidebarOpen ? '' : 'seller-rotated'}`} size={18} />
           </button>
           <button
-            className="sidebar-close mobile-only"
+            className="seller-sidebar-close seller-mobile-only"
             onClick={() => setMobileOpen(false)}
           >
             <X size={20} />
           </button>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="seller-sidebar-nav">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -93,7 +104,7 @@ export default function DashboardLayout() {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
+        <div className="seller-sidebar-footer">
           <button className="seller-nav-link logout-btn" onClick={handleLogout}>
             <LogOut size={20} className="nav-icon" />
             {sidebarOpen && <span className="nav-label">Logout</span>}
@@ -102,29 +113,29 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main area */}
-      <div className="main-area">
-        <header className="topbar">
+      <div className="seller-main-area">
+        <header className="seller-topbar">
           <button
-            className="mobile-menu-btn mobile-only"
+            className="seller-mobile-menu-btn seller-mobile-only"
             onClick={() => setMobileOpen(true)}
           >
             <Menu size={22} />
           </button>
-          <div className="topbar-greeting">
-            <h2>Welcome, <span className="greeting-name">{user?.name || 'Seller'}</span></h2>
+          <div className="seller-topbar-greeting">
+            <h2>Welcome, <span className="seller-greeting-name">{user?.name || 'Seller'}</span></h2>
           </div>
-          <div className="topbar-actions">
-            <NavLink to="/seller/notifications" className="topbar-bell">
+          <div className="seller-topbar-actions">
+            <NavLink to="/seller/notifications" className="seller-topbar-bell">
               <Bell size={20} />
-              {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
+              {unreadCount > 0 && <span className="seller-bell-badge">{unreadCount}</span>}
             </NavLink>
-            <div className="topbar-avatar" title={user?.name || 'Seller'}>
+            <div className="seller-topbar-avatar" title={user?.name || 'Seller'}>
               {initials}
             </div>
           </div>
         </header>
 
-        <main className="dashboard-content">
+        <main className="seller-dashboard-content">
           <Outlet />
         </main>
       </div>

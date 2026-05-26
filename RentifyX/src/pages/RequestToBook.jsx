@@ -1064,6 +1064,25 @@ export default function RequestToBook() {
           box-shadow: 0 6px 18px rgba(255,102,0,.45);
         }
         .rtb-rzp-pay-btn:disabled { opacity: .65; cursor: not-allowed; }
+
+        @media (max-width: 991px) {
+          .rtb-layout {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+          .rtb-qr-card {
+            position: static;
+          }
+          .rtb-page {
+            padding: 20px 16px 60px;
+          }
+          .rtb-topbar {
+            margin-bottom: 24px;
+          }
+          .rtb-topbar h1 {
+            font-size: 20px;
+          }
+        }
       `}</style>
     </div>
   );

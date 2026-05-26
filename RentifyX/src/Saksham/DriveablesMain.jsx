@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { getVehicleListings, getWishlistApi } from '../api';
+import toast from 'react-hot-toast';
 
 // Component Imports
 import Header from '../components/Header/Header';
@@ -277,7 +278,7 @@ const DriveablesMain = () => {
       if (exists) return prev.filter(v => v.id !== vehicle.id);
 
       if (prev.length > 0 && prev[0].category !== vehicle.category) {
-        alert(`Please compare only ${prev[0].category} vehicles together.`);
+        toast.error(`Please compare only ${prev[0].category} vehicles together.`);
         return prev;
       }
       if (prev.length >= 3) { setShowMaxComparePopup(true); return prev; }
