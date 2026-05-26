@@ -4,6 +4,7 @@ import PricingSection from './PricingSection';
 import LicenseVerification from './LicenseVerification';
 import CancellationPolicy from './CancellationPolicy';
 import { getWishlistApi, addToWishlistApi, removeFromWishlistApi } from '../api';
+import toast from 'react-hot-toast';
 import '../pages/ListingDetails.css';
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
@@ -168,11 +169,11 @@ const DriveableDetail = ({ driveable, onClose }) => {
   const handleBooking = () => {
     if (!checkAuth()) return;
     if (!licenseVerified) {
-      alert('Please verify your driving license first!');
+      toast.error('Please verify your driving license first!');
       return;
     }
     if (availability?.conflict) {
-      alert('This vehicle is already booked for the selected period. Please choose different dates.');
+      toast.error('This vehicle is already booked for the selected period. Please choose different dates.');
       return;
     }
 

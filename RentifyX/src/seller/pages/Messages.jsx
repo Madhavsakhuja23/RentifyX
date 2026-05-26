@@ -3,14 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../../api';
-import { Search, Send, User, MessageCircle, Clock } from 'lucide-react';
+import { Search, Send, User, MessageCircle, Clock, ArrowLeft } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import './Messages.css';
 
 export default function Messages() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { socket } = useSocket();
+  const { socket, setActiveConversationId } = useSocket();
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -19,6 +19,17 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (setActiveConversationId) {
+      setActiveConversationId(selectedConv?._id || null);
+    }
+    return () => {
+      if (setActiveConversationId) {
+        setActiveConversationId(null);
+      }
+    };
+  }, [selectedConv?._id, setActiveConversationId]);
 
   useEffect(() => {
     fetchConversations();
@@ -40,6 +51,8 @@ export default function Messages() {
       fetchMessages(selectedConv._id);
       socket?.emit('join_conversation', selectedConv._id);
       socket?.emit('mark_read', selectedConv._id);
+      // Optimistically clear local conversations count for this active ID
+      setConversations(prev => prev.map(c => c._id === selectedConv._id ? { ...c, unreadForMe: 0 } : c));
     }
   }, [selectedConv?._id, socket]);
 
@@ -123,11 +136,31 @@ export default function Messages() {
     }
   };
 
+  const handleBackToInbox = () => {
+    setSelectedConv(null);
+    navigate(location.pathname, { replace: true });
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConv || !socket || !user) return;
 
-    const receiverId = selectedConv.sellerId?._id === user.id ? selectedConv.buyerId?._id : selectedConv.sellerId?._id;
+    // Robust extraction of user IDs, whether populated as objects or unpopulated strings
+    const getUserId = (userObj) => {
+      if (!userObj) return null;
+      return typeof userObj === 'object' ? (userObj._id || userObj.id) : userObj;
+    };
+
+    const sellerIdStr = getUserId(selectedConv.sellerId);
+    const buyerIdStr = getUserId(selectedConv.buyerId);
+    
+    // The receiver is the other participant in the conversation
+    const receiverId = sellerIdStr === user.id ? buyerIdStr : sellerIdStr;
+
+    if (!receiverId) {
+      console.error("Could not determine receiverId", { selectedConv, user });
+      return;
+    }
 
     const messageData = {
       conversationId: selectedConv._id,
@@ -149,7 +182,7 @@ export default function Messages() {
 
   return (
     <div className="messages-page">
-      <div className="messages-container">
+      <div className={`messages-container ${selectedConv ? 'has-active-chat' : ''}`}>
         {/* Sidebar */}
         <div className="conversations-sidebar">
           <div className="sidebar-header">
@@ -173,6 +206,8 @@ export default function Messages() {
                   className={`conversation-item ${selectedConv?._id === conv._id ? 'active' : ''}`}
                   onClick={() => {
                     setSelectedConv(conv);
+                    // Optimistically clear local conversations count for this active ID
+                    setConversations(prev => prev.map(c => c._id === conv._id ? { ...c, unreadForMe: 0 } : c));
                     navigate(`?id=${conv._id}`, { replace: true });
                   }}
                 >
@@ -211,6 +246,9 @@ export default function Messages() {
           {selectedConv ? (
             <>
               <div className="chat-header">
+                <button className="chat-back-button" onClick={handleBackToInbox} aria-label="Back to inbox">
+                  <ArrowLeft size={20} />
+                </button>
                 <div className="header-info">
                   <h4>{selectedConv.sellerId._id === user.id ? selectedConv.buyerId.name : selectedConv.sellerId.name}</h4>
                   <p>{selectedConv.listingId?.title}</p>

@@ -4,6 +4,7 @@ import { listings } from "../data/dwellings";
 import api, { getListingById, checkAvailabilityApi, getWishlistApi, addToWishlistApi, removeFromWishlistApi } from "../api";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
+import toast from "react-hot-toast";
 import "./ListingDetails.css";
 
 /* ── static data ─────────────────────────────── */
@@ -458,7 +459,7 @@ function BookingCard({ listing }) {
 
     } catch (error) {
       console.error("Availability check failed:", error);
-      alert("Failed to check availability. Please try again.");
+      toast.error("Failed to check availability. Please try again.");
     } finally {
       setCheckingAvailability(false);
     }

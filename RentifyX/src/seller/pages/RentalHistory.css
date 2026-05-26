@@ -427,3 +427,120 @@
 }
 
 .btn-close:hover { background: rgba(15, 23, 42, 0.04); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); }
+
+@media (max-width: 768px) {
+  .rental-history .page-header {
+    margin-bottom: 24px;
+  }
+  .rental-history .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .filter-bar {
+    padding: 16px;
+    gap: 12px;
+  }
+  .filter-group {
+    flex: 1 1 140px;
+    min-width: unset;
+  }
+
+  .table-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow-x: visible;
+  }
+
+  .history-table, 
+  .history-table thead, 
+  .history-table tbody, 
+  .history-table th, 
+  .history-table td, 
+  .history-table tr {
+    display: block;
+  }
+  
+  .history-table thead {
+    display: none;
+  }
+  
+  .history-table tbody tr {
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
+  }
+  
+  .history-table tbody tr:hover {
+    transform: none;
+    background: #ffffff;
+  }
+  
+  .history-table td {
+    border-bottom: none;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    font-size: 0.9rem;
+  }
+  
+  .history-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: rgba(15, 23, 42, 0.45);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    text-align: left;
+    margin-right: 12px;
+  }
+  
+  .history-table td.row-item {
+    justify-content: space-between;
+    text-align: right;
+  }
+  
+  .history-table td.row-item .type-badge {
+    margin-right: 0;
+    margin-left: 8px;
+    order: 2;
+  }
+  
+  /* Details Modal on Mobile */
+  .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    border-radius: 20px;
+  }
+  
+  .modal-header {
+    padding: 20px 24px;
+  }
+  
+  .modal-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px 24px;
+  }
+  
+  .modal-footer {
+    padding: 16px 24px;
+  }
+  
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .payment-breakdown {
+    padding: 16px;
+    margin-top: 8px;
+  }
+}

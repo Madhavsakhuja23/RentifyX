@@ -1,5 +1,7 @@
 import Booking from "../models/Booking.js";
+import Listing from "../models/Listing.js";
 import mongoose from "mongoose";
+import { getIo } from "../config/socket.js";
 
 // GET /api/bookings/history — Seller rental history with filters
 export const getRentalHistory = async (req, res) => {
@@ -7,20 +9,47 @@ export const getRentalHistory = async (req, res) => {
     const sellerId = req.user.id;
     const { status, type, from, to } = req.query;
 
-    const matchStage = {
-      sellerId: new mongoose.Types.ObjectId(sellerId),
-    };
+    // Fetch listing IDs owned by the seller
+    const sellerListings = await Listing.find({ seller: new mongoose.Types.ObjectId(sellerId) }).select("_id");
+    const listingIds = sellerListings.map(l => l._id);
 
-    if (status) matchStage.status = status;
+    const filterConditions = [];
+    filterConditions.push({
+      $or: [
+        { sellerId: new mongoose.Types.ObjectId(sellerId) },
+        { listingId: { $in: listingIds } }
+      ]
+    });
+
+    if (status) {
+      if (status === "ongoing") {
+        filterConditions.push({ status: { $in: ["confirmed", "active", "ongoing", "paid"] } });
+      } else {
+        filterConditions.push({ status });
+      }
+    }
 
     if (from || to) {
-      matchStage.createdAt = {};
-      if (from) matchStage.createdAt.$gte = new Date(from);
-      if (to) matchStage.createdAt.$lte = new Date(to);
+      const dateFilter = {};
+      if (from) dateFilter.$gte = new Date(from);
+      if (to) dateFilter.$lte = new Date(to);
+      filterConditions.push({ createdAt: dateFilter });
     }
+
+    const matchStage = { $and: filterConditions };
 
     const pipeline = [
       { $match: matchStage },
+      // Fallback fields mapping for backwards compatibility with buyer checkout bookings
+      {
+        $addFields: {
+          renterId: { $ifNull: ["$renterId", "$userId"] },
+          startDate: { $ifNull: ["$startDate", "$checkIn"] },
+          endDate: { $ifNull: ["$endDate", "$checkOut"] },
+          totalAmount: { $ifNull: ["$totalAmount", "$totalPrice"] },
+          status: { $ifNull: ["$status", "ongoing"] }
+        }
+      },
       {
         $lookup: {
           from: "users",
@@ -37,8 +66,8 @@ export const getRentalHistory = async (req, res) => {
           as: "listing",
         },
       },
-      { $unwind: "$renter" },
-      { $unwind: "$listing" },
+      { $unwind: { path: "$renter", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$listing", preserveNullAndEmptyArrays: true } },
     ];
 
     if (type) {
@@ -52,7 +81,9 @@ export const getRentalHistory = async (req, res) => {
     const bookings = await Booking.aggregate(pipeline);
 
     const totalEarnings = bookings.reduce((sum, b) => {
-      if (b.status === "completed") return sum + b.totalAmount;
+      if (b.status === "completed" || b.paymentStatus === "paid") {
+        return sum + (b.totalAmount || 0);
+      }
       return sum;
     }, 0);
 
@@ -109,6 +140,11 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ msg: "All booking fields are required." });
     }
 
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ msg: "Listing not found" });
+    }
+
     const newCheckIn = new Date(checkIn);
     const newCheckOut = new Date(checkOut);
 
@@ -139,9 +175,25 @@ export const createBooking = async (req, res) => {
       totalPrice,
       utr,
       paymentStatus: "paid",
+
+      // Seller fields to support dynamic seller dashboard stats
+      sellerId: listing.seller,
+      renterId: userId,
+      startDate: newCheckIn,
+      endDate: newCheckOut,
+      totalAmount: totalPrice,
+      status: "ongoing" // starts as ongoing
     });
 
     await newBooking.save();
+
+    // Notify the seller instantly so their dashboard refreshes in real time
+    try {
+      const io = getIo();
+      io.to(listing.seller.toString()).emit("dashboard_stats_updated");
+    } catch (socketErr) {
+      console.error("Socket emit failed on booking create:", socketErr);
+    }
 
     res.status(201).json({
       success: true,

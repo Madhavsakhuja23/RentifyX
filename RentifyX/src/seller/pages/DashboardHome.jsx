@@ -13,10 +13,12 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '../../api';
+import { useSocket } from '../context/SocketContext';
 import './DashboardHome.css';
 import './DashboardHomeStyles.css';
 
 export default function DashboardHome() {
+  const { socket, unreadCount } = useSocket() || {};
   const [stats, setStats] = useState(null);
   const [activity, setActivity] = useState([]);
   const [revenueData, setRevenueData] = useState([]);
@@ -25,7 +27,6 @@ export default function DashboardHome() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      setLoading(true);
       try {
         const [statsRes, activityRes, revenueRes] = await Promise.all([
           api.get('/dashboard/stats'),
@@ -43,12 +44,24 @@ export default function DashboardHome() {
       }
     };
 
+    if (!stats) {
+      setLoading(true);
+    }
     fetchDashboardData();
+    
+    if (socket) {
+      socket.on("dashboard_stats_updated", fetchDashboardData);
+    }
     
     // Poll every 30 seconds
     const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, [revenueRange]);
+    return () => {
+      clearInterval(interval);
+      if (socket) {
+        socket.off("dashboard_stats_updated", fetchDashboardData);
+      }
+    };
+  }, [revenueRange, socket]);
 
   const kpiCards = stats ? [
     {
@@ -71,7 +84,7 @@ export default function DashboardHome() {
     },
     {
       label: 'Unread Messages',
-      value: stats.unreadMessages,
+      value: unreadCount !== undefined ? unreadCount : stats.unreadMessages,
       icon: MessageCircle,
       color: '#ec4899',
     }

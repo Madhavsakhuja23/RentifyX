@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useListings } from '../context/ListingsContext';
 import { Pencil, Trash2, EyeOff, Eye, Search, MessageCircle, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import './MyListings.css';
 
 export default function MyListings() {
@@ -36,7 +37,9 @@ export default function MyListings() {
   }, []);
 
   const formatCountdown = (endDate) => {
+    if (!endDate) return 'No end date';
     const end = new Date(endDate).getTime();
+    if (isNaN(end)) return 'Invalid Date';
     const diff = end - now;
     if (diff <= 0) return 'Expired';
 
@@ -206,9 +209,46 @@ export default function MyListings() {
                       className="action-icon delete"
                       title="Delete"
                       onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this listing?')) {
-                          deleteListing(listing.id);
-                        }
+                        toast((t) => (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <span style={{ fontWeight: 600, color: '#1e293b' }}>Are you sure you want to delete this listing?</span>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                              <button 
+                                style={{
+                                  background: '#ef4444',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => {
+                                  deleteListing(listing.id);
+                                  toast.dismiss(t.id);
+                                }}
+                              >
+                                Delete
+                              </button>
+                              <button 
+                                style={{
+                                  background: '#e2e8f0',
+                                  color: '#334155',
+                                  border: 'none',
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => toast.dismiss(t.id)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ), {
+                          duration: 6000,
+                        });
                       }}
                     >
                       <Trash2 size={15} />

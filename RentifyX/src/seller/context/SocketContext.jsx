@@ -1,15 +1,29 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 import api from "../../api";
 import toast from "react-hot-toast";
+import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
+  const { user } = useAuth();
   const [socket, setSocket] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+
+  const activeConversationIdRef = useRef(null);
+  const userRef = useRef(null);
+
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId;
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -26,7 +40,8 @@ export const SocketProvider = ({ children }) => {
 
     fetchUnreadCount();
 
-    const socketInstance = io( `${import.meta.env.VITE_API_URL}`, {
+    const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const socketInstance = io(socketUrl, {
       auth: { token },
     });
 
@@ -39,11 +54,22 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketInstance.on("new_message_notification", (message) => {
+      // 1. Skip if message is from myself
+      const senderId = message.senderId?._id || message.senderId;
+      const currentUserId = userRef.current?.id || userRef.current?._id;
+      if (senderId && currentUserId && senderId === currentUserId) {
+        return;
+      }
+
+      // 2. Skip if this conversation is currently open and active
+      if (activeConversationIdRef.current === message.conversationId) {
+        return;
+      }
+
       // Fetch exact count to reflect unique conversations
       fetchUnreadCount();
       
-      // Check if we are not actively on the messages page for this conversation
-      // We rely on the local page to emit 'mark_read' if active, which triggers 'messages_read_by_me'
+      // Toast notification for incoming messages from other users
       toast.success(`New message received`, {
         icon: '💬',
         style: {
@@ -64,10 +90,10 @@ export const SocketProvider = ({ children }) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [fetchUnreadCount]);
+  }, [fetchUnreadCount, user]);
 
   return (
-    <SocketContext.Provider value={{ socket, unreadCount, fetchUnreadCount }}>
+    <SocketContext.Provider value={{ socket, unreadCount, fetchUnreadCount, activeConversationId, setActiveConversationId }}>
       {children}
     </SocketContext.Provider>
   );

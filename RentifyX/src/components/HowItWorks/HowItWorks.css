@@ -5,14 +5,14 @@
 
 /* Title */
 .how-title {
-  font-size: 32px;
+  font-size: clamp(24px, 4vw, 32px);
   font-weight: 700;
   color: black;
   margin-bottom: 8px;
 }
 
 .how-subtitle {
-  font-size: 14px;
+  font-size: clamp(13px, 2vw, 14px);
   color: var(--text-secondary);
   max-width: 520px;
   margin: 0 auto 40px;
@@ -97,6 +97,6 @@
 /* Responsive */
 @media (max-width: 768px) {
   .how-section {
-    padding: 60px 0;
+    padding: 40px 0;
   }
 }

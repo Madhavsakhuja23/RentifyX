@@ -1,6 +1,7 @@
 import Booking from "../models/Booking.js";
 import Listing from "../models/Listing.js";
 import Conversation from "../models/Conversation.js";
+import Message from "../models/Message.js";
 import mongoose from "mongoose";
 
 // GET /api/dashboard/stats
@@ -8,10 +9,26 @@ export const getDashboardStats = async (req, res) => {
   try {
     const sellerId = new mongoose.Types.ObjectId(req.user.id);
 
-    // 1. Total earnings (completed bookings)
+    // Fetch listing IDs owned by the seller to aggregate older/buyer-created bookings
+    const sellerListings = await Listing.find({ seller: sellerId }).select("_id");
+    const listingIds = sellerListings.map((l) => l._id);
+
+    // 1. Total earnings (completed or successfully paid bookings)
     const earningsAggr = await Booking.aggregate([
-      { $match: { sellerId, status: "completed" } },
-      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      {
+        $match: {
+          $or: [
+            { sellerId, $or: [{ status: "completed" }, { paymentStatus: "paid" }] },
+            { listingId: { $in: listingIds }, $or: [{ status: "completed" }, { paymentStatus: "paid" }] },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ifNull: ["$totalAmount", "$totalPrice"] } },
+        },
+      },
     ]);
     const totalEarnings = earningsAggr.length > 0 ? earningsAggr[0].total : 0;
 
@@ -24,16 +41,17 @@ export const getDashboardStats = async (req, res) => {
 
     // 3. Ongoing bookings
     const ongoingBookingsCount = await Booking.countDocuments({
-      sellerId,
-      status: "ongoing",
+      $or: [
+        { sellerId, status: { $in: ["confirmed", "active", "ongoing", "paid"] } },
+        { listingId: { $in: listingIds }, status: { $in: ["confirmed", "active", "ongoing", "paid"] } },
+      ],
     });
 
-    // 4. Unread messages
-    const unreadMessagesAggr = await Conversation.aggregate([
-      { $match: { sellerId } },
-      { $group: { _id: null, total: { $sum: "$unreadCount" } } },
-    ]);
-    const unreadMessagesCount = unreadMessagesAggr.length > 0 ? unreadMessagesAggr[0].total : 0;
+    // 4. Unread messages (user-specific unread count from Message collection)
+    const unreadMessagesCount = await Message.countDocuments({
+      receiverId: sellerId,
+      read: false,
+    });
 
     res.json({
       totalEarnings,
@@ -53,6 +71,10 @@ export const getDashboardRevenue = async (req, res) => {
     const sellerId = new mongoose.Types.ObjectId(req.user.id);
     const { range = "month" } = req.query;
 
+    // Fetch listing IDs owned by the seller to aggregate older/buyer-created bookings
+    const sellerListings = await Listing.find({ seller: sellerId }).select("_id");
+    const listingIds = sellerListings.map((l) => l._id);
+
     let dateTruncUnit = "day";
     let startDateLimit = new Date();
 
@@ -70,8 +92,10 @@ export const getDashboardRevenue = async (req, res) => {
     const revenueData = await Booking.aggregate([
       {
         $match: {
-          sellerId,
-          status: "completed",
+          $or: [
+            { sellerId, $or: [{ status: { $in: ["confirmed", "completed"] } }, { paymentStatus: "paid" }] },
+            { listingId: { $in: listingIds }, $or: [{ status: { $in: ["confirmed", "completed"] } }, { paymentStatus: "paid" }] },
+          ],
           createdAt: { $gte: startDateLimit },
         },
       },
@@ -83,7 +107,7 @@ export const getDashboardRevenue = async (req, res) => {
               unit: dateTruncUnit,
             },
           },
-          revenue: { $sum: "$totalAmount" },
+          revenue: { $sum: { $ifNull: ["$totalAmount", "$totalPrice"] } },
         },
       },
       { $sort: { _id: 1 } },
@@ -107,11 +131,21 @@ export const getDashboardActivity = async (req, res) => {
   try {
     const sellerId = req.user.id;
 
-    // Fetch last 5 bookings
-    const bookings = await Booking.find({ sellerId })
+    // Fetch listing IDs owned by the seller to aggregate older/buyer-created bookings
+    const sellerListings = await Listing.find({ seller: sellerId }).select("_id");
+    const listingIds = sellerListings.map((l) => l._id);
+
+    // Fetch last 5 bookings matching sellerId or listingId
+    const bookings = await Booking.find({
+      $or: [
+        { sellerId },
+        { listingId: { $in: listingIds } }
+      ]
+    })
       .sort({ createdAt: -1 })
       .limit(5)
       .populate("renterId", "name")
+      .populate("userId", "name")
       .populate("listingId", "title");
 
     // Fetch last 5 conversations (enquiries)
@@ -125,10 +159,11 @@ export const getDashboardActivity = async (req, res) => {
     const activity = [];
 
     bookings.forEach((b) => {
+      const renterName = b.renterId?.name || b.userId?.name || "Unknown";
       activity.push({
         id: b._id,
         type: "booking",
-        text: `Booking ${b.status} by ${b.renterId?.name || "Unknown"} for "${b.listingId?.title || "Listing"}"`,
+        text: `New booking confirmed by ${renterName} for "${b.listingId?.title || "Listing"}"`,
         createdAt: b.createdAt,
       });
     });

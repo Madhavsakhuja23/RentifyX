@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Filter, Download, IndianRupee, Calendar } from 'lucide-react';
+import { ChevronRight, Filter, Download, IndianRupee, Calendar, User } from 'lucide-react';
 import api from '../../api';
 import { format, differenceInDays } from 'date-fns';
 import './RentalHistory.css';
@@ -19,6 +19,17 @@ export default function RentalHistory() {
   useEffect(() => {
     fetchHistory();
   }, [status, type, dateFrom, dateTo]);
+
+  useEffect(() => {
+    if (selected) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selected]);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -140,7 +151,7 @@ export default function RentalHistory() {
             <tbody>
               {bookings.map(row => (
                 <tr key={row._id}>
-                  <td>
+                  <td data-label="Customer">
                     <div className="customer-cell">
                       {row.renter.photo ? (
                         <img src={row.renter.photo} alt={row.renter.name} className="cell-avatar" />
@@ -150,23 +161,23 @@ export default function RentalHistory() {
                       <span>{row.renter.name}</span>
                     </div>
                   </td>
-                  <td className="row-item">
+                  <td className="row-item" data-label="Item Rented">
                     <span className={`type-badge ${row.listing.category.toLowerCase()}`}>
                       {row.listing.category}
                     </span>
                     {row.listing.title}
                   </td>
-                  <td className="row-dates">
+                  <td className="row-dates" data-label="Dates">
                     {format(new Date(row.startDate), 'MMM dd')} - {format(new Date(row.endDate), 'MMM dd, yyyy')}
                   </td>
-                  <td>{differenceInDays(new Date(row.endDate), new Date(row.startDate))} Days</td>
-                  <td className="row-payment">₹{row.totalAmount.toLocaleString()}</td>
-                  <td>
+                  <td data-label="Duration">{differenceInDays(new Date(row.endDate), new Date(row.startDate))} Days</td>
+                  <td className="row-payment" data-label="Amount">₹{row.totalAmount.toLocaleString()}</td>
+                  <td data-label="Status">
                     <span className={`status-badge ${getStatusClass(row.status)}`}>
                       {row.status}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Action">
                     <button className="details-btn" onClick={() => setSelected(row)}>
                       Details <ChevronRight size={16} />
                     </button>

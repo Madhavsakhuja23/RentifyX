@@ -53,10 +53,11 @@
   justify-content: center;
   font-weight: 800;
   box-shadow: var(--shadow-btn);
+  flex-shrink: 0;
 }
 
 .login-card h3 {
-  font-size: 28px;
+  font-size: clamp(22px, 4vw, 28px);
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -66,7 +67,7 @@
 .login-card p {
   color: var(--text-secondary);
   margin-bottom: 32px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .input-icon {
@@ -104,7 +105,7 @@
 
 .role-selection {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -143,7 +144,7 @@
 }
 
 .login-brand {
-  background:  #FF8D21;
+  background: #FF8D21;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,14 +168,14 @@
 .login-brand h2 {
   font-weight: 800;
   letter-spacing: -0.5px;
-  font-size: 36px;
+  font-size: clamp(24px, 4vw, 36px);
   color: white;
   margin-bottom: 16px;
 }
 
 .login-brand p {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
+  font-size: clamp(15px, 2vw, 18px);
   line-height: 1.6;
 }
 
@@ -183,7 +184,7 @@
 }
 
 .login-brand .col h3 {
-  font-size: 32px;
+  font-size: clamp(24px, 3vw, 32px);
   font-weight: 800;
   color: white;
   margin-bottom: 4px;
@@ -239,19 +240,33 @@
   color: var(--accent-blue);
   text-decoration: underline;
 }
+
+/* Google Button */
 .google-btn {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   background: white;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .google-btn:hover {
-  background: #f5f5f5;
+  background: #f9fafb;
+  border-color: var(--accent-purple);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
+
+/* Alert */
 .alert {
   border-radius: 10px;
   padding: 10px 14px;
@@ -264,13 +279,13 @@
   color: #dc2626;
 }
 
-.google-btn {
-  margin-top: 12px;
-}
+/* ================= RESPONSIVE ================= */
+
 @media (max-width: 768px) {
   .login-card {
-    padding: 32px;
-    margin: 20px;
+    padding: 28px 20px;
+    margin: 16px;
+    border-radius: var(--radius-lg);
   }
 
   .login-brand {
@@ -278,10 +293,36 @@
   }
 
   .login-brand h2 {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .login-brand .row {
-    margin-top: 40px;
+    margin-top: 32px;
+  }
+
+  .role-selection {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .role-option {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .logo-box {
+    width: 40px;
+    height: 40px;
+  }
+
+  .login-logo {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 24px 16px;
+    margin: 12px;
   }
 }

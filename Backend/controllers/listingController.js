@@ -2,6 +2,7 @@ import Listing from "../models/Listing.js";
 import User from "../models/User.js";
 import cloudinary from "../config/cloudinaryConfig.js";
 import mongoose from "mongoose";
+import { getIo } from "../config/socket.js";
 
 // GET /api/listings/my — Get all listings for the authenticated seller
 export const getMyListings = async (req, res) => {
@@ -20,10 +21,17 @@ export const getMyListings = async (req, res) => {
                 $expr: {
                   $and: [
                     { $eq: ["$listingId", "$$listingId"] },
-                    { $eq: ["$status", "ongoing"] },
+                    { $in: ["$status", ["confirmed", "active", "ongoing", "paid"]] },
                   ],
                 },
               },
+            },
+            {
+              $addFields: {
+                renterId: { $ifNull: ["$renterId", "$userId"] },
+                endDate: { $ifNull: ["$endDate", "$checkOut"] },
+                startDate: { $ifNull: ["$startDate", "$checkIn"] },
+              }
             },
             {
               $lookup: {
@@ -116,6 +124,12 @@ export const createListing = async (req, res) => {
     });
 
     await listing.save();
+
+    try {
+      getIo().to(sellerId.toString()).emit("dashboard_stats_updated");
+    } catch (socketErr) {
+      console.error("Socket emit failed on listing create:", socketErr);
+    }
 
     res.status(201).json({
       msg: "Listing created successfully",
@@ -220,6 +234,12 @@ export const updateListing = async (req, res) => {
 
     await listing.save();
 
+    try {
+      getIo().to(sellerId.toString()).emit("dashboard_stats_updated");
+    } catch (socketErr) {
+      console.error("Socket emit failed on listing update:", socketErr);
+    }
+
     res.status(200).json({ msg: "Listing updated successfully", listing });
   } catch (error) {
     console.error("Update listing error:", error);
@@ -249,6 +269,12 @@ export const deleteListing = async (req, res) => {
 
     listing.deleted = true;
     await listing.save();
+
+    try {
+      getIo().to(sellerId.toString()).emit("dashboard_stats_updated");
+    } catch (socketErr) {
+      console.error("Socket emit failed on listing delete:", socketErr);
+    }
 
     res.json({ msg: "Listing deleted successfully", id: listingId });
   } catch (err) {

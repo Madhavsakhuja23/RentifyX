@@ -2,8 +2,6 @@
    RentifyX – Global Theme
    ============================================= */
 
-/* ---------- Theme Variables ---------- */
-
 :root {
 
   /* Backgrounds */
@@ -15,11 +13,8 @@
 
   /* Brand Colors */
   --accent-purple: #FF7B00;
-  /* Deep Olive Moss */
   --accent-blue: #FFA652;
-  /* Classic Olive */
   --accent-cyan: #FF8D21;
-  /* Olive Bark */
   --accent-green: #10b981;
   --accent-pink: #ec4899;
 
@@ -58,44 +53,23 @@
   /* Transition */
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-}
-
-/* =========================================
-   Compatibility Tokens (for ListingDetails)
-   ========================================= */
-
-:root {
-
-  /* Background */
+  /* Compatibility Tokens */
   --background: var(--bg-primary);
   --card: var(--bg-card);
   --secondary: var(--bg-secondary);
   --muted: var(--bg-surface);
   --input: var(--bg-input);
-
-  /* Text */
   --foreground: var(--text-primary);
   --muted-foreground: var(--text-secondary);
-
-  /* Borders */
   --border: var(--border-color);
-
-  /* Primary */
   --primary: var(--accent-purple);
   --primary-foreground: #ffffff;
-
-  /* Extra tokens used in listing page */
   --sand: #f8fafc;
   --terracotta: var(--accent-purple);
   --warm-gold: var(--accent-purple);
   --forest: var(--accent-green);
-
-  /* Radius compatibility */
   --radius: var(--radius-md);
-
-  /* Font */
   --font-sans: var(--font);
-
 }
 
 /* ---------- Base Page ---------- */
@@ -133,13 +107,8 @@ body {
 /* ---------- Page Animation ---------- */
 
 @keyframes fadeIn {
-  from {
-    opacity: 0
-  }
-
-  to {
-    opacity: 1
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ---------- Utility Classes ---------- */
@@ -189,11 +158,13 @@ textarea {
   outline: none;
   font-family: var(--font);
   transition: var(--transition);
+  font-size: 16px; /* prevents zoom on iOS */
+  max-width: 100%;
 }
 
 input:focus {
   border-color: var(--accent-purple);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 123, 0, 0.1);
 }
 
 /* ---------- Card ---------- */
