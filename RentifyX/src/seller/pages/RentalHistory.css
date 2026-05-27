@@ -140,14 +140,17 @@
   background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 20px;
-  overflow-x: auto;
+  overflow-x: hidden;
   box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.06);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .history-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: unset;
 }
 
 .history-table th,
@@ -259,33 +262,39 @@
   transform: translateX(4px);
 }
 
-/* Modal Overlay */
-.modal-overlay {
+/* Scoped Details Modal Overlay & Content to avoid global flex clashes and enable vertical scrolling */
+.rh-details-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 24px;
+  align-items: flex-start;
+  overflow-y: auto;
+  padding: 40px 24px;
+  box-sizing: border-box;
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.premium-modal {
-  background: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 28px;
+.rh-details-modal-content {
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
   width: 100%;
-  max-width: 580px;
-  box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  max-width: 900px;
+  width: min(900px, 92vw);
+  margin: 0 auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04);
   animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   display: flex;
   flex-direction: column;
-  max-height: 85vh;
-  overflow: hidden;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  box-sizing: border-box;
 }
 
 @keyframes fadeIn {
@@ -294,18 +303,59 @@
 }
 
 @keyframes slideUpModal {
-  from { opacity: 0; transform: translateY(30px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .bottom-sheet-drag-handle {
   display: none;
 }
 
-.btn-icon-close {
-  background: #f1f5f9;
-  border: none;
-  color: #64748b;
+/* PREMIUM HERO BANNER HEADER */
+.premium-hero-header {
+  position: relative;
+  height: 260px;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 32px 36px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.premium-hero-header .hero-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.85) contrast(1.05);
+}
+
+.premium-hero-header .hero-bg-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  width: 100%;
+  height: 100%;
+}
+
+.premium-hero-header .hero-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.85) 100%);
+  z-index: 1;
+}
+
+.btn-icon-close-glass {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -313,324 +363,570 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-.btn-icon-close:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-  transform: rotate(90deg);
+.btn-icon-close-glass:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: rotate(90deg) scale(1.05);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.modal-subtitle {
+.hero-header-content {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+  width: 100%;
+}
+
+.hero-badge-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.status-chip {
-  padding: 4px 10px;
+.category-tag {
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
+  color: #ffffff;
 }
+.category-tag.dwelling { background: #4f46e5; }
+.category-tag.vehicle { background: #d97706; }
 
-.premium-body {
-  padding: 24px 32px;
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.modal-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.modal-section h3 {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 1px;
-}
-
-/* Listing Preview Card */
-.listing-detail-card {
-  display: flex;
-  gap: 16px;
-  background: #f8fafc;
-  padding: 16px;
+.status-pill-saas {
+  padding: 4px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(15, 23, 42, 0.04);
-}
-
-.listing-card-img {
-  width: 88px;
-  height: 88px;
-  border-radius: 12px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: #e2e8f0;
-}
-
-.listing-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.listing-img-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-}
-
-.listing-card-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-}
-
-.type-badge-sm {
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  display: inline-block;
-  align-self: flex-start;
-  margin-bottom: 2px;
-}
-
-.type-badge-sm.dwelling { background: #e0e7ff; color: #4338ca; }
-.type-badge-sm.vehicle { background: #fef3c7; color: #92400e; }
-
-.listing-card-info h4 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.listing-loc {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.listing-price-tag {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #ea580c;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
-}
-
-/* Renter Card */
-.renter-detail-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #f8fafc;
-  padding: 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(15, 23, 42, 0.04);
-}
-
-.renter-photo {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.renter-photo-placeholder {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-}
-
-.renter-info-block h4 {
-  margin: 0 0 2px 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.renter-verified {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #059669;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.renter-email {
-  margin: 4px 0 0 0;
-  font-size: 0.85rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Timeline grid */
-.timeline-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.timeline-date-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #f8fafc;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(15, 23, 42, 0.03);
-}
-
-.timeline-date-box svg {
-  color: #64748b;
-  flex-shrink: 0;
-}
-
-.timeline-date-box .box-label {
-  display: block;
   font-size: 0.72rem;
-  color: #94a3b8;
-  font-weight: 600;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-.timeline-date-box .box-val {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-top: 2px;
+.hero-header-content h2 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
 }
 
-.timeline-duration-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(234, 88, 12, 0.05);
-  color: #ea580c;
-  padding: 12px 16px;
-  border-radius: 14px;
-  font-size: 0.9rem;
+.hero-booking-meta {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
   font-weight: 500;
 }
 
-.timeline-duration-indicator strong {
+.hero-booking-meta strong {
   font-weight: 700;
+  color: #ffffff;
 }
 
-/* Financial Breakdown */
-.premium-breakdown {
-  background: #f8fafc;
-  border: 1px solid rgba(15, 23, 42, 0.04);
+/* PREMIUM SAAS BODY */
+.premium-saas-body {
+  padding: 32px;
+  overflow-y: visible;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* QUICK INFO GRID */
+.quick-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.01);
+}
+
+.q-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.q-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  font-weight: 750;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+}
+
+.q-val {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* STRUCTURED SECTIONS */
+.saas-sections-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 28px;
+}
+
+.saas-col-main, .saas-col-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.saas-card-section {
+  background: #ffffff;
+  padding: 26px;
   border-radius: 20px;
-  padding: 20px;
-  margin-top: 0;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.015);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.premium-breakdown .pb-row {
+.saas-card-section:hover {
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.03);
+  transform: translateY(-2px);
+}
+
+.section-title-saas {
+  margin: 0 0 20px 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  font-weight: 750;
+  color: #94a3b8;
+  letter-spacing: 1.2px;
+}
+
+/* LISTING PREVIEW */
+.saas-listing-preview {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.saas-listing-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f1f5f9;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+}
+
+.saas-listing-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.saas-listing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.saas-listing-info h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.saas-listing-loc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.saas-listing-rate {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ea580c;
+}
+
+/* RENTER PROFILE CARD */
+.saas-renter-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.saas-renter-photo-wrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.saas-renter-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.saas-renter-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  border: 2px solid #ffffff;
+}
+
+.verified-badge-tick {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #10b981;
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.saas-renter-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.saas-renter-info h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.saas-renter-verified-text {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.saas-renter-email {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.saas-msg-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(234, 88, 12, 0.06);
+  border: 1px solid rgba(234, 88, 12, 0.15);
+  color: #ea580c;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.02);
+}
+
+.saas-msg-btn:hover {
+  background: rgba(234, 88, 12, 0.12);
+  color: #c2410c;
+  border-color: rgba(234, 88, 12, 0.25);
+  transform: translateY(-1px);
+}
+
+/* JOURNEY TIMELINE */
+.saas-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  position: relative;
+  padding-left: 28px;
+}
+
+.saas-timeline::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 9px;
+  width: 2px;
+  background: #f1f5f9;
+}
+
+.saas-timeline-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.saas-timeline-item .timeline-node {
+  position: absolute;
+  left: -28px;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.saas-timeline-item .timeline-node.green { background: #10b981; color: #ffffff; }
+.saas-timeline-item .timeline-node.blue { background: #3b82f6; color: #ffffff; }
+.saas-timeline-item .timeline-node.gold { background: #f59e0b; color: #ffffff; }
+.saas-timeline-item .timeline-node.grey { background: #e2e8f0; color: #94a3b8; }
+
+.saas-timeline-item .timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.saas-timeline-item .timeline-content h5 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.saas-timeline-item .timeline-content p {
+  margin: 0 0 2px 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.saas-timeline-item .timeline-content span {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* FINANCIAL INVOICE */
+.invoice-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+  color: #0f172a;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
+}
+
+.invoice-card::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.03) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.invoice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 1.5px;
+  margin-bottom: 24px;
+}
+
+.invoice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invoice-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: #475569;
   font-weight: 500;
 }
 
-.premium-breakdown .pb-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.invoice-row .deduction {
+  color: #ef4444;
+  font-weight: 600;
 }
 
-.premium-breakdown .pb-row svg {
-  color: #94a3b8;
-}
-
-.premium-breakdown .pb-divider {
+.invoice-divider {
   height: 1px;
-  border-top: 1px dashed rgba(15, 23, 42, 0.08);
-  margin: 16px 0;
+  border-top: 1px dashed rgba(15, 23, 42, 0.1);
+  margin: 6px 0;
 }
 
-.premium-breakdown .pb-row.total {
-  margin: 0;
-  padding: 0;
-  border: none;
+.invoice-row.net-payout {
   font-size: 1.15rem;
   font-weight: 800;
   color: #0f172a;
 }
 
-.sticky-footer {
-  padding: 20px 32px;
-  background: #f8fafc;
-  border-top: 1px solid rgba(15, 23, 42, 0.04);
-  display: flex;
-  justify-content: flex-end;
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+.invoice-row.net-payout .payout-amount {
+  color: #10b981;
+  font-weight: 900;
 }
 
-.btn-close-premium {
-  width: 100%;
-  padding: 14px;
+.invoice-footer {
+  margin-top: 24px;
+  border-top: 1px dashed rgba(15, 23, 42, 0.08);
+  padding-top: 18px;
+}
+
+.escrow-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pulse-dot.green {
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+  animation: pulseDotEffect 2s infinite;
+}
+
+@keyframes pulseDotEffect {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+/* STATUS LOG CARD */
+.status-log-card {
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.status-log-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ea580c;
+}
+
+.status-log-header h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.status-log-header .status-text {
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #ea580c;
+  font-size: 0.85rem;
+  margin-left: 2px;
+}
+
+.status-log-description {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+/* STICKY SAAS FOOTER */
+.sticky-saas-footer {
+  padding: 16px 32px 32px;
+  background: transparent;
+  border-top: none;
+  display: flex;
+  justify-content: flex-end;
+  position: static;
+  flex-shrink: 0;
+}
+
+.btn-close-saas-primary {
+  width: auto;
+  min-width: 150px;
+  padding: 12px 28px;
   background: #0f172a;
   color: #ffffff;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-.btn-close-premium:hover {
+.btn-close-saas-primary:hover {
   background: #1e293b;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
 }
 
-/* ================= MOBILE STYLING & BOTTOM SHEET OVERHAUL ================= */
+/* Sticky Compact Top Bar default state (hidden on desktop) */
+.mobile-sticky-top-bar {
+  display: none;
+}
+
+/* ================= MOBILE STYLING & FULLSCREEN SHEET OVERHAUL ================= */
 @media (max-width: 768px) {
   .rental-history .page-header {
     margin-bottom: 24px;
@@ -690,12 +986,12 @@
   }
   
   .history-table tbody tr {
-    border: 1px solid rgba(15, 23, 42, 0.05);
-    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 16px;
     margin-bottom: 16px;
     padding: 20px;
     background: #ffffff;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -707,8 +1003,8 @@
   }
   
   .history-table td {
-    border-bottom: 1px dashed rgba(15, 23, 42, 0.03);
-    padding: 14px 0;
+    border-bottom: 1px dashed rgba(15, 23, 42, 0.04);
+    padding: 12px 0;
     display: block;
     text-align: left;
     font-size: 0.92rem;
@@ -740,7 +1036,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     text-align: left;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     letter-spacing: 0.5px;
   }
   
@@ -771,18 +1067,28 @@
     font-size: 0.95rem;
   }
 
-  /* PREMIUM MOBILE BOTTOM SHEET DRAWER */
-  .modal-overlay {
-    align-items: flex-end;
-    padding: 0;
+  /* PREMIUM MOBILE FULLSCREEN BOOKING SHEET */
+  .rh-details-modal-overlay {
+    display: block !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
   }
 
-  .premium-modal {
-    max-height: 88vh;
-    border-radius: 30px 30px 0 0;
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    animation: slideUpBottomSheet 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  .rh-details-modal-content {
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+    border: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+    animation: slideUpBottomSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   @keyframes slideUpBottomSheet {
@@ -791,65 +1097,132 @@
   }
 
   .bottom-sheet-drag-handle {
-    display: block;
-    width: 48px;
-    height: 5px;
-    background: #cbd5e1;
-    border-radius: 10px;
-    margin: 12px auto 0 auto;
-    flex-shrink: 0;
+    display: none !important;
   }
 
-  .modal-header {
-    padding: 16px 24px 20px 24px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.04);
-    background: #ffffff;
+  .mobile-sticky-top-bar {
+    display: flex !important;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    padding: 14px 20px;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
   }
 
-  .modal-header h2 {
-    font-size: 1.25rem;
+  .mobile-top-bar-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 75%;
   }
 
-  .btn-icon-close {
+  .mobile-top-bar-close {
+    background: rgba(15, 23, 42, 0.05);
+    border: none;
+    color: #0f172a;
     width: 32px;
     height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
-  .premium-body {
-    padding: 20px 24px;
-    gap: 20px;
+  .mobile-top-bar-close:hover {
+    background: rgba(15, 23, 42, 0.1);
   }
 
-  .listing-detail-card, .renter-detail-card {
-    padding: 12px;
-    border-radius: 16px;
+  .premium-hero-header .btn-icon-close-glass {
+    display: none !important;
   }
 
-  .listing-card-img {
-    width: 72px;
-    height: 72px;
+  .premium-hero-header {
+    height: 160px !important;
+    padding: 16px 20px 20px 20px !important;
   }
 
-  .listing-card-info h4 {
-    font-size: 0.95rem;
+  .premium-hero-header h2 {
+    font-size: 1.3rem !important;
+    margin-bottom: 4px !important;
   }
 
-  .timeline-grid {
-    grid-template-columns: 1fr;
+  .hero-booking-meta {
+    font-size: 0.85rem !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .rh-details-modal-body.premium-saas-body {
+    padding: 20px 20px !important;
+    gap: 20px !important;
+    overflow-y: visible !important;
+    flex: none !important;
+  }
+
+  .quick-info-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+    padding: 16px !important;
+  }
+
+  .saas-sections-columns {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .saas-card-section {
+    padding: 18px !important;
+  }
+
+  .section-title-saas {
+    margin-bottom: 14px !important;
+  }
+
+  .saas-renter-card {
+    flex-wrap: wrap;
     gap: 12px;
   }
 
-  .timeline-date-box {
-    padding: 12px;
-    border-radius: 12px;
+  .saas-msg-btn {
+    width: 100% !important;
+    justify-content: center;
   }
 
-  .sticky-footer {
-    padding: 16px 24px 24px 24px;
+  .rh-details-modal-footer.sticky-saas-footer {
+    position: sticky !important;
+    bottom: 0;
+    z-index: 10;
+    padding: 16px 20px 24px 20px !important;
     background: #ffffff;
-    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.05);
+    border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
+    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.04) !important;
+  }
+
+  .btn-close-saas-primary {
+    width: 100% !important;
+    min-width: unset !important;
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .rental-history .page-header h1 {
+    font-size: 1.35rem;
+  }
+  
+  .quick-info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
 }
