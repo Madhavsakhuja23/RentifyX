@@ -6,7 +6,6 @@ import {
   List,
   PlusCircle,
   History,
-  BarChart3,
   Bell,
   User,
   LogOut,
@@ -22,7 +21,6 @@ const navItems = [
   { to: '/seller/listings', icon: List, label: 'My Listings' },
   { to: '/seller/add-listing', icon: PlusCircle, label: 'Add Listing' },
   { to: '/seller/history', icon: History, label: 'Rental History' },
-  { to: '/seller/analytics', icon: BarChart3, label: 'Revenue & Analytics' },
   { to: '/seller/notifications', icon: Bell, label: 'Notifications' },
   { to: '/seller/profile', icon: User, label: 'Profile Settings' },
 ];
