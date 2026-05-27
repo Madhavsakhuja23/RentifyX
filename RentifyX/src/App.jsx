@@ -11,7 +11,6 @@ import DashboardHome from './seller/pages/DashboardHome';
 import MyListings from './seller/pages/MyListings';
 import AddListing from './seller/pages/AddListing';
 import RentalHistory from './seller/pages/RentalHistory';
-import RevenueAnalytics from './seller/pages/RevenueAnalytics';
 import Notifications from './seller/pages/Notifications';
 import ProfileSettings from './seller/pages/ProfileSettings';
 import Messages from './seller/pages/Messages';
@@ -104,7 +103,6 @@ const shouldHideChatbot =
           <Route path="listings" element={<MyListings />} />
           <Route path="add-listing" element={<AddListing />} />
           <Route path="history" element={<RentalHistory />} />
-          <Route path="analytics" element={<RevenueAnalytics />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="messages" element={<Messages />} />
           <Route path="profile" element={<ProfileSettings />} />
