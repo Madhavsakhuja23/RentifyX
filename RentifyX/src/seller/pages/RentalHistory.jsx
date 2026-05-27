@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Filter, Download, IndianRupee, Calendar, User } from 'lucide-react';
+import { ChevronRight, Filter, Download, IndianRupee, Calendar, User, X, Clock, MapPin, Tag, CreditCard, ShieldCheck, Mail } from 'lucide-react';
 import api from '../../api';
 import { format, differenceInDays } from 'date-fns';
 import './RentalHistory.css';
@@ -189,69 +189,124 @@ export default function RentalHistory() {
         )}
       </div>
 
-      {/* Detail Modal */}
+      {/* Redesigned Premium Details Modal */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-content premium-modal" onClick={e => e.stopPropagation()}>
+            {/* Sticky Drag Handle for Mobile Bottom Sheet */}
+            <div className="bottom-sheet-drag-handle" />
+
             <div className="modal-header">
-              <h2>Booking Details</h2>
-              <span className="modal-id">#{selected._id.slice(-6)}</span>
+              <div>
+                <h2>Booking Details</h2>
+                <div className="modal-subtitle">
+                  <span className="modal-id">#{selected._id.slice(-6).toUpperCase()}</span>
+                  <span className={`status-chip ${getStatusClass(selected.status)}`}>
+                    {selected.status}
+                  </span>
+                </div>
+              </div>
+              <button className="btn-icon-close" onClick={() => setSelected(null)} aria-label="Close modal">
+                <X size={20} />
+              </button>
             </div>
             
-            <div className="modal-body">
-              <div className="detail-group">
-                <label>Customer Name</label>
-                <div className="detail-customer">
-                   {selected.renter.photo ? (
-                    <img src={selected.renter.photo} alt={selected.renter.name} className="cell-avatar" />
+            <div className="modal-body premium-body">
+              {/* Listing Preview Section */}
+              <div className="modal-section listing-preview-section">
+                <h3>Listing Preview</h3>
+                <div className="listing-detail-card">
+                  <div className="listing-card-img">
+                    {selected.listing.images?.[0]?.url ? (
+                      <img src={selected.listing.images[0].url} alt={selected.listing.title} />
+                    ) : (
+                      <div className="listing-img-placeholder"><MapPin size={24} /></div>
+                    )}
+                  </div>
+                  <div className="listing-card-info">
+                    <span className={`type-badge-sm ${selected.listing.category.toLowerCase()}`}>
+                      {selected.listing.category}
+                    </span>
+                    <h4>{selected.listing.title}</h4>
+                    {selected.listing.location && (
+                      <p className="listing-loc"><MapPin size={12} /> {selected.listing.location}</p>
+                    )}
+                    <span className="listing-price-tag"><Tag size={12} /> ₹{selected.listing.price.toLocaleString()} / {selected.listing.timespan}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Renter Details Section */}
+              <div className="modal-section renter-details-section">
+                <h3>Renter Information</h3>
+                <div className="renter-detail-card">
+                  {selected.renter.photo ? (
+                    <img src={selected.renter.photo} alt={selected.renter.name} className="renter-photo" />
                   ) : (
-                    <div className="avatar-placeholder"><User size={20} /></div>
+                    <div className="renter-photo-placeholder"><User size={24} /></div>
                   )}
-                  <span>{selected.renter.name}</span>
+                  <div className="renter-info-block">
+                    <h4>{selected.renter.name}</h4>
+                    <p className="renter-verified"><ShieldCheck size={14} /> Verified Renter</p>
+                    {selected.renter.email && (
+                      <p className="renter-email"><Mail size={12} /> {selected.renter.email}</p>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="detail-group">
-                <label>Item Rented</label>
-                <p>{selected.listing.title}</p>
+
+              {/* Timeline / Dates Section */}
+              <div className="modal-section dates-timeline-section">
+                <h3>Timeline & Duration</h3>
+                <div className="timeline-grid">
+                  <div className="timeline-date-box">
+                    <Calendar size={16} />
+                    <div>
+                      <span className="box-label">Check In / Start</span>
+                      <span className="box-val">{format(new Date(selected.startDate), 'PPP')}</span>
+                    </div>
+                  </div>
+                  <div className="timeline-date-box">
+                    <Calendar size={16} />
+                    <div>
+                      <span className="box-label">Check Out / End</span>
+                      <span className="box-val">{format(new Date(selected.endDate), 'PPP')}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="timeline-duration-indicator">
+                  <Clock size={16} />
+                  <span>Rental Period: <strong>{differenceInDays(new Date(selected.endDate), new Date(selected.startDate))} Days</strong></span>
+                </div>
               </div>
-              <div className="detail-grid">
-                <div className="detail-group">
-                  <label>Start Date</label>
-                  <p>{format(new Date(selected.startDate), 'PPP')}</p>
-                </div>
-                <div className="detail-group">
-                  <label>End Date</label>
-                  <p>{format(new Date(selected.endDate), 'PPP')}</p>
-                </div>
-                <div className="detail-group">
-                  <label>Duration</label>
-                  <p>{differenceInDays(new Date(selected.endDate), new Date(selected.startDate))} Days</p>
-                </div>
-                <div className="detail-group">
-                  <label>Status</label>
-                  <span className={`status-badge ${getStatusClass(selected.status)}`}>{selected.status}</span>
-                </div>
-              </div>
-              
-              <div className="payment-breakdown">
-                <h3>Payment Breakdown</h3>
-                <div className="pb-row">
-                  <span>Rental Fee</span>
-                  <span>₹{selected.totalAmount.toLocaleString()}</span>
-                </div>
-                <div className="pb-row">
-                  <span>Platform Fee (5%)</span>
-                  <span>- ₹{(selected.totalAmount * 0.05).toLocaleString()}</span>
-                </div>
-                <div className="pb-row total">
-                  <span>Net Earnings</span>
-                  <span className="earn-color">₹{(selected.totalAmount * 0.95).toLocaleString()}</span>
+
+              {/* Payment Details Section */}
+              <div className="modal-section payment-section">
+                <h3>Financial Breakdown</h3>
+                <div className="payment-breakdown premium-breakdown">
+                  <div className="pb-row">
+                    <span className="pb-label"><CreditCard size={14} /> Rental Fee</span>
+                    <span className="pb-value">₹{selected.totalAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="pb-row platform-fee">
+                    <span className="pb-label"><IndianRupee size={14} /> Platform Fee (5%)</span>
+                    <span className="pb-value">- ₹{(selected.totalAmount * 0.05).toLocaleString()}</span>
+                  </div>
+                  <div className="pb-divider" />
+                  <div className="pb-row total">
+                    <span className="pb-label">Net Earnings</span>
+                    <span className="pb-value earn-color">₹{(selected.totalAmount * 0.95).toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-close" onClick={() => setSelected(null)}>Close</button>
+            {/* Sticky Action Footer */}
+            <div className="modal-footer sticky-footer">
+              <button className="btn-close-premium" onClick={() => setSelected(null)}>
+                Close Details
+              </button>
             </div>
           </div>
         </div>
