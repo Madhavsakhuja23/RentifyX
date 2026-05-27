@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Filter, Download, IndianRupee, Calendar, User, X, Clock, MapPin, Tag, CreditCard, ShieldCheck, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  ChevronRight, Filter, Download, IndianRupee, Calendar, User, X, Clock, 
+  MapPin, Tag, CreditCard, ShieldCheck, Mail, Receipt, CheckCircle2, 
+  AlertCircle, ArrowRight, MessageSquare 
+} from 'lucide-react';
 import api from '../../api';
 import { format, differenceInDays } from 'date-fns';
 import './RentalHistory.css';
 
+const getCreationDate = (id) => {
+  try {
+    const timestamp = parseInt(id.substring(0, 8), 16) * 1000;
+    return new Date(timestamp);
+  } catch (e) {
+    return null;
+  }
+};
+
 export default function RentalHistory() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -189,128 +204,246 @@ export default function RentalHistory() {
         )}
       </div>
 
-      {/* Redesigned Premium Details Modal */}
-      {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal-content premium-modal" onClick={e => e.stopPropagation()}>
-            {/* Sticky Drag Handle for Mobile Bottom Sheet */}
-            <div className="bottom-sheet-drag-handle" />
+      {/* Redesigned Modern Premium SaaS Details Modal */}
+      {selected && (() => {
+        const creationDate = getCreationDate(selected._id) || new Date(selected.startDate);
+        const duration = differenceInDays(new Date(selected.endDate), new Date(selected.startDate)) || 1;
+        const subtotal = selected.totalAmount;
+        const platformFee = selected.totalAmount * 0.05;
+        const taxAmount = platformFee * 0.18; // 18% GST on platform fee
+        const netEarnings = subtotal - platformFee - taxAmount;
 
-            <div className="modal-header">
-              <div>
-                <h2>Booking Details</h2>
-                <div className="modal-subtitle">
-                  <span className="modal-id">#{selected._id.slice(-6).toUpperCase()}</span>
-                  <span className={`status-chip ${getStatusClass(selected.status)}`}>
-                    {selected.status}
-                  </span>
-                </div>
+        return (
+          <div className="rh-details-modal-overlay" onClick={() => setSelected(null)}>
+            <div className="rh-details-modal-content premium-saas-modal" onClick={e => e.stopPropagation()}>
+              {/* Sticky Compact Top Bar for Mobile/Tablet */}
+              <div className="mobile-sticky-top-bar">
+                <span className="mobile-top-bar-title">{selected.listing.title}</span>
+                <button className="mobile-top-bar-close" onClick={() => setSelected(null)} aria-label="Close booking sheet">
+                  <X size={18} />
+                </button>
               </div>
-              <button className="btn-icon-close" onClick={() => setSelected(null)} aria-label="Close modal">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="modal-body premium-body">
-              {/* Listing Preview Section */}
-              <div className="modal-section listing-preview-section">
-                <h3>Listing Preview</h3>
-                <div className="listing-detail-card">
-                  <div className="listing-card-img">
-                    {selected.listing.images?.[0]?.url ? (
-                      <img src={selected.listing.images[0].url} alt={selected.listing.title} />
-                    ) : (
-                      <div className="listing-img-placeholder"><MapPin size={24} /></div>
-                    )}
-                  </div>
-                  <div className="listing-card-info">
-                    <span className={`type-badge-sm ${selected.listing.category.toLowerCase()}`}>
+
+              {/* Hero Banner Header Section */}
+              <div className="premium-hero-header">
+                {selected.listing.images?.[0]?.url ? (
+                  <img src={selected.listing.images[0].url} alt={selected.listing.title} className="hero-bg-img" />
+                ) : (
+                  <div className="hero-bg-placeholder" />
+                )}
+                <div className="hero-gradient-overlay" />
+                
+                {/* Floating Absolute Close Button */}
+                <button className="btn-icon-close-glass" onClick={() => setSelected(null)} aria-label="Close modal">
+                  <X size={18} />
+                </button>
+
+                <div className="hero-header-content">
+                  <div className="hero-badge-row">
+                    <span className={`category-tag ${selected.listing.category.toLowerCase()}`}>
                       {selected.listing.category}
                     </span>
-                    <h4>{selected.listing.title}</h4>
-                    {selected.listing.location && (
-                      <p className="listing-loc"><MapPin size={12} /> {selected.listing.location}</p>
-                    )}
-                    <span className="listing-price-tag"><Tag size={12} /> ₹{selected.listing.price.toLocaleString()} / {selected.listing.timespan}</span>
+                    <span className={`status-pill-saas ${getStatusClass(selected.status)}`}>
+                      {selected.status}
+                    </span>
                   </div>
+                  <h2>{selected.listing.title}</h2>
+                  <p className="hero-booking-meta">
+                    Renter: <strong>{selected.renter.name}</strong> • {duration} Days
+                  </p>
                 </div>
               </div>
-
-              {/* Renter Details Section */}
-              <div className="modal-section renter-details-section">
-                <h3>Renter Information</h3>
-                <div className="renter-detail-card">
-                  {selected.renter.photo ? (
-                    <img src={selected.renter.photo} alt={selected.renter.name} className="renter-photo" />
-                  ) : (
-                    <div className="renter-photo-placeholder"><User size={24} /></div>
-                  )}
-                  <div className="renter-info-block">
-                    <h4>{selected.renter.name}</h4>
-                    <p className="renter-verified"><ShieldCheck size={14} /> Verified Renter</p>
-                    {selected.renter.email && (
-                      <p className="renter-email"><Mail size={12} /> {selected.renter.email}</p>
-                    )}
+              
+              <div className="rh-details-modal-body premium-saas-body">
+                {/* 1. Quick Info Grid */}
+                <div className="saas-card quick-info-grid">
+                  <div className="q-info-item">
+                    <span className="q-label">Booking ID</span>
+                    <span className="q-val">#{selected._id.slice(-8).toUpperCase()}</span>
+                  </div>
+                  <div className="q-info-item">
+                    <span className="q-label">Created At</span>
+                    <span className="q-val">{format(creationDate, 'MMM dd, yyyy')}</span>
+                  </div>
+                  <div className="q-info-item">
+                    <span className="q-label">Duration</span>
+                    <span className="q-val">{duration} Days</span>
+                  </div>
+                  <div className="q-info-item">
+                    <span className="q-label">Base Rate</span>
+                    <span className="q-val">₹{Math.round(subtotal / duration).toLocaleString()}/day</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Timeline / Dates Section */}
-              <div className="modal-section dates-timeline-section">
-                <h3>Timeline & Duration</h3>
-                <div className="timeline-grid">
-                  <div className="timeline-date-box">
-                    <Calendar size={16} />
-                    <div>
-                      <span className="box-label">Check In / Start</span>
-                      <span className="box-val">{format(new Date(selected.startDate), 'PPP')}</span>
+                {/* 2. Structured Sections (Two Column Grid on Desktop, Stacked on Mobile) */}
+                <div className="saas-sections-columns">
+                  
+                  {/* Left Column */}
+                  <div className="saas-col-main">
+                    {/* Listing Card */}
+                    <div className="saas-card-section">
+                      <h3 className="section-title-saas">Listing Details</h3>
+                      <div className="saas-listing-preview">
+                        <div className="saas-listing-img">
+                          {selected.listing.images?.[0]?.url ? (
+                            <img src={selected.listing.images[0].url} alt={selected.listing.title} />
+                          ) : (
+                            <div className="listing-img-placeholder"><MapPin size={24} /></div>
+                          )}
+                        </div>
+                        <div className="saas-listing-info">
+                          <h4>{selected.listing.title}</h4>
+                          {selected.listing.location && (
+                            <p className="saas-listing-loc"><MapPin size={12} /> {selected.listing.location}</p>
+                          )}
+                          <span className="saas-listing-rate">₹{selected.listing.price.toLocaleString()} / {selected.listing.timespan}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Renter Information Card */}
+                    <div className="saas-card-section">
+                      <h3 className="section-title-saas">Renter Profile</h3>
+                      <div className="saas-renter-card">
+                        <div className="saas-renter-photo-wrap">
+                          {selected.renter.photo ? (
+                            <img src={selected.renter.photo} alt={selected.renter.name} className="saas-renter-photo" />
+                          ) : (
+                            <div className="saas-renter-placeholder"><User size={24} /></div>
+                          )}
+                          <span className="verified-badge-tick" title="Verified Account">
+                            <ShieldCheck size={14} />
+                          </span>
+                        </div>
+                        <div className="saas-renter-info">
+                          <h4>{selected.renter.name}</h4>
+                          <p className="saas-renter-verified-text">Verified Customer</p>
+                          {selected.renter.email && (
+                            <p className="saas-renter-email"><Mail size={12} /> {selected.renter.email}</p>
+                          )}
+                        </div>
+                        <button className="saas-msg-btn" onClick={() => navigate(`/seller/messages?id=${selected.conversationId || ''}`)} title="Message Renter">
+                          <MessageSquare size={16} />
+                          <span>Message</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Booking Timeline */}
+                    <div className="saas-card-section">
+                      <h3 className="section-title-saas">Rental Journey Timeline</h3>
+                      <div className="saas-timeline">
+                        <div className="saas-timeline-item active">
+                          <div className="timeline-node green"><CheckCircle2 size={14} /></div>
+                          <div className="timeline-content">
+                            <h5>Booking Confirmed</h5>
+                            <p>{format(creationDate, 'MMM dd, yyyy • h:mm a')}</p>
+                            <span>Escrow secured, notification dispatched to seller.</span>
+                          </div>
+                        </div>
+
+                        <div className="saas-timeline-item active">
+                          <div className="timeline-node green"><CheckCircle2 size={14} /></div>
+                          <div className="timeline-content">
+                            <h5>Payment Verified</h5>
+                            <p>{format(creationDate, 'MMM dd, yyyy • h:mm a')}</p>
+                            <span>Base booking amount processed and verified by Razorpay escrow.</span>
+                          </div>
+                        </div>
+
+                        <div className={`saas-timeline-item ${selected.status === 'ongoing' || selected.status === 'completed' ? 'active' : ''}`}>
+                          <div className={`timeline-node ${selected.status === 'ongoing' || selected.status === 'completed' ? 'blue' : 'grey'}`}>
+                            <Clock size={14} />
+                          </div>
+                          <div className="timeline-content">
+                            <h5>Check-In / Start Date</h5>
+                            <p>{format(new Date(selected.startDate), 'MMM dd, yyyy')} • 9:00 AM</p>
+                            <span>Scheduled rental period begins. Handover active.</span>
+                          </div>
+                        </div>
+
+                        <div className={`saas-timeline-item ${selected.status === 'completed' ? 'active' : ''}`}>
+                          <div className={`timeline-node ${selected.status === 'completed' ? 'gold' : 'grey'}`}>
+                            <Calendar size={14} />
+                          </div>
+                          <div className="timeline-content">
+                            <h5>Check-Out / End Date</h5>
+                            <p>{format(new Date(selected.endDate), 'MMM dd, yyyy')} • 6:00 PM</p>
+                            <span>Rental completion and checkout inventory log closure.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Right Column - Financial Invoice Card */}
+                  <div className="saas-col-sidebar">
+                    <div className="saas-card-section">
+                      <h3 className="section-title-saas">Financial Invoice</h3>
+                      <div className="invoice-card">
+                        <div className="invoice-header">
+                          <Receipt size={18} />
+                          <span>SECURE TRANSACTIONS</span>
+                        </div>
+                        <div className="invoice-body">
+                          <div className="invoice-row">
+                            <span className="inv-label">Subtotal ({duration} Days)</span>
+                            <span className="inv-val">₹{subtotal.toLocaleString()}</span>
+                          </div>
+                          <div className="invoice-row">
+                            <span className="inv-label">Platform Fee (5%)</span>
+                            <span className="inv-val deduction">- ₹{platformFee.toLocaleString()}</span>
+                          </div>
+                          <div className="invoice-row">
+                            <span className="inv-label">GST / Taxes (18% of Fee)</span>
+                            <span className="inv-val deduction">- ₹{taxAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="invoice-divider" />
+                          <div className="invoice-row net-payout">
+                            <span className="inv-label">Net Seller Payout</span>
+                            <span className="inv-val payout-amount">₹{netEarnings.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="invoice-footer">
+                          <div className="escrow-indicator">
+                            <span className="pulse-dot green" />
+                            <span>Escrow Verified • Direct Transfer Eligible</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="saas-card-section">
+                      <h3 className="section-title-saas">Status Log</h3>
+                      <div className="status-log-card">
+                        <div className="status-log-header">
+                          <span className="status-indicator-dot" />
+                          <h4>Current Status: <span className="status-text">{selected.status}</span></h4>
+                        </div>
+                        <p className="status-log-description">
+                          {selected.status === 'completed' && "This booking has finished. Payout successfully disbursed to your linked bank account."}
+                          {selected.status === 'ongoing' && "This rental is active. Check-in inventory has been validated. Renter currently holds access."}
+                          {selected.status === 'cancelled' && "This rental was cancelled. Check terms for cancellation disbursements if applicable."}
+                          {selected.status === 'confirmed' && "This booking is paid and secured. Check-in is awaiting calendar activation."}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="timeline-date-box">
-                    <Calendar size={16} />
-                    <div>
-                      <span className="box-label">Check Out / End</span>
-                      <span className="box-val">{format(new Date(selected.endDate), 'PPP')}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="timeline-duration-indicator">
-                  <Clock size={16} />
-                  <span>Rental Period: <strong>{differenceInDays(new Date(selected.endDate), new Date(selected.startDate))} Days</strong></span>
+
                 </div>
               </div>
 
-              {/* Payment Details Section */}
-              <div className="modal-section payment-section">
-                <h3>Financial Breakdown</h3>
-                <div className="payment-breakdown premium-breakdown">
-                  <div className="pb-row">
-                    <span className="pb-label"><CreditCard size={14} /> Rental Fee</span>
-                    <span className="pb-value">₹{selected.totalAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="pb-row platform-fee">
-                    <span className="pb-label"><IndianRupee size={14} /> Platform Fee (5%)</span>
-                    <span className="pb-value">- ₹{(selected.totalAmount * 0.05).toLocaleString()}</span>
-                  </div>
-                  <div className="pb-divider" />
-                  <div className="pb-row total">
-                    <span className="pb-label">Net Earnings</span>
-                    <span className="pb-value earn-color">₹{(selected.totalAmount * 0.95).toLocaleString()}</span>
-                  </div>
-                </div>
+              {/* Sticky Action Footer */}
+              <div className="rh-details-modal-footer sticky-saas-footer">
+                <button className="btn-close-saas-primary" onClick={() => setSelected(null)}>
+                  Close Booking Sheet
+                </button>
               </div>
-            </div>
-
-            {/* Sticky Action Footer */}
-            <div className="modal-footer sticky-footer">
-              <button className="btn-close-premium" onClick={() => setSelected(null)}>
-                Close Details
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
