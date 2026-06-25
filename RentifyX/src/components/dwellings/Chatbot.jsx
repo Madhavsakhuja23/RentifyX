@@ -113,7 +113,7 @@ function Chatbot() {
 
     // ---- Payment ----
     if (msg.includes("payment") || msg.includes("pay") || msg.includes("transaction")) {
-      return "We support UPI, Debit/Credit Cards, Net Banking, and international payments for booking stays or renting vehicles.";
+      return "We use Razorpay for secure online payments. You can pay via UPI, Credit/Debit Cards, or Net Banking through our secure Razorpay checkout.";
     }
 
     // ---- Cancellation ----
