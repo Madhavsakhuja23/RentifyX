@@ -156,8 +156,8 @@ export default function RequestToBook() {
 
   const price = listing ? calculatePrice(listing, booking) : { total: 0 };
 
-  const UPI_ID = "8295190177@ybl";
-  const HOST_NAME = "RentifyX";
+  // const UPI_ID = "8295190177@ybl";
+  // const HOST_NAME = "RentifyX";
 
   // ── Razorpay flow ────────────────────────────────────────────
   async function handleRazorpayPay() {
@@ -416,14 +416,14 @@ export default function RequestToBook() {
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
                   Pay Online
                 </button>
-                <button
+                {/* <button
                   id="rtb-tab-upi"
                   className={`rtb-pay-tab${payMethod === "upi" ? " active" : ""}`}
                   onClick={() => { setPayMethod("upi"); setUtrError(""); }}
                 >
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
                   UPI / QR
-                </button>
+                </button> */}
               </div>
 
               {/* ── Razorpay tab ── */}
