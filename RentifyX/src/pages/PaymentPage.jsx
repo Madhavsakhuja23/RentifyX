@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer/Footer';
-import api, { createBookingApi, checkAvailabilityApi } from '../api';
+import { createBookingApi, checkAvailabilityApi } from '../api';
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * 🔑 RAZORPAY PAYMENT LINK
@@ -10,17 +10,17 @@ import api, { createBookingApi, checkAvailabilityApi } from '../api';
  * receive API approval. The link looks like:
  *   https://rzp.io/l/XXXXXXXX
  *
- * When you get your live API keys approved you can switch to the full SDK
- * flow by using the useRazorpay hook from '../utils/useRazorpay'.
+ * When you get live API keys approved, switch to the full SDK flow by
+ * using the useRazorpay hook from '../utils/useRazorpay'.
  * ─────────────────────────────────────────────────────────────────────────── */
-const RAZORPAY_PAYMENT_LINK = "YOUR_RAZORPAY_PAYMENT_LINK_HERE";
+const RAZORPAY_PAYMENT_LINK = "https://razorpay.me/@madhavsakhuja";
 
-/* ── helpers ───────────────────────────────────────────────────── */
+/* ── helpers ─────────────────────────────────── */
 function fmt(n) {
   return "₹" + Number(n).toLocaleString("en-IN");
 }
 
-/* ── Success Screen ─────────────────────────────────────────────── */
+/* ── Success Screen ───────────────────────────── */
 function SuccessScreen({ vehicle, booking }) {
   const navigate = useNavigate();
   return (
@@ -54,7 +54,7 @@ function SuccessScreen({ vehicle, booking }) {
   );
 }
 
-/* ── Main Component ─────────────────────────────────────────────── */
+/* ── Main Component ──────────────────────────── */
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,10 +63,9 @@ const PaymentPage = () => {
   const totalPrice = bookingDetails?.totalPrice || vehicle?.hourlyRate || 0;
   const grandTotal = Math.round(totalPrice * 1.18 + 50); // taxes + service fee
 
-  // Step tracking: "checkout" → "confirm"
+  // Step: "checkout" → user clicks pay → "confirm" → user enters payment ID
   const [step, setStep] = useState("checkout");
 
-  // Payment ID confirmation state
   const [paymentId, setPaymentId] = useState("");
   const [paymentIdError, setPaymentIdError] = useState("");
   const [confirming, setConfirming] = useState(false);
@@ -80,11 +79,10 @@ const PaymentPage = () => {
 
   if (!vehicle) return null;
 
-  /* ── Open Razorpay payment link ─── */
+  /* ── Step 1: Open Razorpay payment link ─── */
   async function handlePayNow() {
     setAvailabilityError("");
 
-    // Check availability before redirecting to payment
     if (bookingDetails?.startDate && bookingDetails?.endDate) {
       try {
         const availability = await checkAvailabilityApi(
@@ -104,13 +102,13 @@ const PaymentPage = () => {
       }
     }
 
-    // Open payment link in a new tab
+    // Open the Razorpay payment link in a new tab
     window.open(RAZORPAY_PAYMENT_LINK, "_blank", "noopener,noreferrer");
-    // Move to the confirmation step
+    // Advance to step 2 — let user enter Payment ID
     setStep("confirm");
   }
 
-  /* ── Confirm booking after payment ─── */
+  /* ── Step 2: Confirm booking with Payment ID ─── */
   async function handleConfirmBooking() {
     const cleaned = paymentId.trim().replace(/\s/g, '');
     if (cleaned.length < 8) {
@@ -122,7 +120,6 @@ const PaymentPage = () => {
 
     try {
       if (bookingDetails?.startDate && bookingDetails?.endDate) {
-        // Final availability check before saving booking
         const availability = await checkAvailabilityApi(
           vehicle.id || vehicle._id,
           bookingDetails.startDate,
@@ -130,7 +127,7 @@ const PaymentPage = () => {
         );
         if (!availability.available) {
           setPaymentIdError(
-            'Sorry, this vehicle is no longer available for your dates. Please contact support with your Payment ID.'
+            'Sorry, this vehicle is no longer available. Please contact support with your Payment ID.'
           );
           setConfirming(false);
           return;
@@ -158,7 +155,6 @@ const PaymentPage = () => {
           setConfirmedBooking(confirmedData);
           setConfirmed(true);
 
-          // Update localStorage for fallback
           const existing = JSON.parse(localStorage.getItem('bookings') || '[]');
           existing.push({
             ...confirmedData,
@@ -180,7 +176,7 @@ const PaymentPage = () => {
     }
   }
 
-  /* ── Success state ─── */
+  /* ── Success screen ─── */
   if (confirmed && confirmedBooking) {
     return (
       <div className="dv-root">
@@ -214,7 +210,6 @@ const PaymentPage = () => {
           {/* LEFT — Vehicle summary */}
           <div className="dv-left">
             <div className="dv-summary-card">
-
               <div className="dv-vehicle-row">
                 <img src={vehicle.image} alt={vehicle.name} className="dv-vehicle-img" />
                 <div className="dv-vehicle-info">
@@ -268,7 +263,6 @@ const PaymentPage = () => {
                   <strong>{fmt(grandTotal)}</strong>
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -276,10 +270,9 @@ const PaymentPage = () => {
           <div className="dv-right">
             <div className="dv-pay-card">
 
-              {/* ── Step 1: Checkout ── */}
+              {/* ── STEP 1: Pay Now ── */}
               {step === "checkout" && (
                 <>
-                  {/* Header */}
                   <div className="dv-pay-header">
                     <div className="dv-pay-icon">
                       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -290,39 +283,36 @@ const PaymentPage = () => {
                     </div>
                     <div>
                       <h3>Secure Online Payment</h3>
-                      <p>Powered by Razorpay — Cards, UPI, Net Banking</p>
+                      <p>Cards, UPI, Net Banking — Powered by Razorpay</p>
                     </div>
                   </div>
 
-                  {/* Amount display */}
                   <div className="dv-amount-display">
                     <span>Amount to pay</span>
                     <strong>{fmt(grandTotal)}</strong>
                   </div>
 
-                  {/* What's included */}
                   <div className="dv-info-list">
                     <div className="dv-info-item">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#22c55e" strokeWidth="2.5">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      Pay securely using UPI, Credit/Debit Card, or Net Banking
+                      Pay via UPI, Credit/Debit Card, or Net Banking
                     </div>
                     <div className="dv-info-item">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#22c55e" strokeWidth="2.5">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                       After payment, return here to confirm your booking
                     </div>
                     <div className="dv-info-item">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#22c55e" strokeWidth="2.5">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      Keep your Razorpay Payment ID handy
+                      Keep your Payment ID ready from the success screen
                     </div>
                   </div>
 
-                  {/* Availability error */}
                   {availabilityError && (
                     <div className="dv-error-box">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
@@ -334,9 +324,8 @@ const PaymentPage = () => {
                     </div>
                   )}
 
-                  {/* Pay button */}
                   <button
-                    id="rzp-link-pay-btn"
+                    id="rzp-pay-now-btn"
                     className="dv-pay-btn"
                     onClick={handlePayNow}
                   >
@@ -356,10 +345,9 @@ const PaymentPage = () => {
                 </>
               )}
 
-              {/* ── Step 2: Confirm Payment ID ── */}
+              {/* ── STEP 2: Enter Payment ID ── */}
               {step === "confirm" && (
                 <>
-                  {/* Header */}
                   <div className="dv-pay-header">
                     <div className="dv-pay-icon dv-pay-icon--green">
                       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -373,17 +361,14 @@ const PaymentPage = () => {
                   </div>
 
                   <div className="dv-confirm-info">
-                    <p>
-                      After completing payment on Razorpay, find your <strong>Payment ID</strong> in:
-                    </p>
+                    <p>After completing payment on Razorpay, find your <strong>Payment ID</strong> in:</p>
                     <ul>
                       <li>The Razorpay payment success screen</li>
-                      <li>Your email/SMS confirmation from Razorpay</li>
+                      <li>Your email / SMS from Razorpay</li>
                       <li>It looks like: <code>pay_XXXXXXXXXXXXXX</code></li>
                     </ul>
                   </div>
 
-                  {/* Payment ID input */}
                   <div className="dv-pid-section">
                     <label className="dv-pid-label" htmlFor="rzp-payment-id-input">
                       Razorpay Payment ID
@@ -404,7 +389,6 @@ const PaymentPage = () => {
                     {paymentIdError && <span className="dv-pid-error">{paymentIdError}</span>}
                   </div>
 
-                  {/* Confirm button */}
                   <button
                     id="rzp-confirm-booking-btn"
                     className="dv-pay-btn"
@@ -420,7 +404,6 @@ const PaymentPage = () => {
                     )}
                   </button>
 
-                  {/* Go back to pay again */}
                   <button
                     className="dv-retry-btn"
                     onClick={() => { setStep("checkout"); setPaymentIdError(''); setAvailabilityError(''); }}
@@ -433,7 +416,7 @@ const PaymentPage = () => {
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    Your booking is protected. Contact support if you face any issues.
+                    Your booking is protected. Contact support if needed.
                   </p>
                 </>
               )}
@@ -449,7 +432,7 @@ const PaymentPage = () => {
   );
 };
 
-/* ── Styles ──────────────────────────────────────────────────────── */
+/* ── Page Styles ─────────────────────────────── */
 const pageStyles = `
   .dv-root {
     font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
@@ -465,7 +448,6 @@ const pageStyles = `
     padding: 32px 24px 80px;
   }
 
-  /* Topbar */
   .dv-topbar {
     display: flex;
     align-items: center;
@@ -490,7 +472,6 @@ const pageStyles = `
   }
   .dv-back-btn:hover { background: #f0f0f0; }
 
-  /* Layout */
   .dv-layout {
     display: grid;
     grid-template-columns: 1fr 420px;
@@ -571,7 +552,6 @@ const pageStyles = `
     top: 100px;
   }
 
-  /* Payment Header */
   .dv-pay-header {
     display: flex;
     align-items: center;
@@ -597,7 +577,6 @@ const pageStyles = `
   }
   .dv-pay-header p { font-size: 12px; color: #888; }
 
-  /* Amount display */
   .dv-amount-display {
     display: flex;
     justify-content: space-between;
@@ -616,13 +595,12 @@ const pageStyles = `
     color: rgb(255,102,0);
   }
 
-  /* Info list */
   .dv-info-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 9px;
     margin-bottom: 22px;
-    padding: 16px;
+    padding: 14px 16px;
     background: #f8f9ff;
     border: 1px solid #e8eeff;
     border-radius: 12px;
@@ -633,11 +611,10 @@ const pageStyles = `
     gap: 8px;
     font-size: 13px;
     color: #555;
-    line-height: 1.4;
+    line-height: 1.45;
   }
-  .dv-info-item svg { flex-shrink: 0; margin-top: 1px; color: #22c55e; }
+  .dv-info-item svg { flex-shrink: 0; margin-top: 1px; }
 
-  /* Error box */
   .dv-error-box {
     display: flex;
     align-items: flex-start;
@@ -652,7 +629,6 @@ const pageStyles = `
     line-height: 1.4;
   }
 
-  /* Pay button */
   .dv-pay-btn {
     width: 100%;
     padding: 15px;
@@ -679,7 +655,6 @@ const pageStyles = `
   }
   .dv-pay-btn:disabled { opacity: .65; cursor: not-allowed; }
 
-  /* Retry / back button */
   .dv-retry-btn {
     width: 100%;
     padding: 11px;
@@ -696,7 +671,6 @@ const pageStyles = `
   }
   .dv-retry-btn:hover { background: #f5f5f5; }
 
-  /* Secure note */
   .dv-secure-note {
     display: flex;
     align-items: center;
@@ -706,7 +680,7 @@ const pageStyles = `
     justify-content: center;
   }
 
-  /* Confirm info box */
+  /* Confirm info */
   .dv-confirm-info {
     background: #f8f9ff;
     border: 1px solid #e8eeff;
@@ -733,7 +707,7 @@ const pageStyles = `
     color: #3730a3;
   }
 
-  /* Payment ID input section */
+  /* Payment ID input */
   .dv-pid-section { margin-bottom: 20px; }
   .dv-pid-label {
     display: block;
@@ -800,18 +774,8 @@ const pageStyles = `
     margin: 0 auto 24px;
     box-shadow: 0 6px 20px rgba(255,102,0,.35);
   }
-  .dv-success h2 {
-    font-size: 26px;
-    font-weight: 800;
-    color: #222;
-    margin-bottom: 10px;
-  }
-  .dv-success-sub {
-    font-size: 15px;
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 32px;
-  }
+  .dv-success h2 { font-size: 26px; font-weight: 800; color: #222; margin-bottom: 10px; }
+  .dv-success-sub { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 32px; }
   .dv-success-detail {
     background: #fafafa;
     border-radius: 12px;
@@ -830,12 +794,7 @@ const pageStyles = `
   .dv-success-row:last-child { border: none; }
   .dv-success-row span { color: #888; }
   .dv-success-row strong { color: #222; }
-  .dv-success-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+  .dv-success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .dv-success-profile-btn {
     padding: 13px 24px;
     border: none;
